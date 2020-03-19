@@ -44,7 +44,7 @@
 +$  versioned-state
   $%  state-zero
   ==
-+$  state-zero  [%0 ship=@p contract=@t contracts=(set @t)]
++$  state-zero  [%0 data=json ship=@p contract=@t contracts=(set @t)]
 --
 =|  state-zero
 =*  state  -
@@ -70,9 +70,16 @@
   ++  on-arvo
     |=  [=wire =sign-arvo]
     ^-  (quip card _this)
-    ?.  ?=(%bound +<.sign-arvo)
-      (on-arvo:def wire sign-arvo)
-    [~ this]
+    ~&  '%on-arvo'
+    ?:  ?=(%bound +<.sign-arvo)
+      [~ this]
+    ~&  '%after bound'
+    ?:  ?=(%http-response +<.sign-arvo)
+      =^  cards  state
+        (http-response:cc wire client-response.sign-arvo)
+      [cards this]
+    (on-arvo:def wire sign-arvo)
+::
   ++  on-save  !>(state)
   ++  on-load
     |=  old=vase
@@ -102,7 +109,7 @@
     |=  =path
     ^-  (quip card _this)
     ?:  ?=([%http-response *] path)
-      `this
+      [~ this]
     ?:  =(/primary path)
       [[%give %fact ~ %json !>(*json)]~ this]
     ?:  =(/state/update path)
@@ -116,6 +123,22 @@
   --
 ::
 |_  bol=bowl:gall
+::
+++  get-request
+  |=  contract=@t
+  ^-  request:http
+  ~&  '%get-request'
+  ~&  contract
+  =/  url=@t  'https://api.etherscan.io/api?module=contract&action=getabi&address=0xBB9bc244D798123fDe783fCc1C72d3Bb8C189413'
+  =/  hed  [['Accept' 'application/json']]~
+  [%'GET' url hed *(unit octs)]
+::
+++  request-ethereum-abi
+  |=  contract=@t
+  ^-  card:agent:gall
+  ~&  '%request-ethereum-abi'
+  =/  req=request:http  (get-request contract)
+  [%pass /etheventviewer/ethereum-abi-response %arvo %i %request req *outbound-config:iris]
 ::
 ++  subscribe
   |=  contract=@ux
@@ -196,12 +219,16 @@
   ?>  ?=(%add-contract -.act)
   =/  new-state  state(contracts (~(put in contracts.state) contract.act))
 ::  new:
+::  (subscribe (contract-cord-to-hex contract.act))
 ::  :_  new-state
-::  :~  (subscribe (contract-cord-to-hex contract.act))
-::      [%give %fact `/state/update %json !>((make-tile-json new-state))]
+::  :~  (request-ethereum-abi -.act)
+::      [%give %fact [/state/update ~] %json !>((make-tile-json new-state))]
 ::  ==
-  :-  [%give %fact [/state/update ~] %json !>((make-tile-json new-state))]~
-  new-state
+  =/  lismov  [%give %fact [/state/update ~] %json !>((make-tile-json new-state))]
+  :_  new-state
+  :~  (request-ethereum-abi -.act)
+      lismov
+  ==
 ::
 ++  handle-remove-contract
   |=  act=example-action
@@ -213,7 +240,7 @@
 ::  new:
 ::  :_  new-state
 ::  :~  (unsubscribe (contract-cord-to-hex contract.act))
-::      [%give %fact `/state/update %json !>((make-tile-json new-state))]
+::      [%give %fact [/state/update ~] %json !>((make-tile-json new-state))]
 ::  ==
   :-  [%give %fact [/state/update ~] %json !>((make-tile-json new-state))]~
   new-state
@@ -233,7 +260,7 @@
   ~&  'previous ship state:'
   ~&  state
 ::  [~ state(ship ship)]
-::  [[%give %fact `/state/update %json !>(jon)]~ state(ship ship)]
+::  [[%give %fact [/state/update ~] %json !>(jon)]~ state(ship ship)]
   :-  [%give %fact [/state/update ~] %json !>((make-tile-json state))]~
   %=  state
     ship  ship
@@ -248,7 +275,8 @@
   %-  pairs
   :~  [%contract (tape (trip contract.new-state))]
       [%contracts `json`a+(turn `wain`contracts-list |=(=cord s+cord))]
-      [%shipa2 (ship ship.new-state)]
+      [%ship (ship ship.new-state)]
+      [%data data.new-state]
   ==
 ++  set-to-array
   |*  {a/(set) b/$-(* json)}
@@ -274,4 +302,28 @@
       [%'~etheventviewer' *]  (html-response:gen index)
   ==
 ::
+++  http-response
+  |=  [=wire response=client-response:iris]
+  ^-  (quip card _state)
+  ~&  'begin of http response with following wire:'
+  ~&  wire
+  ::  ignore all but %finished
+  ?.  ?=(%finished -.response)
+    ~&  'unfinished response'
+    [~ state]
+    =/  data=(unit mime-data:iris)  full-file.response
+  ?~  data
+    :: data is null
+    ~&  'data is null'
+    [~ state]
+  =/  ujon=(unit json)  (de-json:html q.data.u.data)
+  ?~  ujon
+     [~ state]
+  ?>  ?=(%o -.u.ujon)
+  ?:  (gth 200 status-code.response-header.response)
+    [~ state]
+  ~&  'data received'
+  =/  new-state  state(data (need ujon))
+  :-  [%give %fact ~[/state/update] %json !>((make-tile-json new-state))]~
+  state(data (need ujon))
 --
