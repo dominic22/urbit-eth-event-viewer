@@ -1,0 +1,8 @@
+@import 'css/indigo-static.css';
+@import 'css/fonts.css';
+@import 'css/custom.css';
+
+.h-100-minus-48 {
+  height: calc(100% - 48px);
+}
+
