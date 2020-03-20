@@ -25,7 +25,8 @@ export class Root extends Component {
             path="/~etheventviewer"
             render={() => {
               return (
-                <div className="cf w-100 flex flex-column ba-m ba-l ba-xl b--gray2 br1 h-100 h-100-minus-40-m h-100-minus-40-l h-100-minus-40-xl">
+                <div
+                  className="cf w-100 flex flex-column ba-m ba-l ba-xl b--gray2 br1 h-100 h-100-minus-40-m h-100-minus-40-l h-100-minus-40-xl">
                   <div className="flex flex-column flex-row ba bl-0 bt-0 br-0 b--solid b--gray4 b--gray1-d">
                     <div className="pa4 black-80 w-50 pl3">
                       {this.renderInput()}
@@ -53,7 +54,7 @@ export class Root extends Component {
         rows={1}
         placeholder="New Contract Address"
         value={this.state.contract}
-        style={{resize:'none', width: '382px'}}
+        style={{ resize: 'none', width: '382px' }}
         onChange={this.handleContractChange.bind(this)}
         aria-describedby="name-desc"
       />
@@ -74,7 +75,7 @@ export class Root extends Component {
   }
 
   renderContractsList() {
-    const { contracts } = this.state;
+    const { contracts, selectedContract } = this.state;
     if (!contracts) {
       return (
         <p className="measure center pa5">
@@ -92,7 +93,7 @@ export class Root extends Component {
               return (
                 <li
                   key={contract}
-                  className={`lh-copy pl3 pv3 ba bl-0 bt-0 br-0 b--solid b--gray4 b--gray1-d bg-animate pointer ${this.state.selectedContract === contract ? 'bg-black-20' : 'bg-white'}`}
+                  className={`lh-copy pl3 pv3 ba bl-0 bt-0 br-0 b--solid b--gray4 b--gray1-d bg-animate pointer ${selectedContract === contract ? 'bg-gray5' : 'bg-white'}`}
                   onClick={() => this.setState({ selectedContract: contract })}
                 >
                   <div className="flex flex-column flex-row justify-between ">
@@ -116,13 +117,65 @@ export class Root extends Component {
           </ul>
         </div>
         <div className="pa3 mb4 mb0 w-100">
-          <p className="">
-            Content on the right of the selected contract for event logs etc.
-          </p>
-          <p>{this.state.selectedContract}</p>
+          {this.renderEventsSelection()}
         </div>
       </div>
     );
+  }
+
+  renderEventsSelection() {
+    const { abi, selectedEvents } = this.state;
+    if (!abi || abi.length === 0) {
+      return null;
+    }
+    return (<div className="pa4">
+      <form className="mb4">
+        <fieldset id="favorite_movies" className="bn pa0 ml0">
+          <p className="fw7 mb3">Select a contract event:</p>
+          <div style={{ maxHeight: '400px', overflowY: 'auto' }}>
+            {
+              abi
+                .filter(topics => topics.type === 'event')
+                .map(event => {
+                  return (<div key={event.name}
+                               className="flex items-center mb2 pointer"
+                               onClick={() => this.toggleFromEvents(event.name)}>
+                    <div className="flex mr3 f6 lh-tall us-none pointer flex-row align-center">
+                      <div className={`flex align-center justify-center p1 mr3 white b--gray4 b--gray1-d ba
+               ${selectedEvents.some(eventName => eventName === event.name) ? ' bg-black' : ' bg-white'}`}
+                           style={{
+                             height: '24px',
+                             width: '24px'
+                           }}>{selectedEvents.some(eventName => eventName === event.name) && '✓'}
+                      </div>
+                      {event.name}
+                    </div>
+                  </div>)
+                })}
+          </div>
+        </fieldset>
+      </form>
+      <div className="flex">
+        <button className="db f9 green2 ba pa2 b--green2 bg-gray0-d pointer" onClick={() => console.log('aa')}>Accept
+        </button>
+        <button className="f9 ml3 ba pa2 b--black pointer bg-transparent b--white-d white-d"
+                onClick={() => console.log('Sa')}>Select All
+        </button>
+        <button className="f9 ml3 ba pa2 b--black pointer bg-transparent b--white-d white-d"
+                onClick={() => console.log('ca')}>Cancel
+        </button>
+      </div>
+    </div>);
+  }
+
+  toggleFromEvents(eventName) {
+    const { selectedEvents } = this.state;
+    if (selectedEvents.some(event => event === eventName)) {
+      api.events.remove(eventName);
+    } else {
+      console.log('add event', eventName);
+      api.events.add(eventName);
+    }
   }
 
   renderActionButtons() {

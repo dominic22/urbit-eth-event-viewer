@@ -6,6 +6,11 @@ class UrbitApi {
   setAuthTokens(authTokens) {
     this.authTokens = authTokens;
     this.bindPaths = [];
+
+    this.events = {
+      add: this.add.bind(this),
+      remove: this.remove.bind(this)
+    };
   }
 
   bind(path, method, ship = this.authTokens.ship, appl = "etheventviewer", success, fail) {
@@ -44,6 +49,17 @@ class UrbitApi {
         });
     });
   }
+
+  add(eventName) {
+    store.state.selectedEvents = [...store.state.selectedEvents, eventName]
+    store.setState({selectedEvents : store.state.selectedEvents});
+  }
+
+  remove(eventName) {
+    store.state.selectedEvents = store.state.selectedEvents.filter(event => event !== eventName)
+    store.setState({selectedEvents: store.state.selectedEvents});
+  }
 }
 export let api = new UrbitApi();
+console.log('api ', api.events);
 window.api = api;

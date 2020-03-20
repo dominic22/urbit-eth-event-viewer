@@ -44457,6 +44457,11 @@
               setAuthTokens(authTokens) {
                 this.authTokens = authTokens;
                 this.bindPaths = [];
+
+                this.events = {
+                  add: this.add.bind(this),
+                  remove: this.remove.bind(this)
+                };
               }
 
               bind(path, method, ship = this.authTokens.ship, appl = "etheventviewer", success, fail) {
@@ -44495,8 +44500,19 @@
                     });
                 });
               }
+
+              add(eventName) {
+                store.state.selectedEvents = [...store.state.selectedEvents, eventName];
+                store.setState({selectedEvents : store.state.selectedEvents});
+              }
+
+              remove(eventName) {
+                store.state.selectedEvents = store.state.selectedEvents.filter(event => event !== eventName);
+                store.setState({selectedEvents: store.state.selectedEvents});
+              }
             }
             let api = new UrbitApi();
+            console.log('api ', api.events);
             window.api = api;
 
             class InitialReducer {
@@ -44512,9 +44528,30 @@
                 reduce(json, state) {
                     let data = json;
                     console.log('received data', data);
+                    if(data) {
+                        console.log('parse data', data);
+                        this.contracts(data, state);
+                        this.contract(data, state);
+                        this.abi(data, state);
+                    }
+                }
+                contracts(obj, state) {
+                    let data = lodash.has(obj, 'contracts', false);
                     if (data) {
-                        state.contracts = data.contracts || state.contracts;
-                        state.contract = data.contract || state.contracts;
+                        state.contracts = obj.contracts;
+                    }
+                }
+                abi(obj, state) {
+                    let data = lodash.has(obj, 'data', false);
+                    if (data) {
+                        state.abi = JSON.parse(obj.data.result);
+                        console.log('abi abi', state);
+                    }
+                }
+                contract(obj, state) {
+                    let data = lodash.has(obj, 'contract', false);
+                    if (data) {
+                        state.contract = obj.contract;
                     }
                 }
             }
@@ -44550,9 +44587,29 @@
                         this.setInput(data, state);
                         this.setSelectedContract(data, state);
                     }
+                    data = lodash.get(json, 'eventupdate', false);
+                    console.log('EVENTS REDUCER ', json);
+                    if (data) {
+                        this.add(data, state);
+                        this.remove(data, state);
+                    }
+                }
+                add(obj, state) {
+                    console.log('ADD ', obj);
+                    let data = lodash.get(obj, 'add', false);
+                    if (data) {
+                        state.selectedEvents = [...state.selectedEvents, data.eventName];
+                    }
                 }
 
+                remove(obj, state) {
+                    let data = lodash.get(obj, 'remove', false);
+                    if (data) {
+                        state.selectedEvents = state.selectedEvents.filter(event => event === data.eventName);
+                    }
+                }
                 setInput(obj, state) {
+                    console.log('set input reducer');
                     let data = lodash.has(obj, 'inputValue', false);
                     if (data) {
                         state.inputValue = obj.inputValue;
@@ -44560,21 +44617,35 @@
                 }
 
                 setSelectedContract(obj, state) {
-                    let data = lodash.has(obj, 'selectedContract', false);
+                    const selectedContract = lodash.get(obj, 'selectedContract', false);
+                    if (selectedContract) {
+                        state.selectedContract = selectedContract;
+                    }
+                    console.log('SELECETEFDASDAWD AWD AWD ');
+                }
+            }
+
+            class EventsReducer {
+                reduce(json, state) {
+                    let data = lodash.get(json, 'event-update', false);
+                    console.log('EVENTS REDUCER ', json);
                     if (data) {
-                        state.selectedContract = obj.selectedContract;
+                        this.add(data, state);
+                        this.remove(data, state);
                     }
                 }
+                
             }
 
             class Store {
                 constructor() {
                     this.state = {
-                        inbox: {}
+                        selectedEvents: [],
                     };
 
                     this.initialReducer = new InitialReducer();
                     this.localReducer = new LocalReducer();
+                    this.eventsReducer = new EventsReducer();
                     this.contractsReducer = new ContractsReducer();
                     this.configReducer = new ConfigReducer();
                     this.updateReducer = new UpdateReducer();
@@ -44593,15 +44664,18 @@
                     this.configReducer.reduce(json, this.state);
                     this.updateReducer.reduce(json, this.state);
                     this.contractsReducer.reduce(json, this.state);
+                    this.eventsReducer.reduce(json, this.state);
                     this.localReducer.reduce(json, this.state);
 
                     this.setState(this.state);
                 }
+
                 handleStateUpdateEvent(data) {
                     let json = data.data;
                     this.initialReducer.reduce(json, this.state);
                     this.configReducer.reduce(json, this.state);
                     this.contractsReducer.reduce(json, this.state);
+                    this.eventsReducer.reduce(json, this.state);
                     this.updateReducer.reduce(json, this.state);
                     this.localReducer.reduce(json, this.state);
 
@@ -44609,8 +44683,8 @@
                 }
             }
 
-            let store = new Store();
-            window.store = store;
+            let store$1 = new Store();
+            window.store = store$1;
 
             var classnames = createCommonjsModule(function (module) {
             /*!
@@ -48812,8 +48886,8 @@
             class Root extends react_1 {
               constructor(props) {
                 super(props);
-                this.state = store.state;
-                store.setStateHandler(this.setState.bind(this));
+                this.state = store$1.state;
+                store$1.setStateHandler(this.setState.bind(this));
               }
 
               handleContractChange(event) {
@@ -48830,12 +48904,13 @@
                         path: "/~etheventviewer",
                         render: () => {
                           return (
-                            react.createElement('div', { className: "cf w-100 flex flex-column ba-m ba-l ba-xl b--gray2 br1 h-100 h-100-minus-40-m h-100-minus-40-l h-100-minus-40-xl"            , __self: this, __source: {fileName: _jsxFileName$3, lineNumber: 28}}
-                              , react.createElement('div', { className: "flex flex-column flex-row ba bl-0 bt-0 br-0 b--solid b--gray4 b--gray1-d"         , __self: this, __source: {fileName: _jsxFileName$3, lineNumber: 29}}
-                                , react.createElement('div', { className: "pa4 black-80 w-50 pl3"   , __self: this, __source: {fileName: _jsxFileName$3, lineNumber: 30}}
+                            react.createElement('div', {
+                              className: "cf w-100 flex flex-column ba-m ba-l ba-xl b--gray2 br1 h-100 h-100-minus-40-m h-100-minus-40-l h-100-minus-40-xl"            , __self: this, __source: {fileName: _jsxFileName$3, lineNumber: 28}}
+                              , react.createElement('div', { className: "flex flex-column flex-row ba bl-0 bt-0 br-0 b--solid b--gray4 b--gray1-d"         , __self: this, __source: {fileName: _jsxFileName$3, lineNumber: 30}}
+                                , react.createElement('div', { className: "pa4 black-80 w-50 pl3"   , __self: this, __source: {fileName: _jsxFileName$3, lineNumber: 31}}
                                   , this.renderInput()
                                 )
-                                , react.createElement('div', { className: "w-60 pa4 w-50 pl3"   , __self: this, __source: {fileName: _jsxFileName$3, lineNumber: 33}}
+                                , react.createElement('div', { className: "w-60 pa4 w-50 pl3"   , __self: this, __source: {fileName: _jsxFileName$3, lineNumber: 34}}
                                   , this.renderActionButtons()
                                 )
                               )
@@ -48850,7 +48925,7 @@
               }
 
               renderInput() {
-                return (react.createElement('div', { className: "flex flex-column flex-row"  , __self: this, __source: {fileName: _jsxFileName$3, lineNumber: 48}}
+                return (react.createElement('div', { className: "flex flex-column flex-row"  , __self: this, __source: {fileName: _jsxFileName$3, lineNumber: 49}}
                   , react.createElement('textarea', {
                     id: "name",
                     className: "ba b--black-20 pa3 db w-70 b--gray4 f9 flex-basis-full-s focus-b--black focus-b--white-d"         ,
@@ -48858,9 +48933,9 @@
                     rows: 1,
                     placeholder: "New Contract Address"  ,
                     value: this.state.contract,
-                    style: {resize:'none', width: '382px'},
+                    style: { resize: 'none', width: '382px' },
                     onChange: this.handleContractChange.bind(this),
-                    'aria-describedby': "name-desc", __self: this, __source: {fileName: _jsxFileName$3, lineNumber: 49}}
+                    'aria-describedby': "name-desc", __self: this, __source: {fileName: _jsxFileName$3, lineNumber: 50}}
                   )
                   , react.createElement('a', {
                     className: "dib f9 pa3 bt bb bl br tc pointer bg-white ml3 b--gray4"           ,
@@ -48871,7 +48946,7 @@
                           contract: this.state.contract
                         }
                       });
-                    }, __self: this, __source: {fileName: _jsxFileName$3, lineNumber: 60}}
+                    }, __self: this, __source: {fileName: _jsxFileName$3, lineNumber: 61}}
                   , "Add Contract"
 
                   )
@@ -48879,29 +48954,29 @@
               }
 
               renderContractsList() {
-                const { contracts } = this.state;
+                const { contracts, selectedContract } = this.state;
                 if (!contracts) {
                   return (
-                    react.createElement('p', { className: "measure center pa5"  , __self: this, __source: {fileName: _jsxFileName$3, lineNumber: 80}}, "There are no contracts, feel free to add one."
+                    react.createElement('p', { className: "measure center pa5"  , __self: this, __source: {fileName: _jsxFileName$3, lineNumber: 81}}, "There are no contracts, feel free to add one."
 
                     )
                   );
                 }
 
                 return (
-                  react.createElement('div', { className: "flex flex-column flex-row h-100"   , __self: this, __source: {fileName: _jsxFileName$3, lineNumber: 87}}
+                  react.createElement('div', { className: "flex flex-column flex-row h-100"   , __self: this, __source: {fileName: _jsxFileName$3, lineNumber: 88}}
                     , react.createElement('div', { className: "flex-basis-full-s flex-basis-300-m flex-basis-300-l flex-basis-300-xl"
-                          , __self: this, __source: {fileName: _jsxFileName$3, lineNumber: 88}}
-                      , react.createElement('ul', { className: "list pl0 ma0 ba bl-0 bt-0 bb-0 b--solid b--gray4 b--gray1-d h-100"          , __self: this, __source: {fileName: _jsxFileName$3, lineNumber: 90}}
+                          , __self: this, __source: {fileName: _jsxFileName$3, lineNumber: 89}}
+                      , react.createElement('ul', { className: "list pl0 ma0 ba bl-0 bt-0 bb-0 b--solid b--gray4 b--gray1-d h-100"          , __self: this, __source: {fileName: _jsxFileName$3, lineNumber: 91}}
                         , contracts.map(contract => {
                           return (
                             react.createElement('li', {
                               key: contract,
-                              className: `lh-copy pl3 pv3 ba bl-0 bt-0 br-0 b--solid b--gray4 b--gray1-d bg-animate pointer ${this.state.selectedContract === contract ? 'bg-black-20' : 'bg-white'}`,
-                              onClick: () => this.setState({ selectedContract: contract }), __self: this, __source: {fileName: _jsxFileName$3, lineNumber: 93}}
+                              className: `lh-copy pl3 pv3 ba bl-0 bt-0 br-0 b--solid b--gray4 b--gray1-d bg-animate pointer ${selectedContract === contract ? 'bg-gray5' : 'bg-white'}`,
+                              onClick: () => this.setState({ selectedContract: contract }), __self: this, __source: {fileName: _jsxFileName$3, lineNumber: 94}}
                             
-                              , react.createElement('div', { className: "flex flex-column flex-row justify-between "    , __self: this, __source: {fileName: _jsxFileName$3, lineNumber: 98}}
-                                , react.createElement('p', { className: "pt3 f9" , __self: this, __source: {fileName: _jsxFileName$3, lineNumber: 99}}, contract)
+                              , react.createElement('div', { className: "flex flex-column flex-row justify-between "    , __self: this, __source: {fileName: _jsxFileName$3, lineNumber: 99}}
+                                , react.createElement('p', { className: "pt3 f9" , __self: this, __source: {fileName: _jsxFileName$3, lineNumber: 100}}, contract)
                                 , react.createElement('a', {
                                   className: "dib f9 pa3 tc pl4 pointer bg-white mr3"       ,
                                   onClick: () => {
@@ -48910,7 +48985,7 @@
                                         contract: contract
                                       }
                                     });
-                                  }, __self: this, __source: {fileName: _jsxFileName$3, lineNumber: 100}}
+                                  }, __self: this, __source: {fileName: _jsxFileName$3, lineNumber: 101}}
                                 , "remove"
 
                                 )
@@ -48920,14 +48995,66 @@
                         })
                       )
                     )
-                    , react.createElement('div', { className: "pa3 mb4 mb0 w-100"   , __self: this, __source: {fileName: _jsxFileName$3, lineNumber: 118}}
-                      , react.createElement('p', { className: "", __self: this, __source: {fileName: _jsxFileName$3, lineNumber: 119}}, "Content on the right of the selected contract for event logs etc."
-
-                      )
-                      , react.createElement('p', {__self: this, __source: {fileName: _jsxFileName$3, lineNumber: 122}}, this.state.selectedContract)
+                    , react.createElement('div', { className: "pa3 mb4 mb0 w-100"   , __self: this, __source: {fileName: _jsxFileName$3, lineNumber: 119}}
+                      , this.renderEventsSelection()
                     )
                   )
                 );
+              }
+
+              renderEventsSelection() {
+                const { abi, selectedEvents } = this.state;
+                if (!abi || abi.length === 0) {
+                  return null;
+                }
+                return (react.createElement('div', { className: "pa4", __self: this, __source: {fileName: _jsxFileName$3, lineNumber: 131}}
+                  , react.createElement('form', { className: "mb4", __self: this, __source: {fileName: _jsxFileName$3, lineNumber: 132}}
+                    , react.createElement('fieldset', { id: "favorite_movies", className: "bn pa0 ml0"  , __self: this, __source: {fileName: _jsxFileName$3, lineNumber: 133}}
+                      , react.createElement('p', { className: "fw7 mb3" , __self: this, __source: {fileName: _jsxFileName$3, lineNumber: 134}}, "Select a contract event:"   )
+                      , react.createElement('div', { style: { maxHeight: '400px', overflowY: 'auto' }, __self: this, __source: {fileName: _jsxFileName$3, lineNumber: 135}}
+                        , 
+                          abi
+                            .filter(topics => topics.type === 'event')
+                            .map(event => {
+                              return (react.createElement('div', { key: event.name,
+                                           className: "flex items-center mb2 pointer"   ,
+                                           onClick: () => this.toggleFromEvents(event.name), __self: this, __source: {fileName: _jsxFileName$3, lineNumber: 140}}
+                                , react.createElement('div', { className: "flex mr3 f6 lh-tall us-none pointer flex-row align-center"       , __self: this, __source: {fileName: _jsxFileName$3, lineNumber: 143}}
+                                  , react.createElement('div', { className: `flex align-center justify-center p1 mr3 white b--gray4 b--gray1-d ba
+               ${selectedEvents.some(eventName => eventName === event.name) ? ' bg-black' : ' bg-white'}`,
+                                       style: {
+                                         height: '24px',
+                                         width: '24px'
+                                       }, __self: this, __source: {fileName: _jsxFileName$3, lineNumber: 144}}, selectedEvents.some(eventName => eventName === event.name) && '✓'
+                                  )
+                                  , event.name
+                                )
+                              ))
+                            })
+                      )
+                    )
+                  )
+                  , react.createElement('div', { className: "flex", __self: this, __source: {fileName: _jsxFileName$3, lineNumber: 158}}
+                    , react.createElement('button', { className: "db f9 green2 ba pa2 b--green2 bg-gray0-d pointer"       , onClick: () => console.log('aa'), __self: this, __source: {fileName: _jsxFileName$3, lineNumber: 159}}, "Accept"
+                    )
+                    , react.createElement('button', { className: "f9 ml3 ba pa2 b--black pointer bg-transparent b--white-d white-d"        ,
+                            onClick: () => console.log('Sa'), __self: this, __source: {fileName: _jsxFileName$3, lineNumber: 161}}, "Select All"
+                    )
+                    , react.createElement('button', { className: "f9 ml3 ba pa2 b--black pointer bg-transparent b--white-d white-d"        ,
+                            onClick: () => console.log('ca'), __self: this, __source: {fileName: _jsxFileName$3, lineNumber: 164}}, "Cancel"
+                    )
+                  )
+                ));
+              }
+
+              toggleFromEvents(eventName) {
+                const { selectedEvents } = this.state;
+                if (selectedEvents.some(event => event === eventName)) {
+                  api.events.remove(eventName);
+                } else {
+                  console.log('add event', eventName);
+                  api.events.add(eventName);
+                }
               }
 
               renderActionButtons() {
@@ -48942,7 +49069,7 @@
                           contract: '0xBB9bc244D798123fDe783fCc1C72d3Bb8C189413'
                         }
                       });
-                    }, __self: this, __source: {fileName: _jsxFileName$3, lineNumber: 130}}
+                    }, __self: this, __source: {fileName: _jsxFileName$3, lineNumber: 183}}
                   , "initial"
 
                   )
@@ -48956,7 +49083,7 @@
                           contract: '0xBB9bc244D798123fDe783fCc1C72d3Bb8C189413'
                         }
                       });
-                    }, __self: this, __source: {fileName: _jsxFileName$3, lineNumber: 144}}
+                    }, __self: this, __source: {fileName: _jsxFileName$3, lineNumber: 197}}
                   , "subscribe"
 
                   )
@@ -48970,7 +49097,7 @@
                           contract: '0xBB9bc244D798123fDe783fCc1C72d3Bb8C189413'
                         }
                       });
-                    }, __self: this, __source: {fileName: _jsxFileName$3, lineNumber: 158}}
+                    }, __self: this, __source: {fileName: _jsxFileName$3, lineNumber: 211}}
                   , "unsubscribe"
 
                   )
@@ -57494,11 +57621,11 @@ lyrtesmudnytbyrsenwegfyrmurtelreptegpecnelnevfes\
               }
 
               handleEvent(diff) {
-                store.handleEvent(diff);
+                store$1.handleEvent(diff);
               }
 
               handleStateUpdateEvent(diff) {
-                store.handleStateUpdateEvent(diff);
+                store$1.handleStateUpdateEvent(diff);
               }
 
               handleError(err) {
