@@ -44625,16 +44625,19 @@
                 }
             }
 
-            class EventsReducer {
+            class EthWatcherReducer {
                 reduce(json, state) {
-                    let data = lodash.get(json, 'event-update', false);
-                    console.log('EVENTS REDUCER ', json);
-                    if (data) {
-                        this.add(data, state);
-                        this.remove(data, state);
+                    const data = json;
+                    console.log('received data', data);
+                    if(data) {
+                        this.events(data, state);
                     }
                 }
-                
+                events(obj, state) {
+                    if (data) {
+                        state.events = obj;
+                    }
+                }
             }
 
             class Store {
@@ -44645,7 +44648,7 @@
 
                     this.initialReducer = new InitialReducer();
                     this.localReducer = new LocalReducer();
-                    this.eventsReducer = new EventsReducer();
+                    this.ethWatcherReducer = new EthWatcherReducer();
                     this.contractsReducer = new ContractsReducer();
                     this.configReducer = new ConfigReducer();
                     this.updateReducer = new UpdateReducer();
@@ -44664,7 +44667,6 @@
                     this.configReducer.reduce(json, this.state);
                     this.updateReducer.reduce(json, this.state);
                     this.contractsReducer.reduce(json, this.state);
-                    this.eventsReducer.reduce(json, this.state);
                     this.localReducer.reduce(json, this.state);
 
                     this.setState(this.state);
@@ -44675,9 +44677,16 @@
                     this.initialReducer.reduce(json, this.state);
                     this.configReducer.reduce(json, this.state);
                     this.contractsReducer.reduce(json, this.state);
-                    this.eventsReducer.reduce(json, this.state);
                     this.updateReducer.reduce(json, this.state);
                     this.localReducer.reduce(json, this.state);
+
+                    this.setState(this.state);
+                }
+
+                handleEthWatcherUpdate(data) {
+                    let json = data.data;
+                    console.log('handle ethwatcher update');
+                    this.ethWatcherReducer.reduce(json, this.state);
 
                     this.setState(this.state);
                 }
@@ -57618,6 +57627,13 @@ lyrtesmudnytbyrsenwegfyrmurtelreptegpecnelnevfes\
                   this.handleStateUpdateEvent.bind(this),
                   this.handleError.bind(this)
                 );
+                api.bind(
+                  "/etheventviewer/eth-watcher-update",
+                  "PUT",
+                  api.authTokens.ship,
+                  "etheventviewer",
+                  this.handleEthWatcherUpdate.bind(this),
+                );
               }
 
               handleEvent(diff) {
@@ -57626,6 +57642,9 @@ lyrtesmudnytbyrsenwegfyrmurtelreptegpecnelnevfes\
 
               handleStateUpdateEvent(diff) {
                 store$1.handleStateUpdateEvent(diff);
+              }
+              handleEthWatcherUpdate(diff) {
+                store$1.handleEthWatcherUpdate(diff);
               }
 
               handleError(err) {
