@@ -26,6 +26,13 @@ export class Subscription {
       this.handleStateUpdateEvent.bind(this),
       this.handleError.bind(this)
     );
+    api.bind(
+      "/etheventviewer/eth-watcher-update",
+      "PUT",
+      api.authTokens.ship,
+      "etheventviewer",
+      this.handleEthWatcherUpdate.bind(this),
+    );
   }
 
   handleEvent(diff) {
@@ -34,6 +41,9 @@ export class Subscription {
 
   handleStateUpdateEvent(diff) {
     store.handleStateUpdateEvent(diff);
+  }
+  handleEthWatcherUpdate(diff) {
+    store.handleEthWatcherUpdate(diff);
   }
 
   handleError(err) {
