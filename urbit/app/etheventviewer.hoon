@@ -1,3 +1,4 @@
+/-  eth-watcher
 /+  *server, default-agent
 /=  index
   /^  octs
@@ -35,10 +36,12 @@
 |%
 +$  card  card:agent:gall
 
-+$  example-action
++$  eth-event-viewer-action
   $%  [%create contract=@t]
       [%add-contract contract=@t]
       [%remove-contract contract=@t]
+      [%subscribe contract=@t]
+      [%unsubscribe contract=@t]
   ==
 
 +$  versioned-state
@@ -65,7 +68,24 @@
         [%pass /etheventviewer %agent [our.bol %launch] %poke launcha]
     ==
 ::
-  ++  on-agent  on-agent:def
+  ++  on-agent
+  |=  [=wire =sign:agent:gall]
+  ~&  '%on-agent'
+  ~&  wire
+  ~&  -.sign
+  ?.  ?=([%eth-watcher ~] wire)
+    (on-agent:def wire sign)
+  ~&  '%eth-watcher found'
+  ?.  ?=(%fact -.sign)
+    (on-agent:def wire sign)
+  ~&  '%fact found'
+  ?.  ?=(%eth-watcher-diff p.cage.sign)
+    (on-agent:def wire sign)
+  ~&  '%eth-watcher-diff'
+  =+  !<(diff=diff:eth-watcher q.cage.sign)
+  ~&  'return fact eth-watcher-update to landscape'
+  :-  [%give %fact ~[/etheventviewer/eth-watcher-update] %json !>((make-tile-json state))]~
+  this
   ::
   ++  on-arvo
     |=  [=wire =sign-arvo]
@@ -144,26 +164,31 @@
   |=  contract=@ux
   ^-  card:agent:gall
   ~&  '%subscribe'
-  =/  url  ''
+  =/  url  'https://api.etherscan.io/api?module=logs&action=getLogs'
+  =/  path  /etheventviewer/eth-watcher-update
   =/  topics  [~]
   =/  args=vase  !>
-    :*  %watch  /etheventviewer/eth-display
-        url  ~m5  launch:contracts:azimuth
+    :*  %watch  path
+        url
+        %.n
+        ~s10
+        launch:contracts:azimuth
         ~[contract]
         topics
     ==
-  [%pass /etheventviewer/eth-display %agent [our.bol %eth-watcher] %poke %eth-watcher-poke args]
+  [%pass path %agent [our.bol %eth-watcher] %poke %eth-watcher-poke args]
 ::
 ++  unsubscribe
-  |=  contract=@ux
+  |=  contract=@t
   ^-  card:agent:gall
   ~&  '%unsubscribe'
-  =/  args  !>([%clear /etheventviewer/eth-display])
-  [%pass /etheventviewer/eth-display %agent [our.bol %eth-watcher] %poke %eth-watcher-poke args]
+  =/  path  /etheventviewer/eth-watcher-update
+  =/  args  !>([%clear path])
+  [%pass path %agent [our.bol %eth-watcher] %poke %eth-watcher-poke args]
 ::
 ++  json-to-action
   |=  jon=json
-  ^-  example-action
+  ^-  eth-event-viewer-action
   =,  dejs:format
   =<  (parse-json jon)
   |%
@@ -172,6 +197,8 @@
     :~  [%create parse-contract]
         [%add-contract parse-contract]
         [%remove-contract parse-contract]
+        [%subscribe parse-contract]
+        [%unsubscribe parse-contract]
     ==
 ::
   ++  parse-contract
@@ -191,17 +218,19 @@
   (poke-action (json-to-action jon))
 ::
 ++  poke-action
-  |=  action=example-action
+  |=  action=eth-event-viewer-action
   ^-  (quip card _state)
   ~&  '%poke-action'
   ?-  -.action
       %create    (handle-create action)
       %add-contract  (handle-add-contract action)
       %remove-contract  (handle-remove-contract action)
+      %subscribe  (handle-subscribe action)
+      %unsubscribe  (handle-unsubscribe action)
   ==
 ::
 ++  handle-create
-  |=  act=example-action
+  |=  act=eth-event-viewer-action
   ^-  (quip card _state)
   ~&  '%handle-create'
   ~&  '%contract-cord-to-hex'
@@ -211,8 +240,25 @@
   :-  [%give %fact [/state/update ~] %json !>((make-tile-json new-state))]~
   new-state
 ::
+++  handle-subscribe
+  |=  act=eth-event-viewer-action
+  ^-  (quip card _state)
+  ~&  '%handle-subscribe'
+  ?>  ?=(%subscribe -.act)
+  =/  parsed-contract  (contract-cord-to-hex contract.act)
+  :-  [(subscribe parsed-contract) ~]
+  state
+::
+++  handle-unsubscribe
+  |=  act=eth-event-viewer-action
+  ^-  (quip card _state)
+  ~&  '%handle-unsubscribe'
+  ?>  ?=(%unsubscribe -.act)
+  :-  [(unsubscribe contract.act) ~]
+  state
+::
 ++  handle-add-contract
-  |=  act=example-action
+  |=  act=eth-event-viewer-action
   ^-  (quip card _state)
   ~&  '%handle-create'
   ~&  act
@@ -231,7 +277,7 @@
   ==
 ::
 ++  handle-remove-contract
-  |=  act=example-action
+  |=  act=eth-event-viewer-action
   ^-  (quip card _state)
   ~&  '%handle-remove-contract'
   ~&  act
