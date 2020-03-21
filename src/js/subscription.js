@@ -40,6 +40,7 @@ export class Subscription {
   }
 
   handleStateUpdateEvent(diff) {
+    console.log('update from gall received ', diff);
     store.handleStateUpdateEvent(diff);
   }
   handleEthWatcherUpdate(diff) {

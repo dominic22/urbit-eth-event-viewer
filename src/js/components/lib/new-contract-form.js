@@ -18,7 +18,7 @@ export class NewContractForm extends Component {
     return (<div className="flex flex-column pa3">
       <div className="flex flex-row">
         <div>
-          <p className="f8 mt3 lh-copy db mb3">Contract Address</p>
+          <p className="f8 mt3 lh-copy db mb2">Contract Address</p>
           <textarea
             id="name"
             className="ba b--black-20 pa3 db w-70 b--gray4 f9 flex-basis-full-s focus-b--black focus-b--white-d"
@@ -53,7 +53,7 @@ export class NewContractForm extends Component {
       <div className="flex mt3">
         <button className="db f9 green2 ba pa2 b--green2 bg-gray0-d pointer"
                 onClick={() => this.props.onAcceptClicked(this.state) }>
-          Accept
+          Add Contract
         </button>
         <button className="f9 ml3 ba pa2 b--black pointer bg-transparent b--white-d white-d"
                 onClick={() => console.log('ca')}>

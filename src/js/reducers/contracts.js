@@ -19,7 +19,7 @@ export class ContractsReducer {
     abi(obj, state) {
         let data = _.has(obj, 'data', false);
         if (data) {
-            state.abi = JSON.parse(obj.data.result);
+            state.abi = obj.data && obj.data.result && JSON.parse(obj.data.result);
         }
     }
     contract(obj, state) {
