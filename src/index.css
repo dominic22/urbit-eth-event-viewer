@@ -6,3 +6,9 @@
   height: calc(100% - 48px);
 }
 
+p, div {
+  font-family: "Inter", sans-serif;
+}
+.pointer-none {
+  pointer-events: none;
+}

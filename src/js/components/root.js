@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { BrowserRouter, Route } from 'react-router-dom';
+import { BrowserRouter, Switch, Route, Link } from 'react-router-dom';
 import { api } from '/api';
 import { store } from '/store';
 import { NewContractForm } from './lib/new-contract-form';
@@ -12,9 +12,20 @@ export class Root extends Component {
     store.setStateHandler(this.setState.bind(this));
   }
 
+  renderBaseViewContent() {
+    const {contracts} = this.state;
+    let message = 'There are no contracts, feel free to add one.';
+    if(contracts && contracts.length > 0) {
+      message = 'Please select a contract.';
+    }
+    return (<p className="measure center pa5">{message}</p>)
+  }
+
   render() {
+    const {contracts} = this.state;
     return (
       <BrowserRouter>
+        <Switch>
           <Route
             exact
             path="/~etheventviewer"
@@ -22,8 +33,22 @@ export class Root extends Component {
               return (
                 <Skeleton
                   api={api}
-                  contracts={this.state.contracts}
+                  contracts={contracts}
                   >
+                  { this.renderBaseViewContent() }
+                </Skeleton>
+              );
+            }}
+          />
+          <Route
+            exact
+            path="/~etheventviewer/new"
+            render={() => {
+              return (
+                <Skeleton
+                  api={api}
+                  contracts={this.state.contracts}
+                >
                   <NewContractForm
                     abi={this.state.abi}
                     onInputsChanged={state => console.log('contract', state.contract, ' alias', state.alias)}
@@ -42,6 +67,7 @@ export class Root extends Component {
               );
             }}
           />
+        </Switch>
       </BrowserRouter>
     );
   }

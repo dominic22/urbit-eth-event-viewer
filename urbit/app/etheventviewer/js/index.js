@@ -44644,13 +44644,36 @@
             let store$1 = new Store();
             window.store = store$1;
 
-            const _jsxFileName = "/home/do7ze5/urbit/development/urbit-eth-event-viewer/src/js/components/lib/events-selection.js";
+            const _jsxFileName = "/home/do7ze5/urbit/development/urbit-eth-event-viewer/src/js/components/lib/checkbox.js";
+            class Checkbox extends react_1 {
+              render() {
+                const { label, isActive } = this.props;
+                return (react.createElement('div', { key: label,
+                             className: "flex items-center mb2 pointer"   ,
+                             onClick: () => this.props.toggle(), __self: this, __source: {fileName: _jsxFileName, lineNumber: 6}}
+                  , react.createElement('div', { className: "flex mr3 f8 lh-tall us-none pointer flex-row align-center"       , __self: this, __source: {fileName: _jsxFileName, lineNumber: 9}}
+                    , react.createElement('div', { className: `flex align-center justify-center p1 mr3 white b--gray4 b--gray1-d ba
+               ${isActive ? ' bg-black' : ' bg-white'}`,
+                         style: {
+                           height: '24px',
+                           width: '24px'
+                         }, __self: this, __source: {fileName: _jsxFileName, lineNumber: 10}}
+                      , isActive && '✓'
+                    )
+                    , label
+                  )
+                ));
+              }
+            }
+
+            const _jsxFileName$1 = "/home/do7ze5/urbit/development/urbit-eth-event-viewer/src/js/components/lib/events-selection.js";
 
             class EventsSelection extends react_1 {
               constructor(props) {
                 super(props);
                 this.state = {
                   selectedEvents: [],
+                  eventListDisabled: false,
                 };
               }
 
@@ -44660,48 +44683,43 @@
 
               renderEventsSelection() {
                 const { abi } = this.props;
-                const { selectedEvents } = this.state;
+                const { selectedEvents, eventListDisabled } = this.state;
                 if (!abi || abi.length === 0) {
-                  return react.createElement('p', { className: "f8", __self: this, __source: {fileName: _jsxFileName, lineNumber: 20}}, "No Events found..."  );
+                  return react.createElement('p', { className: "f8", __self: this, __source: {fileName: _jsxFileName$1, lineNumber: 22}}, "No Events found..."  );
                 }
-                return (react.createElement('div', { className: "", __self: this, __source: {fileName: _jsxFileName, lineNumber: 22}}
-                  , react.createElement('form', { className: "mb4", __self: this, __source: {fileName: _jsxFileName, lineNumber: 23}}
-                    , react.createElement('fieldset', { id: "favorite_movies", className: "bn pa0 ml0"  , __self: this, __source: {fileName: _jsxFileName, lineNumber: 24}}
-                      , react.createElement('p', { className: "f8 lh-copy mb2"  , __self: this, __source: {fileName: _jsxFileName, lineNumber: 25}}, "Select contract events:"  )
-                      , react.createElement('div', { style: { maxHeight: '200px', overflowY: 'auto' }, __self: this, __source: {fileName: _jsxFileName, lineNumber: 26}}
+                return (react.createElement('div', {__self: this, __source: {fileName: _jsxFileName$1, lineNumber: 24}}
+                  , react.createElement('form', { className: "mb4", __self: this, __source: {fileName: _jsxFileName$1, lineNumber: 25}}
+                    , react.createElement('fieldset', { id: "favorite_movies", className: `bn pa0 ml0 ${eventListDisabled ? 'o-70 pointer-none' : ''}`, __self: this, __source: {fileName: _jsxFileName$1, lineNumber: 26}}
+                      , react.createElement('p', { className: "f8 lh-copy mb2"  , __self: this, __source: {fileName: _jsxFileName$1, lineNumber: 27}}, "Select contract events:"  )
+                      , react.createElement('div', { style: { maxHeight: '200px', overflowY: 'auto' }, __self: this, __source: {fileName: _jsxFileName$1, lineNumber: 28}}
                         , 
                           abi
                             .filter(topics => topics.type === 'event')
                             .map(event => {
-                              return (react.createElement('div', { key: event.name,
-                                           className: "flex items-center mb2 pointer"   ,
-                                           onClick: () => this.toggleFromEvents(event.name), __self: this, __source: {fileName: _jsxFileName, lineNumber: 31}}
-                                , react.createElement('div', { className: "flex mr3 f6 lh-tall us-none pointer flex-row align-center"       , __self: this, __source: {fileName: _jsxFileName, lineNumber: 34}}
-                                  , react.createElement('div', { className: `flex align-center justify-center p1 mr3 white b--gray4 b--gray1-d ba
-               ${selectedEvents.some(eventName => eventName === event.name) ? ' bg-black' : ' bg-white'}`,
-                                       style: {
-                                         height: '24px',
-                                         width: '24px'
-                                       }, __self: this, __source: {fileName: _jsxFileName, lineNumber: 35}}, selectedEvents.some(eventName => eventName === event.name) && '✓'
-                                  )
-                                  , event.name
-                                )
-                              ))
+                              return (react.createElement(Checkbox, {
+                                label: event.name,
+                                toggle: () => this.toggleFromEvents(event.name),
+                                isActive: selectedEvents.some(eventName => eventName === event.name), __self: this, __source: {fileName: _jsxFileName$1, lineNumber: 33}}))
                             })
                       )
                     )
                   )
-                  , react.createElement('button', { className: "f9 ba pa2 b--black pointer bg-transparent b--white-d white-d"       ,
-                          onClick: () => this.selectAllEvents(), __self: this, __source: {fileName: _jsxFileName, lineNumber: 49}}, "Select All"
-                  )
+                  , react.createElement(Checkbox, {
+                    label: 'Listen to all events',
+                    toggle: () => this.toggleEventListDisabled(),
+                    isActive: eventListDisabled, __self: this, __source: {fileName: _jsxFileName$1, lineNumber: 41}})
                 ));
               }
 
+              toggleEventListDisabled() {
+                this.setState({ eventListDisabled: !this.state.eventListDisabled });
+              }
+
               selectAllEvents() {
-                const {abi} = this.props;
+                const { abi } = this.props;
                 this.setState({
-                  selectedEvents:abi.filter(topics => topics.type === 'event').map(event => event.name)
-                },  this.toggleEventChanged);
+                  selectedEvents: abi.filter(topics => topics.type === 'event').map(event => event.name)
+                }, this.toggleEventChanged);
               }
 
               toggleFromEvents(eventName) {
@@ -44716,14 +44734,15 @@
                   }, this.toggleEventChanged);
                 }
               }
+
               toggleEventChanged() {
-                if(this.props.onEventsChanged) {
+                if (this.props.onEventsChanged) {
                   this.props.onEventsChanged(this.state.selectedEvents);
                 }
               }
             }
 
-            const _jsxFileName$1 = "/home/do7ze5/urbit/development/urbit-eth-event-viewer/src/js/components/lib/new-contract-form.js";
+            const _jsxFileName$2 = "/home/do7ze5/urbit/development/urbit-eth-event-viewer/src/js/components/lib/new-contract-form.js";
             class NewContractForm extends react_1 {
               constructor(props) {
                 super(props);
@@ -44738,10 +44757,10 @@
               }
 
               renderNewContractForm() {
-                return (react.createElement('div', { className: "flex flex-column pa3"  , __self: this, __source: {fileName: _jsxFileName$1, lineNumber: 18}}
-                  , react.createElement('div', { className: "flex flex-row" , __self: this, __source: {fileName: _jsxFileName$1, lineNumber: 19}}
-                    , react.createElement('div', {__self: this, __source: {fileName: _jsxFileName$1, lineNumber: 20}}
-                      , react.createElement('p', { className: "f8 mt3 lh-copy db mb2"    , __self: this, __source: {fileName: _jsxFileName$1, lineNumber: 21}}, "Contract Address" )
+                return (react.createElement('div', { className: "flex flex-column pa3"  , __self: this, __source: {fileName: _jsxFileName$2, lineNumber: 19}}
+                  , react.createElement('div', { className: "flex flex-row" , __self: this, __source: {fileName: _jsxFileName$2, lineNumber: 20}}
+                    , react.createElement('div', {__self: this, __source: {fileName: _jsxFileName$2, lineNumber: 21}}
+                      , react.createElement('p', { className: "f8 mt3 lh-copy db mb2"    , __self: this, __source: {fileName: _jsxFileName$2, lineNumber: 22}}, "Contract Address" )
                       , react.createElement('textarea', {
                         id: "name",
                         className: "ba b--black-20 pa3 db w-70 b--gray4 f9 flex-basis-full-s focus-b--black focus-b--white-d"         ,
@@ -44751,10 +44770,10 @@
                         value: this.state.contract,
                         style: { resize: 'none', width: '382px' },
                         onChange: this.handleContractChange.bind(this),
-                        'aria-describedby': "name-desc", __self: this, __source: {fileName: _jsxFileName$1, lineNumber: 22}}
+                        'aria-describedby': "name-desc", __self: this, __source: {fileName: _jsxFileName$2, lineNumber: 23}}
                       )
-                      , react.createElement('span', { className: "f9 inter red2 db pt2"    , __self: this, __source: {fileName: _jsxFileName$1, lineNumber: 33}}, "Must be a valid contract."    )
-                      , react.createElement('p', { className: "f8 mt3 lh-copy db mb2"    , __self: this, __source: {fileName: _jsxFileName$1, lineNumber: 34}}, "Alias")
+                      , react.createElement('span', { className: "f9 inter red2 db pt2"    , __self: this, __source: {fileName: _jsxFileName$2, lineNumber: 34}}, "Must be a valid contract."    )
+                      , react.createElement('p', { className: "f8 mt3 lh-copy db mb2"    , __self: this, __source: {fileName: _jsxFileName$2, lineNumber: 35}}, "Alias")
                       , react.createElement('textarea', {
                         id: "name",
                         className: "ba b--black-20 pa3 db w-70 b--gray4 f9 flex-basis-full-s focus-b--black focus-b--white-d"         ,
@@ -44764,23 +44783,27 @@
                         value: this.state.alias,
                         style: { resize: 'none', width: '382px' },
                         onChange: this.handleAliasChange.bind(this),
-                        'aria-describedby': "name-desc", __self: this, __source: {fileName: _jsxFileName$1, lineNumber: 35}}
+                        'aria-describedby': "name-desc", __self: this, __source: {fileName: _jsxFileName$2, lineNumber: 36}}
                       )
                     )
-                    , react.createElement('div', { className: "ml8 mt3" , __self: this, __source: {fileName: _jsxFileName$1, lineNumber: 47}}
+                    , react.createElement('div', { className: "ml8 mt3" , __self: this, __source: {fileName: _jsxFileName$2, lineNumber: 48}}
                       , react.createElement(EventsSelection, {
                         onEventsChanged: selectedEvents => console.log('events changed ', selectedEvents),
-                        abi: this.props.abi, __self: this, __source: {fileName: _jsxFileName$1, lineNumber: 48}})
+                        abi: this.props.abi, __self: this, __source: {fileName: _jsxFileName$2, lineNumber: 49}})
                     )
                   )
-                  , react.createElement('div', { className: "flex mt3" , __self: this, __source: {fileName: _jsxFileName$1, lineNumber: 53}}
-                    , react.createElement('button', { className: "db f9 green2 ba pa2 b--green2 bg-gray0-d pointer"       ,
-                            onClick: () => this.props.onAcceptClicked(this.state) , __self: this, __source: {fileName: _jsxFileName$1, lineNumber: 54}}, "Add Contract"
+                  , react.createElement('div', { className: "flex mt3" , __self: this, __source: {fileName: _jsxFileName$2, lineNumber: 54}}
+                    , react.createElement(Link, { to: "/~etheventviewer", __self: this, __source: {fileName: _jsxFileName$2, lineNumber: 55}}
+                      , react.createElement('button', { className: "db f9 green2 ba pa2 b--green2 bg-gray0-d pointer"       ,
+                              onClick: () => this.props.onAcceptClicked(this.state) , __self: this, __source: {fileName: _jsxFileName$2, lineNumber: 56}}, "Add Contract"
+
+                      )
+                    )
+                    , react.createElement(Link, { to: "/~etheventviewer", __self: this, __source: {fileName: _jsxFileName$2, lineNumber: 61}}
+                    , react.createElement('button', { className: "f9 ml3 ba pa2 b--black pointer bg-transparent b--white-d white-d"        ,
+                            onClick: () => console.log('ca'), __self: this, __source: {fileName: _jsxFileName$2, lineNumber: 62}}, "Cancel"
 
                     )
-                    , react.createElement('button', { className: "f9 ml3 ba pa2 b--black pointer bg-transparent b--white-d white-d"        ,
-                            onClick: () => console.log('ca'), __self: this, __source: {fileName: _jsxFileName$1, lineNumber: 58}}, "Cancel"
-
                     )
                   )
                 ))
@@ -44867,7 +44890,7 @@
               return `~${patp}`;
             }
 
-            const _jsxFileName$2 = "/home/do7ze5/urbit/development/urbit-eth-event-viewer/src/js/components/lib/icons/icon-home.js";
+            const _jsxFileName$3 = "/home/do7ze5/urbit/development/urbit-eth-event-viewer/src/js/components/lib/icons/icon-home.js";
             class IconHome extends react_1 {
               render() {
                 let classes = !!this.props.classes ? this.props.classes : "";
@@ -44876,7 +44899,7 @@
                     className: "invert-d " + classes,
                     src: "/~etheventviewer/img/Home.png",
                     width: 16,
-                    height: 16, __self: this, __source: {fileName: _jsxFileName$2, lineNumber: 7}}
+                    height: 16, __self: this, __source: {fileName: _jsxFileName$3, lineNumber: 7}}
                   )
                 );
               }
@@ -48920,7 +48943,7 @@
             var dist_3 = dist.sigil;
             var dist_4 = dist.stringRenderer;
 
-            const _jsxFileName$3 = "/home/do7ze5/urbit/development/urbit-eth-event-viewer/src/js/components/lib/icons/sigil.js";
+            const _jsxFileName$4 = "/home/do7ze5/urbit/development/urbit-eth-event-viewer/src/js/components/lib/icons/sigil.js";
 
             class Sigil extends react_1 {
               render() {
@@ -48932,12 +48955,12 @@
                   return (
                     react.createElement('div', {
                       className: "bg-black dib " + classes,
-                      style: { width: props.size, height: props.size }, __self: this, __source: {fileName: _jsxFileName$3, lineNumber: 13}}
+                      style: { width: props.size, height: props.size }, __self: this, __source: {fileName: _jsxFileName$4, lineNumber: 13}}
                     )
                   );
                 } else {
                   return (
-                    react.createElement('div', { className: "dib " + classes, style: { flexBasis: 32, backgroundColor: props.color }, __self: this, __source: {fileName: _jsxFileName$3, lineNumber: 20}}
+                    react.createElement('div', { className: "dib " + classes, style: { flexBasis: 32, backgroundColor: props.color }, __self: this, __source: {fileName: _jsxFileName$4, lineNumber: 20}}
                       , dist_3({
                         patp: props.ship,
                         renderer: dist_2,
@@ -48950,7 +48973,7 @@
               }
             }
 
-            const _jsxFileName$4 = "/home/do7ze5/urbit/development/urbit-eth-event-viewer/src/js/components/lib/header-bar.js";
+            const _jsxFileName$5 = "/home/do7ze5/urbit/development/urbit-eth-event-viewer/src/js/components/lib/header-bar.js";
             class HeaderBar extends react_1 {
               render() {
 
@@ -48961,15 +48984,15 @@
                     className: 
                       "bg-white bg-gray0-d w-100 justify-between relative tc pt3 db"
                     ,
-                    style: { height: 40 }, __self: this, __source: {fileName: _jsxFileName$4, lineNumber: 12}}
+                    style: { height: 40 }, __self: this, __source: {fileName: _jsxFileName$5, lineNumber: 12}}
                     , react.createElement('a', {
                       className: "dib gray2 f9 inter absolute left-0"     ,
                       href: "/",
-                      style: { top: 14 }, __self: this, __source: {fileName: _jsxFileName$4, lineNumber: 17}}
-                      , react.createElement(IconHome, {__self: this, __source: {fileName: _jsxFileName$4, lineNumber: 21}})
+                      style: { top: 14 }, __self: this, __source: {fileName: _jsxFileName$5, lineNumber: 17}}
+                      , react.createElement(IconHome, {__self: this, __source: {fileName: _jsxFileName$5, lineNumber: 21}})
                       , react.createElement('span', {
                         className: "ml2 white-d v-top lh-title"   ,
-                        style: { paddingTop: 3 }, __self: this, __source: {fileName: _jsxFileName$4, lineNumber: 22}}, "Home"
+                        style: { paddingTop: 3 }, __self: this, __source: {fileName: _jsxFileName$5, lineNumber: 22}}, "Home"
 
                       )
                     )
@@ -48978,24 +49001,24 @@
                       style: {
                         verticalAlign: "text-top",
                         paddingTop: 3
-                      }, __self: this, __source: {fileName: _jsxFileName$4, lineNumber: 28}}
+                      }, __self: this, __source: {fileName: _jsxFileName$5, lineNumber: 28}}
                       , title
                     )
-                    , react.createElement('div', { className: "absolute right-0 lh-copy"  , style: { top: 8 }, __self: this, __source: {fileName: _jsxFileName$4, lineNumber: 36}}
+                    , react.createElement('div', { className: "absolute right-0 lh-copy"  , style: { top: 8 }, __self: this, __source: {fileName: _jsxFileName$5, lineNumber: 36}}
                       , react.createElement(Sigil, {
                         ship: "~" + window.ship,
                         classes: "v-mid mix-blend-diff" ,
                         size: 16,
-                        color: "#000000", __self: this, __source: {fileName: _jsxFileName$4, lineNumber: 37}}
+                        color: "#000000", __self: this, __source: {fileName: _jsxFileName$5, lineNumber: 37}}
                       )
-                      , react.createElement('span', { className: "mono white-d f9 ml2 c-default"    , __self: this, __source: {fileName: _jsxFileName$4, lineNumber: 43}}, cite(window.ship))
+                      , react.createElement('span', { className: "mono white-d f9 ml2 c-default"    , __self: this, __source: {fileName: _jsxFileName$5, lineNumber: 43}}, cite(window.ship))
                     )
                   )
                 );
               }
             }
 
-            const _jsxFileName$5 = "/home/do7ze5/urbit/development/urbit-eth-event-viewer/src/js/components/lib/contracts-sidebar.js";
+            const _jsxFileName$6 = "/home/do7ze5/urbit/development/urbit-eth-event-viewer/src/js/components/lib/contracts-sidebar.js";
 
             class ContractsSidebar extends react_1 {
               constructor(props) {
@@ -49011,9 +49034,11 @@
 
               renderSidebar() {
                 return (react.createElement('div', { className: "flex-basis-full-s flex-basis-300-m flex-basis-300-l flex-basis-300-xl ba bl-0 bt-0 bb-0 b--solid b--gray4 b--gray1-d"
-                                 , __self: this, __source: {fileName: _jsxFileName$5, lineNumber: 17}}
-                  , react.createElement('div', { className: "w-100 bg-transparent pa4 bb b--gray4 b--gray1-d"     , style: { paddingBottom: '13px' }, __self: this, __source: {fileName: _jsxFileName$5, lineNumber: 19}}
-                    , react.createElement('a', { className: "dib f9 pointer green2 gray4-d mr4"     , __self: this, __source: {fileName: _jsxFileName$5, lineNumber: 20}}, "New Contract" )
+                                 , __self: this, __source: {fileName: _jsxFileName$6, lineNumber: 18}}
+                  , react.createElement('div', { className: "w-100 bg-transparent pa4 bb b--gray4 b--gray1-d"     , style: { paddingBottom: '13px' }, __self: this, __source: {fileName: _jsxFileName$6, lineNumber: 20}}
+                    , react.createElement(Link, { to: "/~etheventviewer/new", __self: this, __source: {fileName: _jsxFileName$6, lineNumber: 21}}
+                      , react.createElement('a', { className: "dib f9 pointer green2 gray4-d mr4"     , __self: this, __source: {fileName: _jsxFileName$6, lineNumber: 22}}, "New Contract" )
+                    )
                   )
                   , this.renderContractsList()
                 ));
@@ -49025,16 +49050,16 @@
                 if(!contracts) {
                   return null;
                 }
-                return (react.createElement('ul', { className: "list pl0 ma0 h-100"   , __self: this, __source: {fileName: _jsxFileName$5, lineNumber: 32}}
+                return (react.createElement('ul', { className: "list pl0 ma0"  , __self: this, __source: {fileName: _jsxFileName$6, lineNumber: 35}}
                   , contracts.map(contract => {
                     return (
                       react.createElement('li', {
                         key: contract,
                         className: `lh-copy pl3 pv3 ba bl-0 bt-0 br-0 b--solid b--gray4 b--gray1-d bg-animate pointer ${selectedContract === contract ? 'bg-gray5' : 'bg-white'}`,
-                        onClick: () => this.setState({ selectedContract: contract }), __self: this, __source: {fileName: _jsxFileName$5, lineNumber: 35}}
+                        onClick: () => this.setState({ selectedContract: contract }), __self: this, __source: {fileName: _jsxFileName$6, lineNumber: 38}}
                       
-                        , react.createElement('div', { className: "flex flex-column flex-row justify-between "    , __self: this, __source: {fileName: _jsxFileName$5, lineNumber: 40}}
-                          , react.createElement('p', { className: "pt3 f9" , __self: this, __source: {fileName: _jsxFileName$5, lineNumber: 41}}, contract)
+                        , react.createElement('div', { className: "flex flex-column flex-row justify-between "    , __self: this, __source: {fileName: _jsxFileName$6, lineNumber: 43}}
+                          , react.createElement('p', { className: "pt3 f9" , __self: this, __source: {fileName: _jsxFileName$6, lineNumber: 44}}, contract)
                           , react.createElement('a', {
                             className: "dib f9 pa3 tc pl4 pointer mr3"      ,
                             onClick: () => {
@@ -49043,7 +49068,7 @@
                                   contract: contract
                                 }
                               });
-                            }, __self: this, __source: {fileName: _jsxFileName$5, lineNumber: 42}}
+                            }, __self: this, __source: {fileName: _jsxFileName$6, lineNumber: 45}}
                           , "remove"
 
                           )
@@ -49055,19 +49080,19 @@
               }
             }
 
-            const _jsxFileName$6 = "/home/do7ze5/urbit/development/urbit-eth-event-viewer/src/js/components/skeleton.js";
+            const _jsxFileName$7 = "/home/do7ze5/urbit/development/urbit-eth-event-viewer/src/js/components/skeleton.js";
             class Skeleton extends react_1 {
               render() {
                 return (
-                  react.createElement('div', { className: "absolute h-100 w-100 bg-gray0-d ph4-m ph4-l ph4-xl pb4-m pb4-l pb4-xl"         , __self: this, __source: {fileName: _jsxFileName$6, lineNumber: 8}}
-                    , react.createElement(HeaderBar, {__self: this, __source: {fileName: _jsxFileName$6, lineNumber: 9}})
+                  react.createElement('div', { className: "absolute h-100 w-100 bg-gray0-d ph4-m ph4-l ph4-xl pb4-m pb4-l pb4-xl"         , __self: this, __source: {fileName: _jsxFileName$7, lineNumber: 8}}
+                    , react.createElement(HeaderBar, {__self: this, __source: {fileName: _jsxFileName$7, lineNumber: 9}})
                     , react.createElement('div', {
-                      className: "cf w-100 flex flex-column ba-m ba-l ba-xl b--gray2 br1 h-100 h-100-minus-40-m h-100-minus-40-l h-100-minus-40-xl"            , __self: this, __source: {fileName: _jsxFileName$6, lineNumber: 10}}
-                      , react.createElement('div', { className: "flex flex-column flex-row ba bl-0 bt-0 br-0 b--solid b--gray4 b--gray1-d"         , __self: this, __source: {fileName: _jsxFileName$6, lineNumber: 12}}
-                        , react.createElement('div', { className: "pa4 black-80 w-50 pl3"   , __self: this, __source: {fileName: _jsxFileName$6, lineNumber: 13}}, "Shall we add some filters here?"
+                      className: "cf w-100 flex flex-column ba-m ba-l ba-xl b--gray2 br1 h-100 h-100-minus-40-m h-100-minus-40-l h-100-minus-40-xl"            , __self: this, __source: {fileName: _jsxFileName$7, lineNumber: 10}}
+                      , react.createElement('div', { className: "flex flex-column flex-row ba bl-0 bt-0 br-0 b--solid b--gray4 b--gray1-d"         , __self: this, __source: {fileName: _jsxFileName$7, lineNumber: 12}}
+                        , react.createElement('div', { className: "pa4 black-80 w-50 pl3"   , __self: this, __source: {fileName: _jsxFileName$7, lineNumber: 13}}, "Shall we add some filters here?"
 
                         )
-                        , react.createElement('div', { className: "w-60 pa4 w-50 pl3"   , __self: this, __source: {fileName: _jsxFileName$6, lineNumber: 16}}
+                        , react.createElement('div', { className: "w-60 pa4 w-50 pl3"   , __self: this, __source: {fileName: _jsxFileName$7, lineNumber: 16}}
                           , this.renderActionButtons()
                         )
                       )
@@ -49081,12 +49106,12 @@
                 const { api, children, contracts } = this.props;
 
                 return (
-                  react.createElement('div', { className: "flex flex-column flex-row h-100"   , __self: this, __source: {fileName: _jsxFileName$6, lineNumber: 30}}
+                  react.createElement('div', { className: "flex flex-column flex-row h-100"   , __self: this, __source: {fileName: _jsxFileName$7, lineNumber: 30}}
                     , react.createElement(ContractsSidebar, {
                       api: api,
-                      contracts: contracts, __self: this, __source: {fileName: _jsxFileName$6, lineNumber: 31}})
-                    , react.createElement('div', { className: "pa3 mb4 mb0 w-100"   , __self: this, __source: {fileName: _jsxFileName$6, lineNumber: 34}}
-                      , contracts ? children : this.renderNoContracts()
+                      contracts: contracts, __self: this, __source: {fileName: _jsxFileName$7, lineNumber: 31}})
+                    , react.createElement('div', { className: "pa3 mb4 mb0 w-100"   , __self: this, __source: {fileName: _jsxFileName$7, lineNumber: 34}}
+                      , children
                     )
                   )
                 )
@@ -49094,7 +49119,7 @@
 
               renderNoContracts() {
                 return (
-                  react.createElement('p', { className: "measure center pa5"  , __self: this, __source: {fileName: _jsxFileName$6, lineNumber: 43}}, "There are no contracts, feel free to add one."
+                  react.createElement('p', { className: "measure center pa5"  , __self: this, __source: {fileName: _jsxFileName$7, lineNumber: 43}}, "There are no contracts, feel free to add one."
 
                   )
                 );
@@ -49112,7 +49137,7 @@
                           contract: '0xBB9bc244D798123fDe783fCc1C72d3Bb8C189413'
                         }
                       });
-                    }, __self: this, __source: {fileName: _jsxFileName$6, lineNumber: 51}}
+                    }, __self: this, __source: {fileName: _jsxFileName$7, lineNumber: 51}}
                   , "initial"
 
                   )
@@ -49126,7 +49151,7 @@
                           contract: '0xBB9bc244D798123fDe783fCc1C72d3Bb8C189413'
                         }
                       });
-                    }, __self: this, __source: {fileName: _jsxFileName$6, lineNumber: 65}}
+                    }, __self: this, __source: {fileName: _jsxFileName$7, lineNumber: 65}}
                   , "subscribe"
 
                   )
@@ -49140,7 +49165,7 @@
                           contract: '0xBB9bc244D798123fDe783fCc1C72d3Bb8C189413'
                         }
                       });
-                    }, __self: this, __source: {fileName: _jsxFileName$6, lineNumber: 79}}
+                    }, __self: this, __source: {fileName: _jsxFileName$7, lineNumber: 79}}
                   , "unsubscribe"
 
                   )
@@ -49148,7 +49173,7 @@
               }
             }
 
-            const _jsxFileName$7 = "/home/do7ze5/urbit/development/urbit-eth-event-viewer/src/js/components/root.js";
+            const _jsxFileName$8 = "/home/do7ze5/urbit/development/urbit-eth-event-viewer/src/js/components/root.js";
             class Root extends react_1 {
               constructor(props) {
                 super(props);
@@ -49156,9 +49181,20 @@
                 store$1.setStateHandler(this.setState.bind(this));
               }
 
+              renderBaseViewContent() {
+                const {contracts} = this.state;
+                let message = 'There are no contracts, feel free to add one.';
+                if(contracts && contracts.length > 0) {
+                  message = 'Please select a contract.';
+                }
+                return (react.createElement('p', { className: "measure center pa5"  , __self: this, __source: {fileName: _jsxFileName$8, lineNumber: 21}}, message))
+              }
+
               render() {
+                const {contracts} = this.state;
                 return (
-                  react.createElement(BrowserRouter, {__self: this, __source: {fileName: _jsxFileName$7, lineNumber: 17}}
+                  react.createElement(BrowserRouter, {__self: this, __source: {fileName: _jsxFileName$8, lineNumber: 27}}
+                    , react.createElement(Switch, {__self: this, __source: {fileName: _jsxFileName$8, lineNumber: 28}}
                       , react.createElement(Route, {
                         exact: true,
                         path: "/~etheventviewer",
@@ -49166,8 +49202,22 @@
                           return (
                             react.createElement(Skeleton, {
                               api: api$1,
-                              contracts: this.state.contracts, __self: this, __source: {fileName: _jsxFileName$7, lineNumber: 23}}
+                              contracts: contracts, __self: this, __source: {fileName: _jsxFileName$8, lineNumber: 34}}
                               
+                              ,  this.renderBaseViewContent() 
+                            )
+                          );
+                        }, __self: this, __source: {fileName: _jsxFileName$8, lineNumber: 29}}
+                      )
+                      , react.createElement(Route, {
+                        exact: true,
+                        path: "/~etheventviewer/new",
+                        render: () => {
+                          return (
+                            react.createElement(Skeleton, {
+                              api: api$1,
+                              contracts: this.state.contracts, __self: this, __source: {fileName: _jsxFileName$8, lineNumber: 48}}
+                            
                               , react.createElement(NewContractForm, {
                                 abi: this.state.abi,
                                 onInputsChanged: state => console.log('contract', state.contract, ' alias', state.alias),
@@ -49180,12 +49230,13 @@
                                       alias: state.alias
                                     }
                                   });
-                                }, __self: this, __source: {fileName: _jsxFileName$7, lineNumber: 27}}
+                                }, __self: this, __source: {fileName: _jsxFileName$8, lineNumber: 52}}
                               )
                             )
                           );
-                        }, __self: this, __source: {fileName: _jsxFileName$7, lineNumber: 18}}
+                        }, __self: this, __source: {fileName: _jsxFileName$8, lineNumber: 43}}
                       )
+                    )
                   )
                 );
               }
@@ -57735,7 +57786,7 @@ lyrtesmudnytbyrsenwegfyrmurtelreptegpecnelnevfes\
 
             let subscription = new Subscription();
 
-            const _jsxFileName$8 = "/home/do7ze5/urbit/development/urbit-eth-event-viewer/src/index.js";
+            const _jsxFileName$9 = "/home/do7ze5/urbit/development/urbit-eth-event-viewer/src/index.js";
             api$1.setAuthTokens({
               ship: window.ship
             });
@@ -57743,7 +57794,7 @@ lyrtesmudnytbyrsenwegfyrmurtelreptegpecnelnevfes\
             subscription.start();
 
             reactDom.render((
-              react.createElement(Root, {__self: undefined, __source: {fileName: _jsxFileName$8, lineNumber: 15}} )
+              react.createElement(Root, {__self: undefined, __source: {fileName: _jsxFileName$9, lineNumber: 15}} )
             ), document.querySelectorAll("#root")[0]);
 
 }));

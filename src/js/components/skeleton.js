@@ -32,7 +32,7 @@ export class Skeleton extends Component {
           api={api}
           contracts={contracts}/>
         <div className="pa3 mb4 mb0 w-100">
-          {contracts ? children : this.renderNoContracts()}
+          {children}
         </div>
       </div>
     )

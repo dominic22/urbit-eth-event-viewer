@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import { EventsSelection } from './events-selection';
+import { Link } from 'react-router-dom';
 
 export class NewContractForm extends Component {
   constructor(props) {
@@ -51,14 +52,18 @@ export class NewContractForm extends Component {
         </div>
       </div>
       <div className="flex mt3">
-        <button className="db f9 green2 ba pa2 b--green2 bg-gray0-d pointer"
-                onClick={() => this.props.onAcceptClicked(this.state) }>
-          Add Contract
-        </button>
+        <Link to="/~etheventviewer">
+          <button className="db f9 green2 ba pa2 b--green2 bg-gray0-d pointer"
+                  onClick={() => this.props.onAcceptClicked(this.state) }>
+            Add Contract
+          </button>
+        </Link>
+        <Link to="/~etheventviewer">
         <button className="f9 ml3 ba pa2 b--black pointer bg-transparent b--white-d white-d"
                 onClick={() => console.log('ca')}>
           Cancel
         </button>
+        </Link>
       </div>
     </div>)
   }

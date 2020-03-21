@@ -38,16 +38,21 @@
 
 +$  eth-event-viewer-action
   $%  [%create contract=@t]
-      [%add-contract contract=@t]
+      [%add-contract contract=contracts-type]
       [%remove-contract contract=@t]
       [%subscribe contract=@t]
       [%unsubscribe contract=@t]
+  ==
++$  contracts-type
+  $:  contract=@t
+      alias=@t
+::      selected-events=(list @t)
   ==
 
 +$  versioned-state
   $%  state-zero
   ==
-+$  state-zero  [%0 data=json ship=@p contract=@t contracts=(set @t)]
++$  state-zero  [%0 data=json ship=@p contract=@t contracts=(set @t) custom-contracts=(set contracts-type)]
 --
 =|  state-zero
 =*  state  -
@@ -194,15 +199,22 @@
   |%
   ++  parse-json
     %-  of
-    :~  [%create parse-contract]
+    :~  [%create parse-cord]
         [%add-contract parse-contract]
-        [%remove-contract parse-contract]
-        [%subscribe parse-contract]
-        [%unsubscribe parse-contract]
+        [%remove-contract parse-cord]
+        [%subscribe parse-cord]
+        [%unsubscribe parse-cord]
     ==
 ::
-  ++  parse-contract
+  ++  parse-cord
     (ot contract+so ~)
+::
+  ++  parse-contract
+    %-  ot
+    :~  [%contract so]
+        [%alias so]
+::        [%selected-events ar]
+    ==
 ::
   --
 ::
@@ -234,8 +246,8 @@
   ^-  (quip card _state)
   ~&  '%handle-create'
   ~&  '%contract-cord-to-hex'
-  ~&  (contract-cord-to-hex contract.act)
   ?>  ?=(%create -.act)
+  ~&  (contract-cord-to-hex contract.act)
   =/  new-state  state(contract contract.act)
   :-  [%give %fact [/state/update ~] %json !>((make-tile-json new-state))]~
   new-state
@@ -260,10 +272,15 @@
 ++  handle-add-contract
   |=  act=eth-event-viewer-action
   ^-  (quip card _state)
-  ~&  '%handle-create'
+  ~&  '%handle-add-contract'
   ~&  act
   ?>  ?=(%add-contract -.act)
-  =/  new-state  state(contracts (~(put in contracts.state) contract.act))
+  ~&  contract.contract.act
+  =/  new-state
+  %=  state
+    custom-contracts  (~(put in custom-contracts.state) contract.act)
+    contracts  (~(put in contracts.state) contract.contract.act)
+  ==
 ::  new:
 ::  (subscribe (contract-cord-to-hex contract.act))
 ::  :_  new-state
@@ -316,13 +333,24 @@
 ++  make-tile-json
   |=  new-state=_state
   ^-  json
+  ~&  'make tile json'
   =,  enjs:format
   =/  contracts-list  ~(tap in contracts.new-state)
   %-  pairs
   :~  [%contract (tape (trip contract.new-state))]
+      [%contracts-custom (custom-contracts-encoder new-state)]
       [%contracts `json`a+(turn `wain`contracts-list |=(=cord s+cord))]
       [%ship (ship ship.new-state)]
       [%data data.new-state]
+  ==
+::
+++  custom-contracts-encoder
+  |=  new-state=_state
+  ^-  json
+  =,  enjs:format
+  %-  pairs
+  :~  [%contract (tape "11")]
+      [%alias (tape "contract 0x")]
   ==
 ++  set-to-array
   |*  {a/(set) b/$-(* json)}
