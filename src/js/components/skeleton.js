@@ -24,12 +24,13 @@ export class Skeleton extends Component {
   }
 
   renderContent() {
-    const { api, children, contracts } = this.props;
+    const { api, children, contracts,selectedContract } = this.props;
 
     return (
       <div className="flex flex-column flex-row h-100">
         <ContractsSidebar
           api={api}
+          selectedContract={selectedContract}
           contracts={contracts}/>
         <div className="pa3 mb4 mb0 w-100">
           {children}

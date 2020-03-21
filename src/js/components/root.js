@@ -67,6 +67,21 @@ export class Root extends Component {
               );
             }}
           />
+          <Route
+            exact
+            path="/~etheventviewer/:contract"
+            render={props => {
+              return (
+                <Skeleton
+                  api={api}
+                  selectedContract={props.match.params.contract}
+                  contracts={this.state.contracts}
+                >
+                  <p>Content of selected contract</p>
+                </Skeleton>
+              );
+            }}
+          />
         </Switch>
       </BrowserRouter>
     );

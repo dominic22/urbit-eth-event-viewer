@@ -1,13 +1,15 @@
 import React, { Component } from 'react';
 import { EventsSelection } from './events-selection';
 import { Link } from 'react-router-dom';
-
+import _ from 'lodash';
+import web3Utils from 'web3-utils';
 export class NewContractForm extends Component {
   constructor(props) {
     super(props);
     this.state = {
       contract: '',
       alias: '',
+      validAddress: false,
     }
   }
 
@@ -31,7 +33,7 @@ export class NewContractForm extends Component {
             onChange={this.handleContractChange.bind(this)}
             aria-describedby="name-desc"
           />
-          <span className="f9 inter red2 db pt2">Must be a valid contract.</span>
+          {this.renderInputStatus()}
           <p className="f8 mt3 lh-copy db mb2">Alias</p>
           <textarea
             id="name"
@@ -54,7 +56,7 @@ export class NewContractForm extends Component {
       <div className="flex mt3">
         <Link to="/~etheventviewer">
           <button className="db f9 green2 ba pa2 b--green2 bg-gray0-d pointer"
-                  onClick={() => this.props.onAcceptClicked(this.state) }>
+                  onClick={this.accept.bind(this) }>
             Add Contract
           </button>
         </Link>
@@ -67,9 +69,35 @@ export class NewContractForm extends Component {
       </div>
     </div>)
   }
+  accept() {
+    if(this.state.contract && this.state.validAddress) {
+      this.props.onAcceptClicked(this.state)
+    } else {
+      console.error('No valid address');
+    }
+  }
+  renderInputStatus() {
+    if(!this.state.validAddress && this.state.contract) {
+      return (<span className="f9 inter red2 db pt2">Must be a valid contract address.</span>);
+    }
+    return null;
+  }
+  isValidAddress(address) {
+    return web3Utils.isAddress(address);
+  };
+
+  checkContractAddress(address) {
+    if(address && !this.isValidAddress(address)) {
+      this.setState({validAddress:false});
+    } else {
+      this.setState({validAddress:true});
+    }
+  }
 
   handleContractChange(event) {
-    this.setState({ contract: event.target.value }, this.toggleInputsChanged);
+    const address = event.target.value;
+    _.debounce(() => this.checkContractAddress(address), 100)();
+    this.setState({ contract: address }, this.toggleInputsChanged);
   }
   handleAliasChange(event) {
     this.setState({ alias: event.target.value }, this.toggleInputsChanged);

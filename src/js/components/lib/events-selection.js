@@ -7,7 +7,7 @@ export class EventsSelection extends Component {
     super(props);
     this.state = {
       selectedEvents: [],
-      eventListDisabled: false,
+      eventListDisabled: true,
     }
   }
 
@@ -23,7 +23,7 @@ export class EventsSelection extends Component {
     }
     return (<div>
       <form className="mb4">
-        <fieldset id="favorite_movies" className={`bn pa0 ml0 ${eventListDisabled ? 'o-70 pointer-none' : ''}`}>
+        <fieldset id="favorite_movies" className={`bn pa0 ml0 ${eventListDisabled ? 'o-30 pointer-none' : ''}`}>
           <p className="f8 lh-copy mb2">Select contract events:</p>
           <div style={{ maxHeight: '200px', overflowY: 'auto' }}>
             {
@@ -32,6 +32,7 @@ export class EventsSelection extends Component {
                 .map(event => {
                   return (<Checkbox
                     label={event.name}
+                    key={event.name}
                     toggle={() => this.toggleFromEvents(event.name)}
                     isActive={selectedEvents.some(eventName => eventName === event.name)}/>)
                 })}
