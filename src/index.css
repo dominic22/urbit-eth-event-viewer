@@ -1,14 +1,18 @@
-@import 'css/indigo-static.css';
-@import 'css/fonts.css';
-@import 'css/custom.css';
+@import "css/indigo-static.css";
+@import "css/fonts.css";
+@import "css/custom.css";
 
 .h-100-minus-48 {
   height: calc(100% - 48px);
 }
 
-p, div {
+p,
+div {
   font-family: "Inter", sans-serif;
 }
 .pointer-none {
   pointer-events: none;
+}
+.text-center {
+  text-align: center;
 }

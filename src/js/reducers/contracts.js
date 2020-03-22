@@ -6,7 +6,6 @@ export class ContractsReducer {
         let data = json;
         if(data) {
             this.contracts(data, state);
-            this.contract(data, state);
             this.abi(data, state);
         }
     }
@@ -20,12 +19,6 @@ export class ContractsReducer {
         let data = _.has(obj, 'data', false);
         if (data) {
             state.abi = obj.data && obj.data.result && JSON.parse(obj.data.result);
-        }
-    }
-    contract(obj, state) {
-        let data = _.has(obj, 'contract', false);
-        if (data) {
-            state.contract = obj.contract;
         }
     }
 }

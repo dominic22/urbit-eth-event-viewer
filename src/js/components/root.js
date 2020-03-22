@@ -1,9 +1,9 @@
-import React, { Component } from 'react';
-import { BrowserRouter, Switch, Route, Link } from 'react-router-dom';
-import { api } from '/api';
-import { store } from '/store';
-import { NewContractForm } from './lib/new-contract-form';
-import { Skeleton } from './skeleton';
+import React, { Component } from "react";
+import { BrowserRouter, Switch, Route, Link } from "react-router-dom";
+import { api } from "/api";
+import { store } from "/store";
+import { NewContract } from "./new-contract";
+import { Skeleton } from "./skeleton";
 
 export class Root extends Component {
   constructor(props) {
@@ -13,16 +13,17 @@ export class Root extends Component {
   }
 
   renderBaseViewContent() {
-    const {contracts} = this.state;
-    let message = 'There are no contracts, feel free to add one.';
-    if(contracts && contracts.length > 0) {
-      message = 'Please select a contract.';
+    const { contracts } = this.state;
+    let message = "There are no contracts, feel free to add one.";
+    if (contracts && contracts.length > 0) {
+      message = "Please select a contract.";
     }
-    return (<p className="measure center pa5">{message}</p>)
+    return <p className="measure center pa5 text-center">{message}</p>;
   }
 
   render() {
-    const {contracts} = this.state;
+    const { contracts } = this.state;
+    console.log("CONTRACTS ", contracts);
     return (
       <BrowserRouter>
         <Switch>
@@ -31,11 +32,8 @@ export class Root extends Component {
             path="/~etheventviewer"
             render={() => {
               return (
-                <Skeleton
-                  api={api}
-                  contracts={contracts}
-                  >
-                  { this.renderBaseViewContent() }
+                <Skeleton api={api} contracts={contracts}>
+                  {this.renderBaseViewContent()}
                 </Skeleton>
               );
             }}
@@ -45,22 +43,17 @@ export class Root extends Component {
             path="/~etheventviewer/new"
             render={() => {
               return (
-                <Skeleton
-                  api={api}
-                  contracts={this.state.contracts}
-                >
-                  <NewContractForm
+                <Skeleton api={api} contracts={this.state.contracts}>
+                  <NewContract
                     abi={this.state.abi}
-                    onInputsChanged={state => console.log('contract', state.contract, ' alias', state.alias)}
+                    api={api}
                     onAcceptClicked={state => {
-                      console.log('contract', state.contract, ' alias', state.alias)
-                      console.log('Send action json');
-                      api.action('etheventviewer', 'json', {
-                        'add-contract': {
-                          contract: state.contract,
-                          alias: state.alias
+                      api.action("etheventviewer", "json", {
+                        "add-contract": {
+                          address: state.address,
+                          name: state.name
                         }
-                      })
+                      });
                     }}
                   />
                 </Skeleton>

@@ -1,14 +1,15 @@
 import React, { Component } from 'react';
-import { EventsSelection } from './events-selection';
+import { EventsSelection } from './lib/events-selection';
 import { Link } from 'react-router-dom';
 import _ from 'lodash';
 import web3Utils from 'web3-utils';
-export class NewContractForm extends Component {
+
+export class NewContract extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      contract: '',
-      alias: '',
+      address: '',
+      name: '',
       validAddress: false,
     }
   }
@@ -28,22 +29,22 @@ export class NewContractForm extends Component {
             type="text"
             rows={1}
             placeholder="Beginning with 0x..."
-            value={this.state.contract}
+            value={this.state.address}
             style={{ resize: 'none', width: '382px' }}
             onChange={this.handleContractChange.bind(this)}
             aria-describedby="name-desc"
           />
           {this.renderInputStatus()}
-          <p className="f8 mt3 lh-copy db mb2">Alias</p>
+          <p className="f8 mt3 lh-copy db mb2">Name<span className="gray3"> (Optional)</span></p>
           <textarea
             id="name"
             className="ba b--black-20 pa3 db w-70 b--gray4 f9 flex-basis-full-s focus-b--black focus-b--white-d"
             type="text"
             rows={1}
             placeholder="My Contract Name"
-            value={this.state.alias}
+            value={this.state.name}
             style={{ resize: 'none', width: '382px' }}
-            onChange={this.handleAliasChange.bind(this)}
+            onChange={this.handleNameChange.bind(this)}
             aria-describedby="name-desc"
           />
         </div>
@@ -70,14 +71,14 @@ export class NewContractForm extends Component {
     </div>)
   }
   accept() {
-    if(this.state.contract && this.state.validAddress) {
+    if(this.state.address && this.state.validAddress) {
       this.props.onAcceptClicked(this.state)
     } else {
       console.error('No valid address');
     }
   }
   renderInputStatus() {
-    if(!this.state.validAddress && this.state.contract) {
+    if(!this.state.validAddress && this.state.address) {
       return (<span className="f9 inter red2 db pt2">Must be a valid contract address.</span>);
     }
     return null;
@@ -87,9 +88,17 @@ export class NewContractForm extends Component {
   };
 
   checkContractAddress(address) {
-    if(address && !this.isValidAddress(address)) {
+    if(!address){
+      return
+    }
+    if(!this.isValidAddress(address)) {
       this.setState({validAddress:false});
     } else {
+      this.props.api.action('etheventviewer', 'json', {
+        'get-contract-events': {
+          contract: address
+        }
+      });
       this.setState({validAddress:true});
     }
   }
@@ -97,14 +106,9 @@ export class NewContractForm extends Component {
   handleContractChange(event) {
     const address = event.target.value;
     _.debounce(() => this.checkContractAddress(address), 100)();
-    this.setState({ contract: address }, this.toggleInputsChanged);
+    this.setState({ address });
   }
-  handleAliasChange(event) {
-    this.setState({ alias: event.target.value }, this.toggleInputsChanged);
-  }
-  toggleInputsChanged() {
-    if(this.props.onInputsChanged) {
-      this.props.onInputsChanged(this.state);
-    }
+  handleNameChange(event) {
+    this.setState({ name: event.target.value });
   }
 }
