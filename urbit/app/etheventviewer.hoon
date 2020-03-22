@@ -38,21 +38,23 @@
 
 +$  eth-event-viewer-action
   $%  [%create contract=@t]
-      [%add-contract contract=contracts-type]
+      [%add-contract contract=contract-type]
+      [%get-contract-events contract=@t]
       [%remove-contract contract=@t]
       [%subscribe contract=@t]
       [%unsubscribe contract=@t]
   ==
-+$  contracts-type
-  $:  contract=@t
-      alias=@t
+:: TODO uncomment selected events list
++$  contract-type
+  $:  address=@t
+      name=@t
 ::      selected-events=(list @t)
   ==
 
 +$  versioned-state
   $%  state-zero
   ==
-+$  state-zero  [%0 data=json ship=@p contract=@t contracts=(set @t) custom-contracts=(set contracts-type)]
++$  state-zero  [%0 data=json contracts=(set @t) custom-contracts=(set contract-type)]
 --
 =|  state-zero
 =*  state  -
@@ -118,7 +120,6 @@
       ?+    mark  (on-poke:def mark vase)
           %json
         (poke-action-name:cc !<(json vase))
-::        (poke-json:cc !<(json vase))
           %handle-http-request
         =+  !<([eyre-id=@ta =inbound-request:eyre] vase)
         :: construct a cell but inverted => [card state]
@@ -150,19 +151,20 @@
 |_  bol=bowl:gall
 ::
 ++  get-request
-  |=  contract=@t
+  |=  address=@t
   ^-  request:http
-  ~&  '%get-request'
-  ~&  contract
-  =/  url=@t  'https://api.etherscan.io/api?module=contract&action=getabi&address=0xBB9bc244D798123fDe783fCc1C72d3Bb8C189413'
+  ~&  '%get-request with address:'
+  ~&  address
+  =/  base=@t  'https://api.etherscan.io/api?module=contract&action=getabi&address='
+  =/  url=@t  (cat 3 base address)
   =/  hed  [['Accept' 'application/json']]~
   [%'GET' url hed *(unit octs)]
 ::
 ++  request-ethereum-abi
-  |=  contract=@t
+  |=  address=@t
   ^-  card:agent:gall
   ~&  '%request-ethereum-abi'
-  =/  req=request:http  (get-request contract)
+  =/  req=request:http  (get-request address)
   [%pass /etheventviewer/ethereum-abi-response %arvo %i %request req *outbound-config:iris]
 ::
 ++  subscribe
@@ -201,6 +203,7 @@
     %-  of
     :~  [%create parse-cord]
         [%add-contract parse-contract]
+        [%get-contract-events parse-cord]
         [%remove-contract parse-cord]
         [%subscribe parse-cord]
         [%unsubscribe parse-cord]
@@ -211,8 +214,8 @@
 ::
   ++  parse-contract
     %-  ot
-    :~  [%contract so]
-        [%alias so]
+    :~  [%address so]
+        [%name so]
 ::        [%selected-events ar]
     ==
 ::
@@ -236,6 +239,7 @@
   ?-  -.action
       %create    (handle-create action)
       %add-contract  (handle-add-contract action)
+      %get-contract-events  (handle-get-contract-events action)
       %remove-contract  (handle-remove-contract action)
       %subscribe  (handle-subscribe action)
       %unsubscribe  (handle-unsubscribe action)
@@ -248,9 +252,16 @@
   ~&  '%contract-cord-to-hex'
   ?>  ?=(%create -.act)
   ~&  (contract-cord-to-hex contract.act)
-  =/  new-state  state(contract contract.act)
-  :-  [%give %fact [/state/update ~] %json !>((make-tile-json new-state))]~
-  new-state
+  :-  [%give %fact [/state/update ~] %json !>((make-tile-json state))]~
+  state
+::
+++  handle-get-contract-events
+  |=  act=eth-event-viewer-action
+  ^-  (quip card _state)
+  ~&  '%handle-get-contract-events'
+  ?>  ?=(%get-contract-events -.act)
+  :-  [(request-ethereum-abi contract.act) ~]
+  state
 ::
 ++  handle-subscribe
   |=  act=eth-event-viewer-action
@@ -275,11 +286,11 @@
   ~&  '%handle-add-contract'
   ~&  act
   ?>  ?=(%add-contract -.act)
-  ~&  contract.contract.act
+  ~&  address.contract.act
   =/  new-state
   %=  state
     custom-contracts  (~(put in custom-contracts.state) contract.act)
-    contracts  (~(put in contracts.state) contract.contract.act)
+    contracts  (~(put in contracts.state) address.contract.act)
   ==
 ::  new:
 ::  (subscribe (contract-cord-to-hex contract.act))
@@ -289,7 +300,7 @@
 ::  ==
   =/  lismov  [%give %fact [/state/update ~] %json !>((make-tile-json new-state))]
   :_  new-state
-  :~  (request-ethereum-abi -.act)
+  :~  (request-ethereum-abi address.contract.act)
       lismov
   ==
 ::
@@ -308,28 +319,6 @@
   :-  [%give %fact [/state/update ~] %json !>((make-tile-json new-state))]~
   new-state
 ::
-++  poke-json
-  |=  jon=json
-  ^-  (quip card _state)
-  ~&  'poke-json called'
-  ~&  jon
-  =/  json-map    ((om:dejs:format same) jon)
-  =/  ship-to-hi  (so:dejs:format (~(got by json-map) %ship))
-  =/  ship  (need (slaw %p ship-to-hi))
-  ~&  ship
-  =/  contract-sample  (so:dejs:format (~(got by json-map) %contract))
-::  =/  contract  (need (slaw %t contract-sample))
-  ~&  `@ux`(rash contract-sample hex)
-  ~&  'previous ship state:'
-  ~&  state
-::  [~ state(ship ship)]
-::  [[%give %fact [/state/update ~] %json !>(jon)]~ state(ship ship)]
-  :-  [%give %fact [/state/update ~] %json !>((make-tile-json state))]~
-  %=  state
-    ship  ship
-    contract  contract-sample
-  ==
-::  state(ship ship)]
 ++  make-tile-json
   |=  new-state=_state
   ^-  json
@@ -337,10 +326,8 @@
   =,  enjs:format
   =/  contracts-list  ~(tap in contracts.new-state)
   %-  pairs
-  :~  [%contract (tape (trip contract.new-state))]
-      [%contracts-custom (custom-contracts-encoder new-state)]
+  :~  [%contracts-custom (custom-contracts-encoder new-state)]
       [%contracts `json`a+(turn `wain`contracts-list |=(=cord s+cord))]
-      [%ship (ship ship.new-state)]
       [%data data.new-state]
   ==
 ::
@@ -348,10 +335,20 @@
   |=  new-state=_state
   ^-  json
   =,  enjs:format
+  =/  contract-type-list  ~(tap in custom-contracts.new-state)
+  ~&  'contracts-list:'
+  ~&  contract-type-list
+  `json`a+(turn contract-type-list |=(=contract-type (custom-contract-encoder contract-type)))
+::
+++  custom-contract-encoder
+  |=  =contract-type
+  ^-  json
+  =,  enjs:format
   %-  pairs
-  :~  [%contract (tape "11")]
-      [%alias (tape "contract 0x")]
+  :~  [%address (tape (trip address.contract-type))]
+      [%name (tape (trip name.contract-type))]
   ==
+::
 ++  set-to-array
   |*  {a/(set) b/$-(* json)}
   ^-  json
