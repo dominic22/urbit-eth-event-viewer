@@ -40,21 +40,21 @@
   $%  [%create contract=@t]
       [%add-contract contract=contract-type]
       [%get-contract-events contract=@t]
-      [%remove-contract contract=@t]
+      [%remove-contract contract=contract-type]
       [%subscribe contract=@t]
       [%unsubscribe contract=@t]
   ==
-:: TODO uncomment selected events list
+::
 +$  contract-type
   $:  address=@t
       name=@t
-::      selected-events=(list @t)
+      specific-events=(list @t)
   ==
 
 +$  versioned-state
   $%  state-zero
   ==
-+$  state-zero  [%0 data=json contracts=(set @t) custom-contracts=(set contract-type)]
++$  state-zero  [%0 data=json contracts=(set contract-type)]
 --
 =|  state-zero
 =*  state  -
@@ -173,7 +173,7 @@
   ~&  '%subscribe'
   =/  url  'https://api.etherscan.io/api?module=logs&action=getLogs'
   =/  path  /etheventviewer/eth-watcher-update
-  =/  topics  [~]
+  =/  topics  ~
   =/  args=vase  !>
     :*  %watch  path
         url
@@ -204,7 +204,7 @@
     :~  [%create parse-cord]
         [%add-contract parse-contract]
         [%get-contract-events parse-cord]
-        [%remove-contract parse-cord]
+        [%remove-contract parse-contract]
         [%subscribe parse-cord]
         [%unsubscribe parse-cord]
     ==
@@ -216,7 +216,7 @@
     %-  ot
     :~  [%address so]
         [%name so]
-::        [%selected-events ar]
+        [%specific-events (ar so)]
     ==
 ::
   --
@@ -286,12 +286,8 @@
   ~&  '%handle-add-contract'
   ~&  act
   ?>  ?=(%add-contract -.act)
-  ~&  address.contract.act
-  =/  new-state
-  %=  state
-    custom-contracts  (~(put in custom-contracts.state) contract.act)
-    contracts  (~(put in contracts.state) address.contract.act)
-  ==
+  ~&  contract.act
+  =/  new-state  state(contracts (~(put in contracts.state) contract.act))
 ::  new:
 ::  (subscribe (contract-cord-to-hex contract.act))
 ::  :_  new-state
@@ -324,29 +320,30 @@
   ^-  json
   ~&  'make tile json'
   =,  enjs:format
-  =/  contracts-list  ~(tap in contracts.new-state)
+::  =/  contracts-list  ~(tap in contracts.new-state)
   %-  pairs
-  :~  [%contracts-custom (custom-contracts-encoder new-state)]
-      [%contracts `json`a+(turn `wain`contracts-list |=(=cord s+cord))]
+  :~  [%contracts (contracts-encoder new-state)]
+::      [%contracts `json`a+(turn `wain`contracts-list |=(=cord s+cord))]
       [%data data.new-state]
   ==
 ::
-++  custom-contracts-encoder
+++  contracts-encoder
   |=  new-state=_state
   ^-  json
   =,  enjs:format
-  =/  contract-type-list  ~(tap in custom-contracts.new-state)
+  =/  contract-type-list  ~(tap in contracts.new-state)
   ~&  'contracts-list:'
   ~&  contract-type-list
-  `json`a+(turn contract-type-list |=(=contract-type (custom-contract-encoder contract-type)))
+  `json`a+(turn contract-type-list |=(=contract-type (contract-encoder contract-type)))
 ::
-++  custom-contract-encoder
+++  contract-encoder
   |=  =contract-type
   ^-  json
   =,  enjs:format
   %-  pairs
   :~  [%address (tape (trip address.contract-type))]
       [%name (tape (trip name.contract-type))]
+      [%specific-events `json`a+(turn `wain`specific-events.contract-type |=(=cord s+cord))]
   ==
 ::
 ++  set-to-array
