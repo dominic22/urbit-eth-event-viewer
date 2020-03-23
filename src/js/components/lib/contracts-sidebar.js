@@ -1,5 +1,5 @@
-import React, { Component } from "react";
-import { Link } from "react-router-dom";
+import React, { Component } from 'react';
+import { Link } from 'react-router-dom';
 
 export class ContractsSidebar extends Component {
   render() {
@@ -10,7 +10,7 @@ export class ContractsSidebar extends Component {
       >
         <div
           className="w-100 bg-transparent pa4 bb b--gray4 b--gray1-d"
-          style={{ paddingBottom: "13px" }}
+          style={{ paddingBottom: '13px' }}
         >
           <Link to="/~etheventviewer/new">
             <p className="dib f9 pointer green2 gray4-d mr4">New Contract</p>
@@ -48,7 +48,7 @@ export class ContractsSidebar extends Component {
     return (
       <li
         className={`lh-copy pl3 pv3 ba bl-0 bt-0 br-0 b--solid b--gray4 b--gray1-d bg-animate pointer ${
-          selectedContract === contract.address ? "bg-gray5" : "bg-white"
+          selectedContract === contract.address ? 'bg-gray5' : 'bg-white'
         }`}
       >
         <div className="flex flex-column flex-row justify-between ">
@@ -68,11 +68,13 @@ export class ContractsSidebar extends Component {
   }
 
   removeContract(contract) {
+    const { address, name, specificEvents } = contract;
     const { api } = this.props;
-    api.action("etheventviewer", "json", {
-      "remove-contract": {
-        address: contract.address,
-        name: contract.name
+    api.action('etheventviewer', 'json', {
+      'remove-contract': {
+        address,
+        name,
+        'specific-events': specificEvents,
       }
     });
   }

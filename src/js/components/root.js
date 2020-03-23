@@ -1,5 +1,5 @@
 import React, { Component } from "react";
-import { BrowserRouter, Switch, Route, Link } from "react-router-dom";
+import { BrowserRouter, Switch, Route } from "react-router-dom";
 import { api } from "/api";
 import { store } from "/store";
 import { NewContract } from "./new-contract";
@@ -23,7 +23,6 @@ export class Root extends Component {
 
   render() {
     const { contracts } = this.state;
-    console.log("CONTRACTS ", contracts);
     return (
       <BrowserRouter>
         <Switch>
@@ -51,7 +50,8 @@ export class Root extends Component {
                       api.action("etheventviewer", "json", {
                         "add-contract": {
                           address: state.address,
-                          name: state.name
+                          name: state.name,
+                          'specific-events': state.specificEvents,
                         }
                       });
                     }}

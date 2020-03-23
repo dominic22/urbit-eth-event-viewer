@@ -10,6 +10,7 @@ export class NewContract extends Component {
     this.state = {
       address: '',
       name: '',
+      specificEvents: [],
       validAddress: false,
     }
   }
@@ -26,7 +27,6 @@ export class NewContract extends Component {
           <textarea
             id="name"
             className="ba b--black-20 pa3 db w-70 b--gray4 f9 flex-basis-full-s focus-b--black focus-b--white-d"
-            type="text"
             rows={1}
             placeholder="Beginning with 0x..."
             value={this.state.address}
@@ -39,7 +39,6 @@ export class NewContract extends Component {
           <textarea
             id="name"
             className="ba b--black-20 pa3 db w-70 b--gray4 f9 flex-basis-full-s focus-b--black focus-b--white-d"
-            type="text"
             rows={1}
             placeholder="My Contract Name"
             value={this.state.name}
@@ -50,7 +49,9 @@ export class NewContract extends Component {
         </div>
         <div className="ml8 mt3">
           <EventsSelection
-            onEventsChanged={selectedEvents => console.log('events changed ', selectedEvents)}
+            onEventsChanged={selectedEvents => {
+              this.setState({specificEvents:selectedEvents})
+            }}
             abi={this.props.abi}/>
         </div>
       </div>

@@ -7,7 +7,7 @@ export class EventsSelection extends Component {
     super(props);
     this.state = {
       selectedEvents: [],
-      eventListDisabled: true,
+      listenToAllEvents: true,
     }
   }
 
@@ -17,13 +17,13 @@ export class EventsSelection extends Component {
 
   renderEventsSelection() {
     const { abi } = this.props;
-    const { selectedEvents, eventListDisabled } = this.state;
+    const { selectedEvents, listenToAllEvents } = this.state;
     if (!abi || abi.length === 0) {
       return <p className="f8">No Events found...</p>;
     }
     return (<div>
       <form className="mb4">
-        <fieldset id="favorite_movies" className={`bn pa0 ml0 ${eventListDisabled ? 'o-30 pointer-none' : ''}`}>
+        <fieldset id="favorite_movies" className={`bn pa0 ml0 ${listenToAllEvents ? 'o-30 pointer-none' : ''}`}>
           <p className="f8 lh-copy mb2">Select contract events:</p>
           <div style={{ maxHeight: '200px', overflowY: 'auto' }}>
             {
@@ -42,12 +42,12 @@ export class EventsSelection extends Component {
       <Checkbox
         label={'Listen to all events'}
         toggle={() => this.toggleEventListDisabled()}
-        isActive={eventListDisabled}/>
+        isActive={listenToAllEvents}/>
     </div>);
   }
 
   toggleEventListDisabled() {
-    this.setState({ eventListDisabled: !this.state.eventListDisabled });
+    this.setState({ listenToAllEvents: !this.state.listenToAllEvents }, this.toggleEventChanged);
   }
 
   selectAllEvents() {
@@ -72,7 +72,11 @@ export class EventsSelection extends Component {
 
   toggleEventChanged() {
     if (this.props.onEventsChanged) {
-      this.props.onEventsChanged(this.state.selectedEvents);
+      if(this.state.listenToAllEvents) {
+        this.props.onEventsChanged([]);
+      } else {
+        this.props.onEventsChanged(this.state.selectedEvents);
+      }
     }
   }
 }
