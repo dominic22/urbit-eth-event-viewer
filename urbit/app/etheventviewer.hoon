@@ -42,6 +42,9 @@
       [%get-contract-events contract=@t]
       [%remove-contract contract=contract-type]
       [%subscribe contract=@t]
+::    remove
+      [%watch contract=@t]
+      [%leave contract=@t]
       [%unsubscribe contract=@t]
   ==
 ::
@@ -54,7 +57,7 @@
 +$  versioned-state
   $%  state-zero
   ==
-+$  state-zero  [%0 data=json contracts=(set contract-type)]
++$  state-zero  [%0 abi-result=json contracts=(set contract-type) ti=@t]
 --
 =|  state-zero
 =*  state  -
@@ -79,20 +82,30 @@
   |=  [=wire =sign:agent:gall]
   ~&  '%on-agent'
   ~&  wire
-  ~&  -.sign
-  ?.  ?=([%eth-watcher ~] wire)
-    (on-agent:def wire sign)
-  ~&  '%eth-watcher found'
+::  ~&  sign
+::  ~&  -.sign
+::  ?.  ?=([%eth-watcher ~] wire)
+::    ~&  '%eth-watcher not found'
+::    (on-agent:def wire sign)
+::  ~&  '%eth-watcher found'
   ?.  ?=(%fact -.sign)
+    ~&  'no fact received'
     (on-agent:def wire sign)
-  ~&  '%fact found'
+  ~&  '%fact / update from publisher received'
   ?.  ?=(%eth-watcher-diff p.cage.sign)
+    ~&  'close since not eth-watcher-diff'
     (on-agent:def wire sign)
   ~&  '%eth-watcher-diff'
   =+  !<(diff=diff:eth-watcher q.cage.sign)
-  ~&  'return fact eth-watcher-update to landscape'
-  :-  [%give %fact ~[/etheventviewer/eth-watcher-update] %json !>((make-tile-json state))]~
-  this
+  ?-  -.diff
+    %history  ~&  [%got-history (lent loglist.diff)]
+              ~&  (event-logs-to-udiffs loglist.diff)
+              [~ this]
+    %log      ~&  %got-log
+              [~ this]
+    %disavow  ~&  %disavow-unimplemented
+              [~ this]
+  ==
   ::
   ++  on-arvo
     |=  [=wire =sign-arvo]
@@ -160,6 +173,39 @@
   =/  hed  [['Accept' 'application/json']]~
   [%'GET' url hed *(unit octs)]
 ::
+++  event-logs-to-udiffs
+  |=  event-logs=loglist:eth-watcher
+  ~&  '%event-logs-to-ud'
+::  ~&  (decode-topics t.topics.event-log ~[%uint %uint])
+  %+  murn  event-logs
+  |=  =event-log:rpc:ethereum
+  ^-  (unit card)
+  (event-log-decoder event-log)
+::
+++  event-log-decoder
+  |=  =event-log:rpc:ethereum
+  ^-  (unit card)
+  =,  abi:ethereum
+  ~&  '%event-log-decoder'
+  ~&  '%event-log-decoder'
+  ?~  mined.event-log
+    ~&  'mined is null'
+    ~
+  ~&  'address'
+  ~&  address.event-log
+  ~&  'from'
+  ~&  -.t.topics.event-log
+  ~&  'to'
+  ~&  +.t.topics.event-log
+::  ~&  'block-information'
+::  ~&  mined.event-log
+::  ~&  (decode-topics t.topics.event-log ~[%uint %uint])
+  ~
+++  transform-event-string-to-hex
+  |=  event-string=tape
+  ^-  @ux
+  `@ux`(keccak-256:keccak:crypto (as-octt:mimes:html "ChangedKeys(uint32,bytes32,bytes32,uint32,uint32)"))
+::
 ++  request-ethereum-abi
   |=  address=@t
   ^-  card:agent:gall
@@ -167,31 +213,71 @@
   =/  req=request:http  (get-request address)
   [%pass /etheventviewer/ethereum-abi-response %arvo %i %request req *outbound-config:iris]
 ::
+++  to-eth-watcher
+  |=  [=wire =task:agent:gall]
+  ^-  card
+  [%pass wire %agent [our.bol %eth-watcher] task]
+::
+++  setup-eth-watcher
+  |=  contract=@ux
+  =/  url  'http://eth-mainnet.urbit.org:8545'
+  %+  to-eth-watcher  /ethviewer
+  :+  %poke   %eth-watcher-poke
+  !>  ^-  poke:eth-watcher
+  :+  %watch  /[dap.bol]
+  :*  url
+      |
+      ~m1
+      9.759.316
+      ~[contract]
+      ~
+  ==
+::
+++  watch-eth-watcher
+  ~&  'watch eth watcher'
+  %+  to-eth-watcher  /watcher12
+  [%watch /logs/[dap.bol]]
+::
+++  leave-eth-watcher
+  ~&  'leave eth watcher'
+  %+  to-eth-watcher  /watcher12
+  [%leave ~]
+::
+::
+++  clear-eth-watcher
+  %+  to-eth-watcher  /clear
+  :+  %poke  %eth-watcher-poke
+  !>  ^-  poke:eth-watcher
+  [%clear /logs/[dap.bol]]
+::
 ++  subscribe
   |=  contract=@ux
   ^-  card:agent:gall
   ~&  '%subscribe'
-  =/  url  'https://api.etherscan.io/api?module=logs&action=getLogs'
-  =/  path  /etheventviewer/eth-watcher-update
+  =/  url  'http://eth-mainnet.urbit.org:8545'
+  =/  path  /[dap.bol]
+  ~&  'to following contract'
+  ~&  contract
   =/  topics  ~
   =/  args=vase  !>
     :*  %watch  path
         url
         %.n
-        ~s10
-        launch:contracts:azimuth
+        ~m1
+        9.759.316
         ~[contract]
         topics
     ==
-  [%pass path %agent [our.bol %eth-watcher] %poke %eth-watcher-poke args]
+  [%pass /ethviewer %agent [our.bol %eth-watcher] %poke %eth-watcher-poke args]
 ::
 ++  unsubscribe
   |=  contract=@t
   ^-  card:agent:gall
   ~&  '%unsubscribe'
-  =/  path  /etheventviewer/eth-watcher-update
+  =/  path  /logs/[dap.bol]
+::  =/  path  /etheventviewer/eth-watcher-update
   =/  args  !>([%clear path])
-  [%pass path %agent [our.bol %eth-watcher] %poke %eth-watcher-poke args]
+  [%pass /clear %agent [our.bol %eth-watcher] %poke %eth-watcher-poke args]
 ::
 ++  json-to-action
   |=  jon=json
@@ -206,6 +292,8 @@
         [%get-contract-events parse-cord]
         [%remove-contract parse-contract]
         [%subscribe parse-cord]
+        [%watch parse-cord]
+        [%leave parse-cord]
         [%unsubscribe parse-cord]
     ==
 ::
@@ -242,8 +330,25 @@
       %get-contract-events  (handle-get-contract-events action)
       %remove-contract  (handle-remove-contract action)
       %subscribe  (handle-subscribe action)
+      %watch  (handle-watch action)
+      %leave  (handle-leave action)
       %unsubscribe  (handle-unsubscribe action)
-  ==
+  ==::
+++  handle-leave
+  |=  act=eth-event-viewer-action
+  ^-  (quip card _state)
+  ~&  '%handle-leave'
+  ?>  ?=(%leave -.act)
+  ~&  leave-eth-watcher
+  [[leave-eth-watcher ~] state]
+::
+++  handle-watch
+  |=  act=eth-event-viewer-action
+  ^-  (quip card _state)
+  ~&  '%handle-watch'
+  ?>  ?=(%watch -.act)
+  =/  parsed-contract  (contract-cord-to-hex contract.act)
+  [[watch-eth-watcher]~ state]
 ::
 ++  handle-create
   |=  act=eth-event-viewer-action
@@ -324,7 +429,7 @@
   %-  pairs
   :~  [%contracts (contracts-encoder new-state)]
 ::      [%contracts `json`a+(turn `wain`contracts-list |=(=cord s+cord))]
-      [%data data.new-state]
+      [%abi-result abi-result.new-state]
   ==
 ::
 ++  contracts-encoder
@@ -373,8 +478,8 @@
 ++  http-response
   |=  [=wire response=client-response:iris]
   ^-  (quip card _state)
+  =,  dejs:format
   ~&  'begin of http response with following wire:'
-  ~&  wire
   ::  ignore all but %finished
   ?.  ?=(%finished -.response)
     ~&  'unfinished response'
@@ -390,8 +495,16 @@
   ?>  ?=(%o -.u.ujon)
   ?:  (gth 200 status-code.response-header.response)
     [~ state]
-  ~&  'data received'
-  =/  new-state  state(data (need ujon))
+  =/  result  (~(got by p.u.ujon) 'result')
+::  =/  jon=json  %-  pairs:enjs:format  :~
+::    result+(~(got by p.u.ujon) 'result')
+::  ==
+  ~&  'result11'
+::  ~&  result+(~(got by p.u.ujon) 'result')
+::  ~&  (decode-result result+(~(got by p.u.ujon) 'result'))
+  ::~&  `json`a+(turn result |=(result=json (abi-result-encoder result)))
+  =/  new-state  state(abi-result (~(got by p.u.ujon) 'result'))
   :-  [%give %fact ~[/state/update] %json !>((make-tile-json new-state))]~
-  state(data (need ujon))
+  state(abi-result (~(got by p.u.ujon) 'result'))
+::
 --
