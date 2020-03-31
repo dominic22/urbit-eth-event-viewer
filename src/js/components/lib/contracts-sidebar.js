@@ -33,7 +33,7 @@ export class ContractsSidebar extends Component {
           return (
             <Link
               to={`/~etheventviewer/${contract.address}`}
-              key={contract.address}
+              key={contract.address + contract.name}
             >
               {this.renderListItem(contract)}
             </Link>

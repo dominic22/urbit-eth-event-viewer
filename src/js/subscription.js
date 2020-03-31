@@ -33,6 +33,14 @@ export class Subscription {
       "etheventviewer",
       this.handleEthWatcherUpdate.bind(this),
     );
+    // TODO
+    api.bind(
+      "/" + api.authTokens.ship +"/etheventviewer",
+      "PUT",
+      api.authTokens.ship,
+      "etheventviewer",
+      this.handleEthWatcherUpdate.bind(this),
+    );
   }
 
   handleEvent(diff) {

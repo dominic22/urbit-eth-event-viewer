@@ -23,7 +23,7 @@ export class EventsSelection extends Component {
     }
     return (<div>
       <form className="mb4">
-        <fieldset id="favorite_movies" className={`bn pa0 ml0 ${listenToAllEvents ? 'o-30 pointer-none' : ''}`}>
+        <fieldset id="events" className={`bn pa0 ml0 ${listenToAllEvents ? 'o-10 pointer-none' : ''}`}>
           <p className="f8 lh-copy mb2">Select contract events:</p>
           <div style={{ maxHeight: '200px', overflowY: 'auto' }}>
             {
@@ -35,7 +35,8 @@ export class EventsSelection extends Component {
                     key={event.name}
                     toggle={() => this.toggleFromEvents(event.name)}
                     isActive={selectedEvents.some(eventName => eventName === event.name)}/>)
-                })}
+                })
+            }
           </div>
         </fieldset>
       </form>
@@ -60,14 +61,34 @@ export class EventsSelection extends Component {
   toggleFromEvents(eventName) {
     const { selectedEvents } = this.state;
     if (selectedEvents.some(event => event === eventName)) {
+      // remove
       this.setState({
         selectedEvents: selectedEvents.filter(event => event !== eventName),
       }, this.toggleEventChanged);
     } else {
+      // add
+      this.getEventStructureByName(eventName);
       this.setState({
         selectedEvents: [...selectedEvents, eventName],
       }, this.toggleEventChanged);
     }
+  }
+
+  // example: "ChangedKeys(uint32,bytes32,bytes32,uint32,uint32)"
+  getEventStructureByName(eventName) {
+    const { abi } = this.props;
+    const event = abi.find(event => event.name === eventName);
+    const inputTypes = event.inputs.map(input => input.type);
+    const reducer = (acc, currentValue) => {
+      if(!acc) {
+        acc = currentValue;
+      } else {
+        acc = acc + ',' + currentValue;
+      }
+      return acc;
+    };
+    const reducedInputTypes = inputTypes.reduce(reducer, '');
+    return `${event.name}(${reducedInputTypes})`;
   }
 
   toggleEventChanged() {
@@ -75,7 +96,9 @@ export class EventsSelection extends Component {
       if(this.state.listenToAllEvents) {
         this.props.onEventsChanged([]);
       } else {
-        this.props.onEventsChanged(this.state.selectedEvents);
+        const structuredEvents = this.state.selectedEvents
+          .map(eventName => this.getEventStructureByName(eventName));
+        this.props.onEventsChanged(structuredEvents);
       }
     }
   }

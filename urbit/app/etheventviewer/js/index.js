@@ -44749,13 +44749,19 @@
                 contracts(obj, state) {
                     let data = lodash.has(obj, 'contracts', false);
                     if (data) {
-                        state.contracts = obj.contracts;
+                        state.contracts = obj.contracts.map(contract => {
+                            return {
+                                name: contract.name,
+                                address: contract.address,
+                                specificEvents: contract['specific-events']
+                            }
+                        });
                     }
                 }
                 abi(obj, state) {
-                    let data = lodash.has(obj, 'data', false);
+                    let data = lodash.has(obj, 'abi-result', false);
                     if (data) {
-                        state.abi = obj.data && obj.data.result && JSON.parse(obj.data.result);
+                        state.abi = obj['abi-result'] && JSON.parse(obj['abi-result']);
                     }
                 }
             }
@@ -44896,7 +44902,7 @@
                 }
                 return (react.createElement('div', {__self: this, __source: {fileName: _jsxFileName$1, lineNumber: 24}}
                   , react.createElement('form', { className: "mb4", __self: this, __source: {fileName: _jsxFileName$1, lineNumber: 25}}
-                    , react.createElement('fieldset', { id: "favorite_movies", className: `bn pa0 ml0 ${listenToAllEvents ? 'o-30 pointer-none' : ''}`, __self: this, __source: {fileName: _jsxFileName$1, lineNumber: 26}}
+                    , react.createElement('fieldset', { id: "favorite_movies", className: `bn pa0 ml0 ${listenToAllEvents ? 'o-10 pointer-none' : ''}`, __self: this, __source: {fileName: _jsxFileName$1, lineNumber: 26}}
                       , react.createElement('p', { className: "f8 lh-copy mb2"  , __self: this, __source: {fileName: _jsxFileName$1, lineNumber: 27}}, "Select contract events:"  )
                       , react.createElement('div', { style: { maxHeight: '200px', overflowY: 'auto' }, __self: this, __source: {fileName: _jsxFileName$1, lineNumber: 28}}
                         , 
@@ -44909,13 +44915,14 @@
                                 toggle: () => this.toggleFromEvents(event.name),
                                 isActive: selectedEvents.some(eventName => eventName === event.name), __self: this, __source: {fileName: _jsxFileName$1, lineNumber: 33}}))
                             })
+                        
                       )
                     )
                   )
                   , react.createElement(Checkbox, {
                     label: 'Listen to all events',
                     toggle: () => this.toggleEventListDisabled(),
-                    isActive: listenToAllEvents, __self: this, __source: {fileName: _jsxFileName$1, lineNumber: 42}})
+                    isActive: listenToAllEvents, __self: this, __source: {fileName: _jsxFileName$1, lineNumber: 43}})
                 ));
               }
 
@@ -44933,14 +44940,34 @@
               toggleFromEvents(eventName) {
                 const { selectedEvents } = this.state;
                 if (selectedEvents.some(event => event === eventName)) {
+                  // remove
                   this.setState({
                     selectedEvents: selectedEvents.filter(event => event !== eventName),
                   }, this.toggleEventChanged);
                 } else {
+                  // add
+                  this.getEventStructureByName(eventName);
                   this.setState({
                     selectedEvents: [...selectedEvents, eventName],
                   }, this.toggleEventChanged);
                 }
+              }
+
+              // example: "ChangedKeys(uint32,bytes32,bytes32,uint32,uint32)"
+              getEventStructureByName(eventName) {
+                const { abi } = this.props;
+                const event = abi.find(event => event.name === eventName);
+                const inputTypes = event.inputs.map(input => input.type);
+                const reducer = (acc, currentValue) => {
+                  if(!acc) {
+                    acc = currentValue;
+                  } else {
+                    acc = acc + ',' + currentValue;
+                  }
+                  return acc;
+                };
+                const reducedInputTypes = inputTypes.reduce(reducer, '');
+                return `${event.name}(${reducedInputTypes})`;
               }
 
               toggleEventChanged() {
@@ -44948,7 +44975,9 @@
                   if(this.state.listenToAllEvents) {
                     this.props.onEventsChanged([]);
                   } else {
-                    this.props.onEventsChanged(this.state.selectedEvents);
+                    const structuredEvents = this.state.selectedEvents
+                      .map(eventName => this.getEventStructureByName(eventName));
+                    this.props.onEventsChanged(structuredEvents);
                   }
                 }
               }
@@ -66104,7 +66133,7 @@
                       return (
                         react.createElement(Link, {
                           to: `/~etheventviewer/${contract.address}`,
-                          key: contract.address, __self: this, __source: {fileName: _jsxFileName$6, lineNumber: 34}}
+                          key: contract.address + contract.name, __self: this, __source: {fileName: _jsxFileName$6, lineNumber: 34}}
                         
                           , this.renderListItem(contract)
                         )
@@ -66156,92 +66185,120 @@
               render() {
                 return (
                   react.createElement('div', { className: "absolute h-100 w-100 bg-gray0-d ph4-m ph4-l ph4-xl pb4-m pb4-l pb4-xl"         , __self: this, __source: {fileName: _jsxFileName$7, lineNumber: 8}}
-                    , react.createElement(HeaderBar, {__self: this, __source: {fileName: _jsxFileName$7, lineNumber: 9}})
-                    , react.createElement('div', {
-                      className: "cf w-100 flex flex-column ba-m ba-l ba-xl b--gray2 br1 h-100 h-100-minus-40-m h-100-minus-40-l h-100-minus-40-xl"            , __self: this, __source: {fileName: _jsxFileName$7, lineNumber: 10}}
-                      , react.createElement('div', { className: "flex flex-column flex-row ba bl-0 bt-0 br-0 b--solid b--gray4 b--gray1-d"         , __self: this, __source: {fileName: _jsxFileName$7, lineNumber: 12}}
-                        , react.createElement('div', { className: "pa4 black-80 w-50 pl3"   , __self: this, __source: {fileName: _jsxFileName$7, lineNumber: 13}}, "Shall we add some filters here?"
+                    , react.createElement(HeaderBar, {__self: this, __source: {fileName: _jsxFileName$7, lineNumber: 9}} )
+                    , react.createElement('div', { className: "cf w-100 flex flex-column ba-m ba-l ba-xl b--gray2 br1 h-100 h-100-minus-40-m h-100-minus-40-l h-100-minus-40-xl"            , __self: this, __source: {fileName: _jsxFileName$7, lineNumber: 10}}
+                      , react.createElement('div', { className: "flex flex-column flex-row ba bl-0 bt-0 br-0 b--solid b--gray4 b--gray1-d"         , __self: this, __source: {fileName: _jsxFileName$7, lineNumber: 11}}
+                        , react.createElement('div', { className: "pa4 black-80 w-50 pl3"   , __self: this, __source: {fileName: _jsxFileName$7, lineNumber: 12}}, "Shall we add some filters here? 22"
 
                         )
-                        , react.createElement('div', { className: "w-60 pa4 w-50 pl3"   , __self: this, __source: {fileName: _jsxFileName$7, lineNumber: 16}}
+                        , react.createElement('div', { className: "w-60 pa4 w-50 pl3"   , __self: this, __source: {fileName: _jsxFileName$7, lineNumber: 15}}
                           , this.renderActionButtons()
                         )
                       )
                       , this.renderContent()
                     )
                   )
-                )
+                );
               }
 
               renderContent() {
-                const { api, children, contracts,selectedContract } = this.props;
+                const { api, children, contracts, selectedContract } = this.props;
 
                 return (
-                  react.createElement('div', { className: "flex flex-column flex-row h-100"   , __self: this, __source: {fileName: _jsxFileName$7, lineNumber: 30}}
+                  react.createElement('div', { className: "flex flex-column flex-row h-100"   , __self: this, __source: {fileName: _jsxFileName$7, lineNumber: 29}}
                     , react.createElement(ContractsSidebar, {
                       api: api,
                       selectedContract: selectedContract,
-                      contracts: contracts, __self: this, __source: {fileName: _jsxFileName$7, lineNumber: 31}})
-                    , react.createElement('div', { className: "pa3 mb4 mb0 w-100"   , __self: this, __source: {fileName: _jsxFileName$7, lineNumber: 35}}
-                      , children
+                      contracts: contracts, __self: this, __source: {fileName: _jsxFileName$7, lineNumber: 30}}
                     )
+                    , react.createElement('div', { className: "pa3 mb4 mb0 w-100"   , __self: this, __source: {fileName: _jsxFileName$7, lineNumber: 35}}, children)
                   )
-                )
+                );
               }
 
               renderNoContracts() {
                 return (
-                  react.createElement('p', { className: "measure center pa5"  , __self: this, __source: {fileName: _jsxFileName$7, lineNumber: 44}}, "There are no contracts, feel free to add one."
+                  react.createElement('p', { className: "measure center pa5"  , __self: this, __source: {fileName: _jsxFileName$7, lineNumber: 42}}, "There are no contracts, feel free to add one."
 
                   )
                 );
               }
 
               renderActionButtons() {
-                return react.createElement(react.Fragment, null
-                  , react.createElement('a', {
-                    key: "initial",
-                    className: "dib f9 pa3 bt bb bl br tc pointer bg-white b--gray4"          ,
-                    onClick: () => {
-                      console.log('Send contract action json 2s');
-                      api.action('etheventviewer', 'json', {
-                        create: {
-                          contract: '0xBB9bc244D798123fDe783fCc1C72d3Bb8C189413'
-                        }
-                      });
-                    }, __self: this, __source: {fileName: _jsxFileName$7, lineNumber: 52}}
-                  , "initial"
+                return (
+                  react.createElement(react.Fragment, null
+                    , react.createElement('a', {
+                      key: "initial",
+                      className: "dib f9 pa3 bt bb bl br tc pointer bg-white b--gray4"          ,
+                      onClick: () => {
+                        console.log("Send contract action json 2s");
+                        api.action("etheventviewer", "json", {
+                          create: {
+                            contract: "0xB8c77482e45F1F44dE1745F52C74426C631bDD52"
+                          }
+                        });
+                      }, __self: this, __source: {fileName: _jsxFileName$7, lineNumber: 51}}
+                    , "initial1"
 
-                  )
-                  , react.createElement('a', {
-                    key: "subscribe",
-                    className: "dib f9 pa3 bt bb bl br tc pointer bg-white b--gray4"          ,
-                    onClick: () => {
-                      console.log('Send subscribe');
-                      api.action('etheventviewer', 'json', {
-                        subscribe: {
-                          contract: '0xBB9bc244D798123fDe783fCc1C72d3Bb8C189413'
-                        }
-                      });
-                    }, __self: this, __source: {fileName: _jsxFileName$7, lineNumber: 66}}
-                  , "subscribe"
+                    )
+                    , react.createElement('a', {
+                      key: "subscribe",
+                      className: "dib f9 pa3 bt bb bl br tc pointer bg-white b--gray4"          ,
+                      onClick: () => {
+                        console.log("Send subscribe");
+                        api.action("etheventviewer", "json", {
+                          subscribe: {
+                            contract: "0xB8c77482e45F1F44dE1745F52C74426C631bDD52"
+                          }
+                        });
+                      }, __self: this, __source: {fileName: _jsxFileName$7, lineNumber: 65}}
+                    , "subscribe"
 
-                  )
-                  , react.createElement('a', {
-                    key: "unsubscribe",
-                    className: "dib f9 pa3 bt bb bl br tc pointer bg-white b--gray4"          ,
-                    onClick: () => {
-                      console.log('Send unsubscribe');
-                      api.action('etheventviewer', 'json', {
-                        unsubscribe: {
-                          contract: '0xBB9bc244D798123fDe783fCc1C72d3Bb8C189413'
-                        }
-                      });
-                    }, __self: this, __source: {fileName: _jsxFileName$7, lineNumber: 80}}
-                  , "unsubscribe"
+                    )
+                    , react.createElement('a', {
+                      key: "watch",
+                      className: "dib f9 pa3 bt bb bl br tc pointer bg-white b--gray4"          ,
+                      onClick: () => {
+                        console.log("Send watch");
+                        api.action("etheventviewer", "json", {
+                          watch: {
+                            contract: "0xB8c77482e45F1F44dE1745F52C74426C631bDD52"
+                          }
+                        });
+                      }, __self: this, __source: {fileName: _jsxFileName$7, lineNumber: 79}}
+                    , "watch"
 
+                    )
+                    , react.createElement('a', {
+                      key: "leave",
+                      className: "dib f9 pa3 bt bb bl br tc pointer bg-white b--gray4"          ,
+                      onClick: () => {
+                        console.log("Send leave");
+                        api.action("etheventviewer", "json", {
+                          leave: {
+                            contract: "0xB8c77482e45F1F44dE1745F52C74426C631bDD52"
+                          }
+                        });
+                      }, __self: this, __source: {fileName: _jsxFileName$7, lineNumber: 93}}
+                    , "leave"
+
+                    )
+                    , react.createElement('a', {
+                      key: "unsubscribe",
+                      className: "dib f9 pa3 bt bb bl br tc pointer bg-white b--gray4"          ,
+                      onClick: () => {
+                        console.log("Send unsubscribe");
+                        api.action("etheventviewer", "json", {
+                          unsubscribe: {
+                            contract: "0xB8c77482e45F1F44dE1745F52C74426C631bDD52"
+                          }
+                        });
+                      }, __self: this, __source: {fileName: _jsxFileName$7, lineNumber: 107}}
+                    , "unsubscribe"
+
+                    )
                   )
-                )
+                );
               }
             }
 
@@ -69449,6 +69506,14 @@ lyrtesmudnytbyrsenwegfyrmurtelreptegpecnelnevfes\
                 );
                 api$1.bind(
                   "/etheventviewer/eth-watcher-update",
+                  "PUT",
+                  api$1.authTokens.ship,
+                  "etheventviewer",
+                  this.handleEthWatcherUpdate.bind(this),
+                );
+                // TODO
+                api$1.bind(
+                  "/" + api$1.authTokens.ship +"/etheventviewer",
                   "PUT",
                   api$1.authTokens.ship,
                   "etheventviewer",

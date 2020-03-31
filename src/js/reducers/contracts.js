@@ -12,13 +12,19 @@ export class ContractsReducer {
     contracts(obj, state) {
         let data = _.has(obj, 'contracts', false);
         if (data) {
-            state.contracts = obj.contracts;
+            state.contracts = obj.contracts.map(contract => {
+                return {
+                    name: contract.name,
+                    address: contract.address,
+                    specificEvents: contract['specific-events']
+                }
+            });
         }
     }
     abi(obj, state) {
-        let data = _.has(obj, 'data', false);
+        let data = _.has(obj, 'abi-result', false);
         if (data) {
-            state.abi = obj.data && obj.data.result && JSON.parse(obj.data.result);
+            state.abi = obj['abi-result'] && JSON.parse(obj['abi-result']);
         }
     }
 }
