@@ -99,8 +99,7 @@
   =+  !<(diff=diff:eth-watcher q.cage.sign)
   ?-  -.diff
     %history  ~&  [%got-history (lent loglist.diff)]
-              ~&  (event-logs-to-udiffs loglist.diff)
-              [~ this]
+              [[%give %fact [/state/update ~] %json !>((event-logs-to-json loglist.diff))]~ this]
     %log      ~&  %got-log
               [~ this]
     %disavow  ~&  %disavow-unimplemented
@@ -173,34 +172,57 @@
   =/  hed  [['Accept' 'application/json']]~
   [%'GET' url hed *(unit octs)]
 ::
-++  event-logs-to-udiffs
+++  event-logs-to-json
   |=  event-logs=loglist:eth-watcher
   ~&  '%event-logs-to-ud'
 ::  ~&  (decode-topics t.topics.event-log ~[%uint %uint])
-  %+  murn  event-logs
-  |=  =event-log:rpc:ethereum
-  ^-  (unit card)
-  (event-log-decoder event-log)
+::  %+  murn  event-logs
+::  |=  =event-log:rpc:ethereum
+  =,  enjs:format
+  ^-  json
+  %-  pairs
+  :~  [%event-logs `json`a+(turn event-logs |=(=event-log:rpc:ethereum (event-log-encoder event-log)))]
+  ==
 ::
-++  event-log-decoder
+++  event-log-encoder
   |=  =event-log:rpc:ethereum
-  ^-  (unit card)
+  ^-  json
   =,  abi:ethereum
-  ~&  '%event-log-decoder'
-  ~&  '%event-log-decoder'
-  ?~  mined.event-log
-    ~&  'mined is null'
-    ~
-  ~&  'address'
-  ~&  address.event-log
-  ~&  'from'
-  ~&  -.t.topics.event-log
-  ~&  'to'
-  ~&  +.t.topics.event-log
+  =,  enjs:format
+  %-  pairs
+  :~  [%address s+(scot %ux address.event-log)]
+      [%data (tape (trip data.event-log))]
+      [%topics `json`a+(turn topics.event-log |=(addr=@ux s+(scot %ux addr)))]
+      [%mined (mined-encoder event-log)]
+  ==
+
+++  mined-encoder
+  |=  =event-log:rpc:ethereum
+  ^-  json
+  =,  abi:ethereum
+  =,  enjs:format
+  =/  mined  (need mined.event-log)
+  %-  pairs
+  :~  [%log-index (numb log-index:mined)]
+      [%transaction-index (numb transaction-index:mined)]
+      [%transaction-hash s+(scot %ux transaction-hash:mined)]
+      [%block-number (numb block-number:mined)]
+      [%block-hash s+(scot %ux block-hash:mined)]
+  ==
+::  ~&  '%event-log-decoder'
+::  ?~  mined.event-log
+::    ~&  'mined is null'
+::    ~
+::  ~&  'address'
+::  ~&  address.event-log
+::  ~&  'from'
+::  ~&  -.t.topics.event-log
+::  ~&  'to'
+::  ~&  +.t.topics.event-log
 ::  ~&  'block-information'
 ::  ~&  mined.event-log
 ::  ~&  (decode-topics t.topics.event-log ~[%uint %uint])
-  ~
+::  ~
 ++  transform-event-string-to-hex
   |=  event-string=tape
   ^-  @ux
@@ -449,6 +471,7 @@
   :~  [%address (tape (trip address.contract-type))]
       [%name (tape (trip name.contract-type))]
       [%specific-events `json`a+(turn `wain`specific-events.contract-type |=(=cord s+cord))]
+      [%event-log (tape "AAA")]
   ==
 ::
 ++  set-to-array
