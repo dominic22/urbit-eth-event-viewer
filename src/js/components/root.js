@@ -2,8 +2,9 @@ import React, { Component } from "react";
 import { BrowserRouter, Switch, Route } from "react-router-dom";
 import { api } from "/api";
 import { store } from "/store";
-import { NewContract } from "./new-contract";
+import { NewContract } from "./new";
 import { Skeleton } from "./skeleton";
+import { EventLog } from './log';
 
 export class Root extends Component {
   constructor(props) {
@@ -52,6 +53,7 @@ export class Root extends Component {
                           address: state.address,
                           name: state.name,
                           'specific-events': state.specificEvents,
+                          'event-logs': null,
                         }
                       });
                     }}
@@ -71,6 +73,7 @@ export class Root extends Component {
                   contracts={this.state.contracts}
                 >
                   <p>Content of selected contract</p>
+                  <EventLog eventLog={this.state.eventLogs}/>
                 </Skeleton>
               );
             }}

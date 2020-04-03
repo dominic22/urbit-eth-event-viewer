@@ -4,6 +4,9 @@ import { ContractsSidebar } from "./lib/contracts-sidebar";
 
 export class Skeleton extends Component {
   render() {
+    const {eventLogs} = this.props;
+    console.log('eventLogs ', eventLogs);
+
     return (
       <div className="absolute h-100 w-100 bg-gray0-d ph4-m ph4-l ph4-xl pb4-m pb4-l pb4-xl">
         <HeaderBar />
@@ -46,6 +49,7 @@ export class Skeleton extends Component {
   }
 
   renderActionButtons() {
+    const {selectedContract} = this.props;
     return (
       <>
         <a
@@ -55,7 +59,7 @@ export class Skeleton extends Component {
             console.log("Send contract action json 2s");
             api.action("etheventviewer", "json", {
               create: {
-                contract: "0xB8c77482e45F1F44dE1745F52C74426C631bDD52"
+                contract: selectedContract
               }
             });
           }}
@@ -69,12 +73,12 @@ export class Skeleton extends Component {
             console.log("Send subscribe");
             api.action("etheventviewer", "json", {
               subscribe: {
-                contract: "0xB8c77482e45F1F44dE1745F52C74426C631bDD52"
+                contract: selectedContract
               }
             });
           }}
         >
-          subscribe
+          subscribe112
         </a>
         <a
           key="watch"
@@ -83,7 +87,7 @@ export class Skeleton extends Component {
             console.log("Send watch");
             api.action("etheventviewer", "json", {
               watch: {
-                contract: "0xB8c77482e45F1F44dE1745F52C74426C631bDD52"
+                contract: selectedContract
               }
             });
           }}
@@ -97,7 +101,7 @@ export class Skeleton extends Component {
             console.log("Send leave");
             api.action("etheventviewer", "json", {
               leave: {
-                contract: "0xB8c77482e45F1F44dE1745F52C74426C631bDD52"
+                contract: selectedContract
               }
             });
           }}
@@ -111,7 +115,7 @@ export class Skeleton extends Component {
             console.log("Send unsubscribe");
             api.action("etheventviewer", "json", {
               unsubscribe: {
-                contract: "0xB8c77482e45F1F44dE1745F52C74426C631bDD52"
+                contract: selectedContract
               }
             });
           }}

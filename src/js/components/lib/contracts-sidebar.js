@@ -75,6 +75,7 @@ export class ContractsSidebar extends Component {
         address,
         name,
         'specific-events': specificEvents,
+        'event-logs': null
       }
     });
   }
