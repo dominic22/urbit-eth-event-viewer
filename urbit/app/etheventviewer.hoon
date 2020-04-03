@@ -52,6 +52,7 @@
   $:  address=@t
       name=@t
       specific-events=(list @t)
+      event-logs=loglist:eth-watcher
   ==
 
 +$  versioned-state
@@ -80,10 +81,9 @@
 ::
   ++  on-agent
   |=  [=wire =sign:agent:gall]
+::  ^-  (quip card _state)
   ~&  '%on-agent'
   ~&  wire
-::  ~&  sign
-::  ~&  -.sign
 ::  ?.  ?=([%eth-watcher ~] wire)
 ::    ~&  '%eth-watcher not found'
 ::    (on-agent:def wire sign)
@@ -99,6 +99,7 @@
   =+  !<(diff=diff:eth-watcher q.cage.sign)
   ?-  -.diff
     %history  ~&  [%got-history (lent loglist.diff)]
+::              (event-logs-card loglist.diff)
               [[%give %fact [/state/update ~] %json !>((event-logs-to-json loglist.diff))]~ this]
     %log      ~&  %got-log
               [~ this]
@@ -172,12 +173,15 @@
   =/  hed  [['Accept' 'application/json']]~
   [%'GET' url hed *(unit octs)]
 ::
+++  event-logs-card
+  |=  event-logs=loglist:eth-watcher
+  ^-  (quip card _state)
+  =/  logs=json  (event-logs-to-json event-logs)
+  [[%give %fact [/state/update ~] %json !>(logs)]~ state]
+::
 ++  event-logs-to-json
   |=  event-logs=loglist:eth-watcher
-  ~&  '%event-logs-to-ud'
-::  ~&  (decode-topics t.topics.event-log ~[%uint %uint])
-::  %+  murn  event-logs
-::  |=  =event-log:rpc:ethereum
+  ~&  '%event-logs-to-json'
   =,  enjs:format
   ^-  json
   %-  pairs
@@ -250,7 +254,7 @@
   :*  url
       |
       ~m1
-      9.759.316
+      9.786.320
       ~[contract]
       ~
   ==
@@ -286,7 +290,7 @@
         url
         %.n
         ~m1
-        9.759.316
+        9.786.320
         ~[contract]
         topics
     ==
@@ -327,6 +331,7 @@
     :~  [%address so]
         [%name so]
         [%specific-events (ar so)]
+        [%event-logs ul]
     ==
 ::
   --
@@ -471,7 +476,7 @@
   :~  [%address (tape (trip address.contract-type))]
       [%name (tape (trip name.contract-type))]
       [%specific-events `json`a+(turn `wain`specific-events.contract-type |=(=cord s+cord))]
-      [%event-log (tape "AAA")]
+      [%event-logs (tape "AAA")]
   ==
 ::
 ++  set-to-array
