@@ -40,9 +40,8 @@
   $%  [%create contract=@t]
       [%add-contract contract=contract-type]
       [%get-contract-events contract=@t]
-      [%remove-contract contract=contract-type]
+      [%remove-contract contract=@t]
       [%subscribe contract=@t]
-::    remove
       [%watch contract=@t]
       [%leave contract=@t]
       [%unsubscribe contract=@t]
@@ -59,7 +58,7 @@
 +$  versioned-state
   $%  state-zero
   ==
-+$  state-zero  [%0 contracts=(set contract-type)]
++$  state-zero  [%0 contracts=(map @t contract-type)]
 --
 =|  state-zero
 =*  state  -
@@ -317,7 +316,7 @@
     :~  [%create parse-cord]
         [%add-contract parse-contract]
         [%get-contract-events parse-cord]
-        [%remove-contract parse-contract]
+        [%remove-contract parse-cord]
         [%subscribe parse-cord]
         [%watch parse-cord]
         [%leave parse-cord]
@@ -421,7 +420,7 @@
   ~&  act
   ?>  ?=(%add-contract -.act)
   ~&  contract.act
-  =/  new-state  state(contracts (~(put in contracts.state) contract.act))
+  =/  new-state  state(contracts (~(put in contracts.state) [address.contract.act contract.act]))
 ::  new:
 ::  (subscribe (contract-cord-to-hex contract.act))
 ::  :_  new-state
@@ -440,7 +439,7 @@
   ~&  '%handle-remove-contract'
   ~&  act
   ?>  ?=(%remove-contract -.act)
-  =/  new-state  state(contracts (~(del in contracts.state) contract.act))
+  =/  new-state  state(contracts (~(del by contracts.state) contract.act))
 ::  new:
 ::  :_  new-state
 ::  :~  (unsubscribe (contract-cord-to-hex contract.act))
@@ -464,7 +463,9 @@
   |=  new-state=_state
   ^-  json
   =,  enjs:format
-  =/  contract-type-list  ~(tap in contracts.new-state)
+  =/  contracts  contracts.new-state
+  =/  keys  `(list @t)`~(tap in ~(key by contracts))
+  =/  contract-type-list  `(list contract-type)`(turn keys |=(key=@t u.+:(~(get by contracts) key)))
   ~&  'contracts-list:'
   ~&  contract-type-list
   `json`a+(turn contract-type-list |=(=contract-type (contract-encoder contract-type)))
@@ -478,7 +479,7 @@
       [%name (tape (trip name.contract-type))]
       [%abi-events (tape (trip abi-events.contract-type))]
       [%specific-events `json`a+(turn `wain`specific-events.contract-type |=(=cord s+cord))]
-      [%event-logs (tape "AAA")]
+      [%event-logs ~]
   ==
 ::
 ++  set-to-array
