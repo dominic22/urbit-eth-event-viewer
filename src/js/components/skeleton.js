@@ -4,9 +4,6 @@ import { ContractsSidebar } from "./lib/contracts-sidebar";
 
 export class Skeleton extends Component {
   render() {
-    const {eventLogs} = this.props;
-    console.log('eventLogs ', eventLogs);
-
     return (
       <div className="absolute h-100 w-100 bg-gray0-d ph4-m ph4-l ph4-xl pb4-m pb4-l pb4-xl">
         <HeaderBar />
@@ -78,7 +75,7 @@ export class Skeleton extends Component {
             });
           }}
         >
-          subscribe112
+          subscribe
         </a>
         <a
           key="watch"

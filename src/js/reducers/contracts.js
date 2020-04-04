@@ -33,7 +33,6 @@ export class ContractsReducer {
 
     eventLogs(obj, state) {
         let data = _.has(obj, 'event-logs', false);
-        console.log('EVENTLOGS ', data);
         if (data) {
             state.eventLogs = obj['event-logs'];
         }
