@@ -35,20 +35,20 @@
 ::
 |%
 +$  card  card:agent:gall
-
+::
 +$  eth-event-viewer-action
-  $%  [%create contract=@t]
+  $%  [%create contract=@ux]
       [%add-contract contract=contract-type]
-      [%get-contract-events contract=@t]
-      [%remove-contract contract=@t]
-      [%subscribe contract=@t]
-      [%watch contract=@t]
-      [%leave contract=@t]
-      [%unsubscribe contract=@t]
+      [%get-contract-events contract=@ux]
+      [%remove-contract contract=@ux]
+      [%subscribe contract=@ux]
+      [%watch contract=@ux]
+      [%leave contract=@ux]
+      [%unsubscribe contract=@ux]
   ==
 ::
 +$  contract-type
-  $:  address=@t
+  $:  address=@ux
       name=@t
       abi-events=@t
       specific-events=(list @t)
@@ -58,7 +58,7 @@
 +$  versioned-state
   $%  state-zero
   ==
-+$  state-zero  [%0 contracts=(map @t contract-type)]
++$  state-zero  [%0 contracts=(map @ux contract-type)]
 --
 =|  state-zero
 =*  state  -
@@ -177,6 +177,14 @@
   |=  event-logs=loglist:eth-watcher
   ^-  (quip card _state)
   =/  logs=json  (event-logs-to-json event-logs)
+::  =/  modified-contract contract.act
+::  =/  contract-address  address.+2:event-logs
+  ?~  event-logs
+    ~&  'history is null'
+    [~ state]
+  ~&  'contract addr:'
+  ~&  address:`event-log:rpc:ethereum`+2:event-logs
+::  =/  new-state  state(contracts (~(put in contracts.state) [address.modified-contract modified-contract]))
   [[%give %fact [/state/update ~] %json !>(logs)]~ state]
 ::
 ++  event-logs-to-json
@@ -184,6 +192,8 @@
   ~&  '%event-logs-to-json'
   =,  enjs:format
   ^-  json
+  ~&  'contract addr:'
+  ~&  address:`event-log:rpc:ethereum`+2:event-logs
   %-  pairs
   :~  [%event-logs `json`a+(turn event-logs |=(=event-log:rpc:ethereum (event-log-encoder event-log)))]
   ==
@@ -233,11 +243,17 @@
   `@ux`(keccak-256:keccak:crypto (as-octt:mimes:html "ChangedKeys(uint32,bytes32,bytes32,uint32,uint32)"))
 ::
 ++  request-ethereum-abi
-  |=  address=@t
+  |=  address=@ux
   ^-  card:agent:gall
   ~&  '%request-ethereum-abi'
-  =/  req=request:http  (get-request address)
+  =/  req=request:http  (get-request (ux-to-cord address))
   [%pass /etheventviewer/ethereum-abi-response %arvo %i %request req *outbound-config:iris]
+::
+++  ux-to-cord
+  |=  address=@ux
+  ^-  @t
+::  crip to transform tape to cord
+  (cat 3 '0x' (crip ((x-co:co 4) address)))
 ::
 ++  to-eth-watcher
   |=  [=wire =task:agent:gall]
@@ -254,7 +270,7 @@
   :*  url
       |
       ~m1
-      9.786.320
+      9.798.223
       ~[contract]
       ~
   ==
@@ -290,14 +306,14 @@
         url
         %.n
         ~m1
-        9.786.320
+        9.798.223
         ~[contract]
         topics
     ==
   [%pass /ethviewer %agent [our.bol %eth-watcher] %poke %eth-watcher-poke args]
 ::
 ++  unsubscribe
-  |=  contract=@t
+  |=  contract=@ux
   ^-  card:agent:gall
   ~&  '%unsubscribe'
   =/  path  /logs/[dap.bol]
@@ -324,11 +340,11 @@
     ==
 ::
   ++  parse-cord
-    (ot contract+so ~)
+    (ot contract+parse-hex-result:rpc:ethereum ~)
 ::
   ++  parse-contract
     %-  ot
-    :~  [%address so]
+    :~  [%address parse-hex-result:rpc:ethereum]
         [%name so]
         [%abi-events so]
         [%specific-events (ar so)]
@@ -351,7 +367,6 @@
 ++  poke-action
   |=  action=eth-event-viewer-action
   ^-  (quip card _state)
-  ~&  '%poke-action'
   ?-  -.action
       %create    (handle-create action)
       %add-contract  (handle-add-contract action)
@@ -375,7 +390,7 @@
   ^-  (quip card _state)
   ~&  '%handle-watch'
   ?>  ?=(%watch -.act)
-  =/  parsed-contract  (contract-cord-to-hex contract.act)
+::  =/  parsed-contract  (contract-cord-to-hex contract.act)
   [[watch-eth-watcher]~ state]
 ::
 ++  handle-create
@@ -384,7 +399,7 @@
   ~&  '%handle-create'
   ~&  '%contract-cord-to-hex'
   ?>  ?=(%create -.act)
-  ~&  (contract-cord-to-hex contract.act)
+::  ~&  (contract-cord-to-hex contract.act)
   :-  [%give %fact [/state/update ~] %json !>((make-tile-json state))]~
   state
 ::
@@ -401,8 +416,8 @@
   ^-  (quip card _state)
   ~&  '%handle-subscribe'
   ?>  ?=(%subscribe -.act)
-  =/  parsed-contract  (contract-cord-to-hex contract.act)
-  :-  [(subscribe parsed-contract) ~]
+::  =/  parsed-contract  (contract-cord-to-hex contract.act)
+  :-  [(subscribe contract.act) ~]
   state
 ::
 ++  handle-unsubscribe
@@ -419,7 +434,7 @@
   ~&  '%handle-add-contract'
   ~&  act
   ?>  ?=(%add-contract -.act)
-  ~&  contract.act
+::  =/  contract-addr=@ux  (contract-cord-to-hex address.contract.act)
   =/  new-state  state(contracts (~(put in contracts.state) [address.contract.act contract.act]))
 ::  new:
 ::  (subscribe (contract-cord-to-hex contract.act))
@@ -439,6 +454,7 @@
   ~&  '%handle-remove-contract'
   ~&  act
   ?>  ?=(%remove-contract -.act)
+::  =/  contract-addr=@ux  (contract-cord-to-hex contract.act)
   =/  new-state  state(contracts (~(del by contracts.state) contract.act))
 ::  new:
 ::  :_  new-state
@@ -464,8 +480,8 @@
   ^-  json
   =,  enjs:format
   =/  contracts  contracts.new-state
-  =/  keys  `(list @t)`~(tap in ~(key by contracts))
-  =/  contract-type-list  `(list contract-type)`(turn keys |=(key=@t u.+:(~(get by contracts) key)))
+  =/  keys  `(list @ux)`~(tap in ~(key by contracts))
+  =/  contract-type-list  `(list contract-type)`(turn keys |=(key=@ux u.+:(~(get by contracts) key)))
   ~&  'contracts-list:'
   ~&  contract-type-list
   `json`a+(turn contract-type-list |=(=contract-type (contract-encoder contract-type)))
@@ -475,7 +491,7 @@
   ^-  json
   =,  enjs:format
   %-  pairs
-  :~  [%address (tape (trip address.contract-type))]
+  :~  [%address (tape (trip (ux-to-cord address.contract-type)))]
       [%name (tape (trip name.contract-type))]
       [%abi-events (tape (trip abi-events.contract-type))]
       [%specific-events `json`a+(turn `wain`specific-events.contract-type |=(=cord s+cord))]
