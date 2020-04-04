@@ -204,12 +204,12 @@
   =,  abi:ethereum
   =,  enjs:format
   %-  pairs
-  :~  [%address s+(scot %ux address.event-log)]
+  :~  [%address (tape (trip (ux-to-cord address.event-log)))]
       [%data (tape (trip data.event-log))]
-      [%topics `json`a+(turn topics.event-log |=(addr=@ux s+(scot %ux addr)))]
+      [%topics `json`a+(turn topics.event-log |=(addr=@ux (tape (trip (ux-to-cord addr)))))]
       [%mined (mined-encoder event-log)]
   ==
-
+::
 ++  mined-encoder
   |=  =event-log:rpc:ethereum
   ^-  json
@@ -219,9 +219,9 @@
   %-  pairs
   :~  [%log-index (numb log-index:mined)]
       [%transaction-index (numb transaction-index:mined)]
-      [%transaction-hash s+(scot %ux transaction-hash:mined)]
+      [%transaction-hash (tape (trip (ux-to-cord transaction-hash:mined)))]
       [%block-number (numb block-number:mined)]
-      [%block-hash s+(scot %ux block-hash:mined)]
+      [%block-hash (tape (trip (ux-to-cord block-hash:mined)))]
   ==
 ::  ~&  '%event-log-decoder'
 ::  ?~  mined.event-log
@@ -376,7 +376,8 @@
       %watch  (handle-watch action)
       %leave  (handle-leave action)
       %unsubscribe  (handle-unsubscribe action)
-  ==::
+  ==
+::
 ++  handle-leave
   |=  act=eth-event-viewer-action
   ^-  (quip card _state)
