@@ -51,6 +51,7 @@
 +$  contract-type
   $:  address=@t
       name=@t
+      abi-events=@t
       specific-events=(list @t)
       event-logs=loglist:eth-watcher
   ==
@@ -58,7 +59,7 @@
 +$  versioned-state
   $%  state-zero
   ==
-+$  state-zero  [%0 abi-result=json contracts=(set contract-type) ti=@t]
++$  state-zero  [%0 contracts=(set contract-type)]
 --
 =|  state-zero
 =*  state  -
@@ -330,6 +331,7 @@
     %-  ot
     :~  [%address so]
         [%name so]
+        [%abi-events so]
         [%specific-events (ar so)]
         [%event-logs ul]
     ==
@@ -456,7 +458,6 @@
   %-  pairs
   :~  [%contracts (contracts-encoder new-state)]
 ::      [%contracts `json`a+(turn `wain`contracts-list |=(=cord s+cord))]
-      [%abi-result abi-result.new-state]
   ==
 ::
 ++  contracts-encoder
@@ -475,6 +476,7 @@
   %-  pairs
   :~  [%address (tape (trip address.contract-type))]
       [%name (tape (trip name.contract-type))]
+      [%abi-events (tape (trip abi-events.contract-type))]
       [%specific-events `json`a+(turn `wain`specific-events.contract-type |=(=cord s+cord))]
       [%event-logs (tape "AAA")]
   ==
@@ -523,16 +525,15 @@
   ?>  ?=(%o -.u.ujon)
   ?:  (gth 200 status-code.response-header.response)
     [~ state]
-  =/  result  (~(got by p.u.ujon) 'result')
-::  =/  jon=json  %-  pairs:enjs:format  :~
-::    result+(~(got by p.u.ujon) 'result')
-::  ==
-  ~&  'result11'
+::  =/  result  (~(got by p.u.ujon) 'result')
+  =/  jon=json  %-  pairs:enjs:format  :~
+    abi-result+(~(got by p.u.ujon) 'result')
+  ==
 ::  ~&  result+(~(got by p.u.ujon) 'result')
 ::  ~&  (decode-result result+(~(got by p.u.ujon) 'result'))
   ::~&  `json`a+(turn result |=(result=json (abi-result-encoder result)))
-  =/  new-state  state(abi-result (~(got by p.u.ujon) 'result'))
-  :-  [%give %fact ~[/state/update] %json !>((make-tile-json new-state))]~
-  state(abi-result (~(got by p.u.ujon) 'result'))
+::  =/  new-state  state(abi-result (~(got by p.u.ujon) 'result'))
+  :-  [%give %fact ~[/state/update] %json !>(jon)]~
+  state
 ::
 --

@@ -10,8 +10,15 @@ export class NewContract extends Component {
     this.state = {
       address: '',
       name: '',
+      abiEvents: '',
       specificEvents: [],
       validAddress: false,
+    }
+  }
+
+  componentDidUpdate(prevProps) {
+    if(this.props.abi && this.props.abi !== prevProps.abi) {
+      this.setState({abiEvents: this.props.abi.filter(topics => topics.type === 'event')})
     }
   }
 

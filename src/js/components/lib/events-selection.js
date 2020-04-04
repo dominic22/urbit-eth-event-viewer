@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import { Checkbox } from './checkbox';
-
+import {getEventStructureByName} from '../../lib/events';
 
 export class EventsSelection extends Component {
   constructor(props) {
@@ -67,28 +67,11 @@ export class EventsSelection extends Component {
       }, this.toggleEventChanged);
     } else {
       // add
-      this.getEventStructureByName(eventName);
+      getEventStructureByName(eventName);
       this.setState({
         selectedEvents: [...selectedEvents, eventName],
       }, this.toggleEventChanged);
     }
-  }
-
-  // example: "ChangedKeys(uint32,bytes32,bytes32,uint32,uint32)"
-  getEventStructureByName(eventName) {
-    const { abi } = this.props;
-    const event = abi.find(event => event.name === eventName);
-    const inputTypes = event.inputs.map(input => input.type);
-    const reducer = (acc, currentValue) => {
-      if(!acc) {
-        acc = currentValue;
-      } else {
-        acc = acc + ',' + currentValue;
-      }
-      return acc;
-    };
-    const reducedInputTypes = inputTypes.reduce(reducer, '');
-    return `${event.name}(${reducedInputTypes})`;
   }
 
   toggleEventChanged() {
@@ -97,7 +80,7 @@ export class EventsSelection extends Component {
         this.props.onEventsChanged([]);
       } else {
         const structuredEvents = this.state.selectedEvents
-          .map(eventName => this.getEventStructureByName(eventName));
+          .map(eventName => getEventStructureByName(eventName));
         this.props.onEventsChanged(structuredEvents);
       }
     }
