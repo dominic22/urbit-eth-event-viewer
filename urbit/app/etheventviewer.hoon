@@ -81,7 +81,7 @@
 ::
   ++  on-agent
   |=  [=wire =sign:agent:gall]
-::  ^-  (quip card _state)
+  ^-  (quip card _this)
   ~&  '%on-agent'
   ~&  wire
 ::  ?.  ?=([%eth-watcher ~] wire)
@@ -99,8 +99,11 @@
   =+  !<(diff=diff:eth-watcher q.cage.sign)
   ?-  -.diff
     %history  ~&  [%got-history (lent loglist.diff)]
+              =^  cards  state
+                (event-logs-card loglist.diff)
+              [cards this]
 ::              (event-logs-card loglist.diff)
-              [[%give %fact [/state/update ~] %json !>((event-logs-to-json loglist.diff))]~ this]
+::              [[%give %fact [/state/update ~] %json !>((event-logs-to-json loglist.diff))]~ state]
     %log      ~&  %got-log
               [~ this]
     %disavow  ~&  %disavow-unimplemented
@@ -177,21 +180,32 @@
   |=  event-logs=loglist:eth-watcher
   ^-  (quip card _state)
   =/  logs=json  (event-logs-to-json event-logs)
+  ~&  '%event-logs-card'
 ::  =/  modified-contract contract.act
 ::  =/  contract-address  address.+2:event-logs
   ?~  event-logs
     ~&  'history is null'
     [~ state]
-  ~&  'contract addr:'
-  ~&  address:`event-log:rpc:ethereum`+2:event-logs
+  =/  address  address:`event-log:rpc:ethereum`+2:event-logs
+  =/  contract  (~(got by contracts.state) address)
+  =/  updated-contract  contract(event-logs event-logs)
+  =/  filtered-contracts  (~(del by contracts.state) address)
+  =/  new-contracts  (~(put by contracts.state) address updated-contract)
+  =/  new-state  state(contracts new-contracts)
 ::  =/  new-state  state(contracts (~(put in contracts.state) [address.modified-contract modified-contract]))
-  [[%give %fact [/state/update ~] %json !>(logs)]~ state]
+  [[%give %fact [/state/update ~] %json !>((make-tile-json new-state))]~ new-state]
 ::
 ++  event-logs-to-json
   |=  event-logs=loglist:eth-watcher
   ~&  '%event-logs-to-json'
   =,  enjs:format
   ^-  json
+  ?~  event-logs
+    ~&  'history is null'
+    %-  pairs
+    :~  [%event-logs ~]
+    ==
+    
   ~&  'contract addr:'
   ~&  address:`event-log:rpc:ethereum`+2:event-logs
   %-  pairs
@@ -496,7 +510,7 @@
       [%name (tape (trip name.contract-type))]
       [%abi-events (tape (trip abi-events.contract-type))]
       [%specific-events `json`a+(turn `wain`specific-events.contract-type |=(=cord s+cord))]
-      [%event-logs ~]
+      [%event-logs (event-logs-to-json event-logs.contract-type)]
   ==
 ::
 ++  set-to-array
