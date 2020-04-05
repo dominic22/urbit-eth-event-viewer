@@ -6,6 +6,14 @@
   height: calc(100% - 48px);
 }
 
+.h-100-minus-56 {
+  height: calc(100% - 56px);
+}
+
+.w-100-minus-384 {
+  width: calc(100% - 384px);
+}
+
 p,
 div {
   font-family: "Inter", sans-serif;
