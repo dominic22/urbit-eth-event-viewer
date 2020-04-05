@@ -155,9 +155,10 @@
     ?:  =(/primary path)
       [[%give %fact ~ %json !>(*json)]~ this]
     ?:  =(/state/update path)
-      [[%give %fact ~ %json !>(*json)]~ this]
+      =^  cards  state
+        [[%give %fact [/state/update ~] %json !>((make-tile-json state))]~ state]
+      [cards this]
     (on-watch:def path)
-
   ::
   ++  on-leave  on-leave:def
   ++  on-peek   on-peek:def
