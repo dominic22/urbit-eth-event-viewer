@@ -1,3 +1,15 @@
+import web3Utils from 'web3-utils';
+
+export function getEventHashes(events) {
+  if(!events) {
+    console.error('No events found');
+    return [];
+  }
+  return events.map(event => ({
+    hash: web3Utils.sha3(reduceToEventDefinition(event)),
+    name: event.name
+  }))
+}
 
 export function getEventStructureByName(abi, eventName) {
   const event = abi.find(event => event.name === eventName);

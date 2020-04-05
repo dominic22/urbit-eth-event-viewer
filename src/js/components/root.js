@@ -4,7 +4,7 @@ import { api } from "/api";
 import { store } from "/store";
 import { NewContract } from "./new";
 import { Skeleton } from "./skeleton";
-import { EventLog } from './log';
+import { EventLogs } from './log';
 
 export class Root extends Component {
   constructor(props) {
@@ -71,10 +71,11 @@ export class Root extends Component {
                 <Skeleton
                   api={api}
                   selectedContract={props.match.params.contract}
-                  contracts={this.state.contracts}
+                  contracts={contracts}
                 >
-                  <p>Content of selected contract</p>
-                  <EventLog eventLog={this.state.eventLogs}/>
+                  <EventLogs
+                    contract={contracts && contracts.find(contract => contract.address === props.match.params.contract)}
+                  />
                 </Skeleton>
               );
             }}

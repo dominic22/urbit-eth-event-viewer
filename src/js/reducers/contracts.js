@@ -17,8 +17,9 @@ export class ContractsReducer {
                 return {
                     name: contract.name,
                     address: contract.address,
+                    abiEvents: JSON.parse(contract['abi-events']),
                     specificEvents: contract['specific-events'],
-                    eventLog: contract['event-log']
+                    eventLogs: contract['event-logs']
                 }
             });
         }

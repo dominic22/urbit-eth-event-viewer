@@ -179,7 +179,7 @@
 ++  event-logs-card
   |=  event-logs=loglist:eth-watcher
   ^-  (quip card _state)
-  =/  logs=json  (event-logs-to-json event-logs)
+::  =/  logs=json  (event-logs-to-json event-logs)
   ~&  '%event-logs-card'
 ::  =/  modified-contract contract.act
 ::  =/  contract-address  address.+2:event-logs
@@ -202,15 +202,8 @@
   ^-  json
   ?~  event-logs
     ~&  'history is null'
-    %-  pairs
-    :~  [%event-logs ~]
-    ==
-    
-  ~&  'contract addr:'
-  ~&  address:`event-log:rpc:ethereum`+2:event-logs
-  %-  pairs
-  :~  [%event-logs `json`a+(turn event-logs |=(=event-log:rpc:ethereum (event-log-encoder event-log)))]
-  ==
+    ~
+  `json`a+(turn event-logs |=(=event-log:rpc:ethereum (event-log-encoder event-log)))
 ::
 ++  event-log-encoder
   |=  =event-log:rpc:ethereum
@@ -406,6 +399,7 @@
   ~&  '%handle-watch'
   ?>  ?=(%watch -.act)
 ::  =/  parsed-contract  (contract-cord-to-hex contract.act)
+  ~&  contract.act
   [[watch-eth-watcher]~ state]
 ::
 ++  handle-create
@@ -497,8 +491,6 @@
   =/  contracts  contracts.new-state
   =/  keys  `(list @ux)`~(tap in ~(key by contracts))
   =/  contract-type-list  `(list contract-type)`(turn keys |=(key=@ux u.+:(~(get by contracts) key)))
-  ~&  'contracts-list:'
-  ~&  contract-type-list
   `json`a+(turn contract-type-list |=(=contract-type (contract-encoder contract-type)))
 ::
 ++  contract-encoder

@@ -10,7 +10,7 @@ export class Skeleton extends Component {
         <div className="cf w-100 flex flex-column ba-m ba-l ba-xl b--gray2 br1 h-100 h-100-minus-40-m h-100-minus-40-l h-100-minus-40-xl">
           <div className="flex flex-column flex-row ba bl-0 bt-0 br-0 b--solid b--gray4 b--gray1-d">
             <div className="pa4 black-80 w-50 pl3">
-              Shall we add some filters here? 22
+              Shall we add some filters here?
             </div>
             <div className="w-60 pa4 w-50 pl3">
               {this.renderActionButtons()}
@@ -32,16 +32,8 @@ export class Skeleton extends Component {
           selectedContract={selectedContract}
           contracts={contracts}
         />
-        <div className="pa3 mb4 mb0 w-100">{children}</div>
+        <div className="mb4 mb0 w-100">{children}</div>
       </div>
-    );
-  }
-
-  renderNoContracts() {
-    return (
-      <p className="measure center pa5">
-        There are no contracts, feel free to add one.
-      </p>
     );
   }
 
@@ -56,7 +48,6 @@ export class Skeleton extends Component {
             console.log("Send contract action json 2s");
             api.action("etheventviewer", "json", {
               create: {
-                contract: selectedContract
               }
             });
           }}

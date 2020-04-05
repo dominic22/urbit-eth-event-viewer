@@ -44754,8 +44754,9 @@
                             return {
                                 name: contract.name,
                                 address: contract.address,
+                                abiEvents: JSON.parse(contract['abi-events']),
                                 specificEvents: contract['specific-events'],
-                                eventLog: contract['event-log']
+                                eventLogs: contract['event-logs']
                             }
                         });
                     }
@@ -44886,112 +44887,6 @@
                     , label
                   )
                 ));
-              }
-            }
-
-            function getEventStructureByName(abi, eventName) {
-              const event = abi.find(event => event.name === eventName);
-              reduceToEventDefinition(event);
-            }
-
-            // example: "ChangedKeys(uint32,bytes32,bytes32,uint32,uint32)"
-            function reduceToEventDefinition(event) {
-              const inputTypes = event.inputs.map(input => input.type);
-              const reducer = (acc, currentValue) => {
-                if(!acc) {
-                  acc = currentValue;
-                } else {
-                  acc = acc + ',' + currentValue;
-                }
-                return acc;
-              };
-              const reducedInputTypes = inputTypes.reduce(reducer, '');
-              return `${event.name}(${reducedInputTypes})`;
-            }
-
-            const _jsxFileName$1 = "/home/do7ze5/urbit/development/urbit-eth-event-viewer/src/js/components/lib/events-selection.js";
-            class EventsSelection extends react_1 {
-              constructor(props) {
-                super(props);
-                this.state = {
-                  selectedEvents: [],
-                  listenToAllEvents: true,
-                };
-              }
-
-              render() {
-                return this.renderEventsSelection();
-              }
-
-              renderEventsSelection() {
-                const { abi } = this.props;
-                const { selectedEvents, listenToAllEvents } = this.state;
-                if (!abi || abi.length === 0) {
-                  return react.createElement('p', { className: "f8", __self: this, __source: {fileName: _jsxFileName$1, lineNumber: 22}}, "No Events found..."  );
-                }
-                return (react.createElement('div', {__self: this, __source: {fileName: _jsxFileName$1, lineNumber: 24}}
-                  , react.createElement('form', { className: "mb4", __self: this, __source: {fileName: _jsxFileName$1, lineNumber: 25}}
-                    , react.createElement('fieldset', { id: "events", className: `bn pa0 ml0 ${listenToAllEvents ? 'o-10 pointer-none' : ''}`, __self: this, __source: {fileName: _jsxFileName$1, lineNumber: 26}}
-                      , react.createElement('p', { className: "f8 lh-copy mb2"  , __self: this, __source: {fileName: _jsxFileName$1, lineNumber: 27}}, "Select contract events:"  )
-                      , react.createElement('div', { style: { maxHeight: '200px', overflowY: 'auto' }, __self: this, __source: {fileName: _jsxFileName$1, lineNumber: 28}}
-                        , 
-                          abi
-                            .filter(topics => topics.type === 'event')
-                            .map(event => {
-                              return (react.createElement(Checkbox, {
-                                label: event.name,
-                                key: event.name,
-                                toggle: () => this.toggleFromEvents(event.name),
-                                isActive: selectedEvents.some(eventName => eventName === event.name), __self: this, __source: {fileName: _jsxFileName$1, lineNumber: 33}}))
-                            })
-                        
-                      )
-                    )
-                  )
-                  , react.createElement(Checkbox, {
-                    label: 'Listen to all events',
-                    toggle: () => this.toggleEventListDisabled(),
-                    isActive: listenToAllEvents, __self: this, __source: {fileName: _jsxFileName$1, lineNumber: 43}})
-                ));
-              }
-
-              toggleEventListDisabled() {
-                this.setState({ listenToAllEvents: !this.state.listenToAllEvents }, this.toggleEventChanged);
-              }
-
-              selectAllEvents() {
-                const { abi } = this.props;
-                this.setState({
-                  selectedEvents: abi.filter(topics => topics.type === 'event').map(event => event.name)
-                }, this.toggleEventChanged);
-              }
-
-              toggleFromEvents(eventName) {
-                const { selectedEvents } = this.state;
-                if (selectedEvents.some(event => event === eventName)) {
-                  // remove
-                  this.setState({
-                    selectedEvents: selectedEvents.filter(event => event !== eventName),
-                  }, this.toggleEventChanged);
-                } else {
-                  // add
-                  getEventStructureByName(eventName);
-                  this.setState({
-                    selectedEvents: [...selectedEvents, eventName],
-                  }, this.toggleEventChanged);
-                }
-              }
-
-              toggleEventChanged() {
-                if (this.props.onEventsChanged) {
-                  if(this.state.listenToAllEvents) {
-                    this.props.onEventsChanged([]);
-                  } else {
-                    const structuredEvents = this.state.selectedEvents
-                      .map(eventName => getEventStructureByName(eventName));
-                    this.props.onEventsChanged(structuredEvents);
-                  }
-                }
               }
             }
 
@@ -61805,6 +61700,123 @@
                 isInBloom: utils$1.isInBloom
             };
 
+            function getEventHashes(events) {
+              if(!events) {
+                console.error('No events found');
+                return [];
+              }
+              return events.map(event => ({
+                hash: src$3.sha3(reduceToEventDefinition(event)),
+                name: event.name
+              }))
+            }
+
+            function getEventStructureByName(abi, eventName) {
+              const event = abi.find(event => event.name === eventName);
+              reduceToEventDefinition(event);
+            }
+
+            // example: "ChangedKeys(uint32,bytes32,bytes32,uint32,uint32)"
+            function reduceToEventDefinition(event) {
+              const inputTypes = event.inputs.map(input => input.type);
+              const reducer = (acc, currentValue) => {
+                if(!acc) {
+                  acc = currentValue;
+                } else {
+                  acc = acc + ',' + currentValue;
+                }
+                return acc;
+              };
+              const reducedInputTypes = inputTypes.reduce(reducer, '');
+              return `${event.name}(${reducedInputTypes})`;
+            }
+
+            const _jsxFileName$1 = "/home/do7ze5/urbit/development/urbit-eth-event-viewer/src/js/components/lib/events-selection.js";
+            class EventsSelection extends react_1 {
+              constructor(props) {
+                super(props);
+                this.state = {
+                  selectedEvents: [],
+                  listenToAllEvents: true,
+                };
+              }
+
+              render() {
+                return this.renderEventsSelection();
+              }
+
+              renderEventsSelection() {
+                const { abi } = this.props;
+                const { selectedEvents, listenToAllEvents } = this.state;
+                if (!abi || abi.length === 0) {
+                  return react.createElement('p', { className: "f8", __self: this, __source: {fileName: _jsxFileName$1, lineNumber: 22}}, "No Events found..."  );
+                }
+                return (react.createElement('div', {__self: this, __source: {fileName: _jsxFileName$1, lineNumber: 24}}
+                  , react.createElement('form', { className: "mb4", __self: this, __source: {fileName: _jsxFileName$1, lineNumber: 25}}
+                    , react.createElement('fieldset', { id: "events", className: `bn pa0 ml0 ${listenToAllEvents ? 'o-10 pointer-none' : ''}`, __self: this, __source: {fileName: _jsxFileName$1, lineNumber: 26}}
+                      , react.createElement('p', { className: "f8 lh-copy mb2"  , __self: this, __source: {fileName: _jsxFileName$1, lineNumber: 27}}, "Select contract events:"  )
+                      , react.createElement('div', { style: { maxHeight: '200px', overflowY: 'auto' }, __self: this, __source: {fileName: _jsxFileName$1, lineNumber: 28}}
+                        , 
+                          abi
+                            .filter(topics => topics.type === 'event')
+                            .map(event => {
+                              return (react.createElement(Checkbox, {
+                                label: event.name,
+                                key: event.name,
+                                toggle: () => this.toggleFromEvents(event.name),
+                                isActive: selectedEvents.some(eventName => eventName === event.name), __self: this, __source: {fileName: _jsxFileName$1, lineNumber: 33}}))
+                            })
+                        
+                      )
+                    )
+                  )
+                  , react.createElement(Checkbox, {
+                    label: 'Listen to all events',
+                    toggle: () => this.toggleEventListDisabled(),
+                    isActive: listenToAllEvents, __self: this, __source: {fileName: _jsxFileName$1, lineNumber: 43}})
+                ));
+              }
+
+              toggleEventListDisabled() {
+                this.setState({ listenToAllEvents: !this.state.listenToAllEvents }, this.toggleEventChanged);
+              }
+
+              selectAllEvents() {
+                const { abi } = this.props;
+                this.setState({
+                  selectedEvents: abi.filter(topics => topics.type === 'event').map(event => event.name)
+                }, this.toggleEventChanged);
+              }
+
+              toggleFromEvents(eventName) {
+                const { selectedEvents } = this.state;
+                if (selectedEvents.some(event => event === eventName)) {
+                  // remove
+                  this.setState({
+                    selectedEvents: selectedEvents.filter(event => event !== eventName),
+                  }, this.toggleEventChanged);
+                } else {
+                  // add
+                  getEventStructureByName(eventName);
+                  this.setState({
+                    selectedEvents: [...selectedEvents, eventName],
+                  }, this.toggleEventChanged);
+                }
+              }
+
+              toggleEventChanged() {
+                if (this.props.onEventsChanged) {
+                  if(this.state.listenToAllEvents) {
+                    this.props.onEventsChanged([]);
+                  } else {
+                    const structuredEvents = this.state.selectedEvents
+                      .map(eventName => getEventStructureByName(eventName));
+                    this.props.onEventsChanged(structuredEvents);
+                  }
+                }
+              }
+            }
+
             const _jsxFileName$2 = "/home/do7ze5/urbit/development/urbit-eth-event-viewer/src/js/components/new.js";
             class NewContract extends react_1 {
               constructor(props) {
@@ -66205,7 +66217,7 @@
                     , react.createElement(HeaderBar, {__self: this, __source: {fileName: _jsxFileName$7, lineNumber: 9}} )
                     , react.createElement('div', { className: "cf w-100 flex flex-column ba-m ba-l ba-xl b--gray2 br1 h-100 h-100-minus-40-m h-100-minus-40-l h-100-minus-40-xl"            , __self: this, __source: {fileName: _jsxFileName$7, lineNumber: 10}}
                       , react.createElement('div', { className: "flex flex-column flex-row ba bl-0 bt-0 br-0 b--solid b--gray4 b--gray1-d"         , __self: this, __source: {fileName: _jsxFileName$7, lineNumber: 11}}
-                        , react.createElement('div', { className: "pa4 black-80 w-50 pl3"   , __self: this, __source: {fileName: _jsxFileName$7, lineNumber: 12}}, "Shall we add some filters here? 22"
+                        , react.createElement('div', { className: "pa4 black-80 w-50 pl3"   , __self: this, __source: {fileName: _jsxFileName$7, lineNumber: 12}}, "Shall we add some filters here?"
 
                         )
                         , react.createElement('div', { className: "w-60 pa4 w-50 pl3"   , __self: this, __source: {fileName: _jsxFileName$7, lineNumber: 15}}
@@ -66228,15 +66240,7 @@
                       selectedContract: selectedContract,
                       contracts: contracts, __self: this, __source: {fileName: _jsxFileName$7, lineNumber: 30}}
                     )
-                    , react.createElement('div', { className: "pa3 mb4 mb0 w-100"   , __self: this, __source: {fileName: _jsxFileName$7, lineNumber: 35}}, children)
-                  )
-                );
-              }
-
-              renderNoContracts() {
-                return (
-                  react.createElement('p', { className: "measure center pa5"  , __self: this, __source: {fileName: _jsxFileName$7, lineNumber: 42}}, "There are no contracts, feel free to add one."
-
+                    , react.createElement('div', { className: "mb4 mb0 w-100"  , __self: this, __source: {fileName: _jsxFileName$7, lineNumber: 35}}, children)
                   )
                 );
               }
@@ -66252,10 +66256,9 @@
                         console.log("Send contract action json 2s");
                         api.action("etheventviewer", "json", {
                           create: {
-                            contract: selectedContract
                           }
                         });
-                      }, __self: this, __source: {fileName: _jsxFileName$7, lineNumber: 52}}
+                      }, __self: this, __source: {fileName: _jsxFileName$7, lineNumber: 44}}
                     , "initial1"
 
                     )
@@ -66269,7 +66272,7 @@
                             contract: selectedContract
                           }
                         });
-                      }, __self: this, __source: {fileName: _jsxFileName$7, lineNumber: 66}}
+                      }, __self: this, __source: {fileName: _jsxFileName$7, lineNumber: 57}}
                     , "subscribe"
 
                     )
@@ -66283,7 +66286,7 @@
                             contract: selectedContract
                           }
                         });
-                      }, __self: this, __source: {fileName: _jsxFileName$7, lineNumber: 80}}
+                      }, __self: this, __source: {fileName: _jsxFileName$7, lineNumber: 71}}
                     , "watch"
 
                     )
@@ -66297,7 +66300,7 @@
                             contract: selectedContract
                           }
                         });
-                      }, __self: this, __source: {fileName: _jsxFileName$7, lineNumber: 94}}
+                      }, __self: this, __source: {fileName: _jsxFileName$7, lineNumber: 85}}
                     , "leave"
 
                     )
@@ -66311,7 +66314,7 @@
                             contract: selectedContract
                           }
                         });
-                      }, __self: this, __source: {fileName: _jsxFileName$7, lineNumber: 108}}
+                      }, __self: this, __source: {fileName: _jsxFileName$7, lineNumber: 99}}
                     , "unsubscribe"
 
                     )
@@ -66321,36 +66324,36 @@
             }
 
             const _jsxFileName$8 = "/home/do7ze5/urbit/development/urbit-eth-event-viewer/src/js/components/log.js";
-            class EventLog extends react_1 {
+            class EventLogs extends react_1 {
               constructor(props) {
                 super(props);
-                this.state = {
-                };
               }
-
               render() {
-                const {eventLogs} = this.props;
-                console.log('eventLog', eventLogs);
+                const {contract} = this.props;
+
+                if(!contract) {
+                  return react.createElement('p', {__self: this, __source: {fileName: _jsxFileName$8, lineNumber: 13}}, "No contract data available!!!"   )
+                }
+                console.log('current contract: ', contract);
+                const hashes = getEventHashes(contract.abiEvents);
+                console.log('getEventHashMap ', getEventHashes(contract.abiEvents));
                 // Displays events, per contract+config or for all watched, in readable format
                 // (ie, "Transfer: from: 0xabc, to: 0xdef, value: 123", with block number or timestamp, link to transaction on Etherscan.")
-                return (react.createElement('div', { className: "pa4", __self: this, __source: {fileName: _jsxFileName$8, lineNumber: 15}}
-                    , react.createElement('div', { className: "overflow-auto", __self: this, __source: {fileName: _jsxFileName$8, lineNumber: 16}}
-                      , react.createElement('table', { className: "f6 w-100 mw8 center"   , cellSpacing: "0", __self: this, __source: {fileName: _jsxFileName$8, lineNumber: 17}}
-                        , react.createElement('thead', {__self: this, __source: {fileName: _jsxFileName$8, lineNumber: 18}}
-                        , react.createElement('tr', {__self: this, __source: {fileName: _jsxFileName$8, lineNumber: 19}}
-                          , react.createElement('th', { className: "fw6 bb b--gray4 f8 tl pb3 pr3 bg-white"       , __self: this, __source: {fileName: _jsxFileName$8, lineNumber: 20}}, "Block Number" )
-                          , react.createElement('th', { className: "fw6 bb b--gray4 f8 tl pb3 pr3 bg-white"       , __self: this, __source: {fileName: _jsxFileName$8, lineNumber: 21}}, "Username")
-                          , react.createElement('th', { className: "fw6 bb b--gray4 f8 tl pb3 pr3 bg-white"       , __self: this, __source: {fileName: _jsxFileName$8, lineNumber: 22}}, "Email")
-                          , react.createElement('th', { className: "fw6 bb b--gray4 f8 tl pb3 pr3 bg-white"       , __self: this, __source: {fileName: _jsxFileName$8, lineNumber: 23}}, "ID")
+                return (react.createElement('div', { className: "h-100", __self: this, __source: {fileName: _jsxFileName$8, lineNumber: 20}}
+                    , react.createElement('div', { className: "h-100 overflow-auto pa4"  , __self: this, __source: {fileName: _jsxFileName$8, lineNumber: 21}}
+                      , react.createElement('table', { className: "f6 w-100 mw8 center"   , cellSpacing: "0", __self: this, __source: {fileName: _jsxFileName$8, lineNumber: 22}}
+                        , react.createElement('thead', {__self: this, __source: {fileName: _jsxFileName$8, lineNumber: 23}}
+                        , react.createElement('tr', {__self: this, __source: {fileName: _jsxFileName$8, lineNumber: 24}}
+                          , react.createElement('th', { className: "fw6 bb b--gray4 f8 tl pb3 pr3 bg-white"       , __self: this, __source: {fileName: _jsxFileName$8, lineNumber: 25}}, "Block Number" )
+                          , react.createElement('th', { className: "fw6 bb b--gray4 f8 tl pb3 pr3 bg-white"       , __self: this, __source: {fileName: _jsxFileName$8, lineNumber: 26}}, "Event Name" )
+                          , react.createElement('th', { className: "fw6 bb b--gray4 f8 tl pb3 pr3 bg-white"       , __self: this, __source: {fileName: _jsxFileName$8, lineNumber: 27}}, "From")
+                          , react.createElement('th', { className: "fw6 bb b--gray4 f8 tl pb3 pr3 bg-white"       , __self: this, __source: {fileName: _jsxFileName$8, lineNumber: 28}}, "To")
+                          , react.createElement('th', { className: "fw6 bb b--gray4 f8 tl pb3 pr3 bg-white"       , __self: this, __source: {fileName: _jsxFileName$8, lineNumber: 29}}, "Value")
                         )
                         )
-                        , react.createElement('tbody', { className: "lh-copy", __self: this, __source: {fileName: _jsxFileName$8, lineNumber: 26}}
-                        , react.createElement('tr', {__self: this, __source: {fileName: _jsxFileName$8, lineNumber: 27}}
-                          , react.createElement('td', { className: "pv3 pr3 bb b--gray4 f8"    , __self: this, __source: {fileName: _jsxFileName$8, lineNumber: 28}}, "Hassan Johnson" )
-                          , react.createElement('td', { className: "pv3 pr3 bb b--gray4 f8"    , __self: this, __source: {fileName: _jsxFileName$8, lineNumber: 29}}, "@hassan")
-                          , react.createElement('td', { className: "pv3 pr3 bb b--gray4 f8"    , __self: this, __source: {fileName: _jsxFileName$8, lineNumber: 30}}, "hassan@companywithalongdomain.co")
-                          , react.createElement('td', { className: "pv3 pr3 bb b--gray4 f8"    , __self: this, __source: {fileName: _jsxFileName$8, lineNumber: 31}}, "14419232532474")
-                        )
+                        , react.createElement('tbody', { className: "lh-copy", __self: this, __source: {fileName: _jsxFileName$8, lineNumber: 32}}
+
+
                         )
                       )
                     )
@@ -66425,10 +66428,11 @@
                             react.createElement(Skeleton, {
                               api: api$1,
                               selectedContract: props.match.params.contract,
-                              contracts: this.state.contracts, __self: this, __source: {fileName: _jsxFileName$9, lineNumber: 71}}
+                              contracts: contracts, __self: this, __source: {fileName: _jsxFileName$9, lineNumber: 71}}
                             
-                              , react.createElement('p', {__self: this, __source: {fileName: _jsxFileName$9, lineNumber: 76}}, "Content of selected contract"   )
-                              , react.createElement(EventLog, { eventLog: this.state.eventLogs, __self: this, __source: {fileName: _jsxFileName$9, lineNumber: 77}})
+                              , react.createElement(EventLogs, {
+                                contract: contracts && contracts.find(contract => contract.address === props.match.params.contract), __self: this, __source: {fileName: _jsxFileName$9, lineNumber: 76}}
+                              )
                             )
                           );
                         }, __self: this, __source: {fileName: _jsxFileName$9, lineNumber: 66}}
