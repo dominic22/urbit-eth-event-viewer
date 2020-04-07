@@ -65,7 +65,7 @@ export class NewContract extends Component {
       <div className="flex mt3">
         <Link to="/~etheventviewer">
           <button className="db f9 green2 ba pa2 b--green2 bg-gray0-d pointer"
-                  onClick={this.accept.bind(this) }>
+                  onClick={() => this.accept() }>
             Add Contract
           </button>
         </Link>
@@ -79,7 +79,9 @@ export class NewContract extends Component {
     </div>)
   }
   accept() {
-    if(this.state.address && this.state.validAddress) {
+    if(this.props.contracts.some(contract => contract.address === this.state.address)) {
+      console.error('Contract already added.');
+    } else if(this.state.address && this.state.validAddress) {
       this.props.onAcceptClicked(this.state)
     } else {
       console.error('No valid address');

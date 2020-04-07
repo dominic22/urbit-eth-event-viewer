@@ -19,7 +19,9 @@ export class Root extends Component {
     if (contracts && contracts.length > 0) {
       message = "Please select a contract.";
     }
-    return <p className="measure center pa5 text-center">{message}</p>;
+    return <div className="pl3 pr3 pt2 dt pb3 w-100 h-100">
+      <p className="f8 pt3 gray2 w-100 h-100 dtc v-mid tc">{message}</p>
+    </div>
   }
 
   render() {
@@ -47,6 +49,7 @@ export class Root extends Component {
                   <NewContract
                     abi={this.state.abi}
                     api={api}
+                    contracts={contracts}
                     onAcceptClicked={state => {
                       api.action("etheventviewer", "json", {
                         "add-contract": {

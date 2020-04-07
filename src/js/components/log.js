@@ -10,8 +10,13 @@ export class EventLogs extends Component {
   render() {
     const {contract} = this.props;
 
-    if(!contract) {
-      return <p>No contract data available!!!</p>
+    if(!contract || !contract.eventLogs) {
+      return <div className="pl3 pr3 pt2 dt pb3 w-100 h-100">
+        <div className="f8 pt3 gray2 w-100 h-100 dtc v-mid tc">
+          <p className="w-100 tc mb2">No contract data available.</p>
+          <p className="w-100 tc">It might need some time, pick a coffee and lean back.</p>
+        </div>
+      </div>
     }
     console.log('current contract: ', contract);
     const hashPairs = getEventHashPairs(contract.abiEvents);
@@ -24,19 +29,13 @@ export class EventLogs extends Component {
             {
               contract.eventLogs.map(eventLog => {
                 return (
-                  <Link
-                    to={'https://etherscan.io/address/0x223c067f8cf28ae173ee5cafea60ca44c335fecb#events'}
+                  <a
+                    href={`https://etherscan.io/tx/${eventLog.mined['transaction-hash']}`}
                     key={Math.random()}
+                    target={'_blank'}
                   >
                     {this.renderListItem(eventLog, hashPairs, contract.abiEvents)}
-                  </Link>
-                  // <tr key={Math.random()}>
-                  //   <td className="pv3 pr3 bb b--gray4 f8">{eventLog.mined['block-number']}</td>
-                  //   <td className="pv3 pr3 bb b--gray4 f8">{eventHash ? eventHash.name : '-'}</td>
-                  //   <td className="pv3 pr3 bb b--gray4 f8">{eventLog.topics[1] || '-'}</td>
-                  //   <td className="pv3 pr3 bb b--gray4 f8">{eventLog.topics[2] || '-'}</td>
-                  //   <td className="pv3 pr3 bb b--gray4 f8">{eventLog.topics[3] || '-'}</td>
-                  // </tr>
+                  </a>
                 );
               })
             }
@@ -55,9 +54,9 @@ export class EventLogs extends Component {
         className={'lh-copy pl3 pv3 ba bl-0 bt-0 br-0 b--solid b--gray4 b--gray1-d bg-animate pointer'}
       >
         <div className="flex flex-column flex-row">
-          <div key="transaction-info" style={{width:'160px'}}>
-            <p className="f8">Block No. {eventLog.mined['block-number']}</p>
-            <p className="f9 gray3">{hashPair ? hashPair.name : '-'}</p>
+          <div key="transaction-info" style={{width:'180px'}}>
+            <p className="f9">{hashPair ? hashPair.name : '-'}</p>
+            <p className="f9 gray3">Block No. {eventLog.mined['block-number']}</p>
           </div>
           {
             eventLog.topics.map((topic, index) => {
@@ -67,7 +66,7 @@ export class EventLogs extends Component {
               }
               const topicIndex = index - 1;
               return (<div className="ml2" key={topic + topicIndex} style={{minWidth:'100px'}}>
-                <p className="f8">{hashPair.inputs[topicIndex] && hashPair.inputs[topicIndex].name}</p>
+                <p className="f9">{hashPair && hashPair.inputs[topicIndex] && hashPair.inputs[topicIndex].name}</p>
                 <p className="f9 gray3">{topic}</p>
               </div>)
             })
