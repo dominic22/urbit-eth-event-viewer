@@ -50,8 +50,8 @@
 +$  contract-type
   $:  address=@ux
       name=@t
-      abi-events=@t
       specific-events=(list @t)
+      abi-events=@t
       event-logs=loglist:eth-watcher
   ==
 
@@ -105,7 +105,9 @@
 ::              (event-logs-card loglist.diff)
 ::              [[%give %fact [/state/update ~] %json !>((event-logs-to-json loglist.diff))]~ state]
     %log      ~&  %got-log
-              [~ this]
+              =^  cards  state
+                (event-logs-card [event-log.diff ~])
+              [cards this]
     %disavow  ~&  %disavow-unimplemented
               [~ this]
   ==
@@ -189,7 +191,7 @@
     [~ state]
   =/  address  address:`event-log:rpc:ethereum`+2:event-logs
   =/  contract  (~(got by contracts.state) address)
-  =/  updated-contract  contract(event-logs event-logs)
+  =/  updated-contract  contract(event-logs (weld (flop event-logs.contract) event-logs))
   =/  filtered-contracts  (~(del by contracts.state) address)
   =/  new-contracts  (~(put by contracts.state) address updated-contract)
   =/  new-state  state(contracts new-contracts)
@@ -271,34 +273,48 @@
 ++  setup-eth-watcher
   |=  contract=@ux
   =/  url  'http://eth-mainnet.urbit.org:8545'
-  %+  to-eth-watcher  /ethviewer
+  ~&  '%setup eth-watcher for path:'
+  ~&  (get-path contract)
+  %+  to-eth-watcher  /setup
   :+  %poke   %eth-watcher-poke
   !>  ^-  poke:eth-watcher
-  :+  %watch  /[dap.bol]
+  :+  %watch  (get-path contract)
   :*  url
       |
       ~m1
-      9.798.223
+      9.825.780
       ~[contract]
       ~
   ==
 ::
+++  get-path
+  |=  contract=@ux
+  ^-  path
+  `path`/[dap.bol]/(scot %tas (ux-to-cord contract))
+::
+++  get-logs-path
+  |=  contract=@ux
+  ^-  path
+  `path`/logs/[dap.bol]/(scot %tas (ux-to-cord contract))
+::
 ++  watch-eth-watcher
+  |=  contract=@ux
   ~&  'watch eth watcher'
-  %+  to-eth-watcher  /watcher12
-  [%watch /logs/[dap.bol]]
+  %+  to-eth-watcher  /watch
+  [%watch (get-logs-path contract)]
 ::
 ++  leave-eth-watcher
   ~&  'leave eth watcher'
-  %+  to-eth-watcher  /watcher12
+  %+  to-eth-watcher  /watch
   [%leave ~]
 ::
 ::
 ++  clear-eth-watcher
+  |=  contract=@ux
   %+  to-eth-watcher  /clear
   :+  %poke  %eth-watcher-poke
   !>  ^-  poke:eth-watcher
-  [%clear /logs/[dap.bol]]
+  [%clear (get-logs-path contract)]
 ::
 ++  subscribe
   |=  contract=@ux
@@ -314,7 +330,7 @@
         url
         %.n
         ~m1
-        9.798.223
+        9.825.780
         ~[contract]
         topics
     ==
@@ -354,8 +370,8 @@
     %-  ot
     :~  [%address parse-hex-result:rpc:ethereum]
         [%name so]
-        [%abi-events so]
         [%specific-events (ar so)]
+        [%abi-events so]
         [%event-logs ul]
     ==
 ::
@@ -401,7 +417,7 @@
   ?>  ?=(%watch -.act)
 ::  =/  parsed-contract  (contract-cord-to-hex contract.act)
   ~&  contract.act
-  [[watch-eth-watcher]~ state]
+  [[(watch-eth-watcher contract.act)]~ state]
 ::
 ++  handle-create
   |=  act=eth-event-viewer-action
@@ -427,7 +443,7 @@
   ~&  '%handle-subscribe'
   ?>  ?=(%subscribe -.act)
 ::  =/  parsed-contract  (contract-cord-to-hex contract.act)
-  :-  [(subscribe contract.act) ~]
+  :-  [(setup-eth-watcher contract.act) ~]
   state
 ::
 ++  handle-unsubscribe
@@ -456,6 +472,7 @@
   :_  new-state
   :~  (request-ethereum-abi address.contract.act)
       lismov
+      (setup-eth-watcher address.contract.act)
   ==
 ::
 ++  handle-remove-contract
@@ -471,8 +488,12 @@
 ::  :~  (unsubscribe (contract-cord-to-hex contract.act))
 ::      [%give %fact [/state/update ~] %json !>((make-tile-json new-state))]
 ::  ==
-  :-  [%give %fact [/state/update ~] %json !>((make-tile-json new-state))]~
-  new-state
+  :_  new-state
+  :~  [%give %fact [/state/update ~] %json !>((make-tile-json new-state))]
+      (clear-eth-watcher contract.act)
+  ==
+::  :-  [%give %fact [/state/update ~] %json !>((make-tile-json new-state))]~
+::  new-state
 ::
 ++  make-tile-json
   |=  new-state=_state
@@ -534,7 +555,6 @@
   |=  [=wire response=client-response:iris]
   ^-  (quip card _state)
   =,  dejs:format
-  ~&  'begin of http response with following wire:'
   ::  ignore all but %finished
   ?.  ?=(%finished -.response)
     ~&  'unfinished response'
