@@ -10,6 +10,10 @@
   height: calc(100% - 56px);
 }
 
+.h-100-minus-60 {
+  height: calc(100% - 60px);
+}
+
 .w-100-minus-384 {
   width: calc(100% - 384px);
 }
