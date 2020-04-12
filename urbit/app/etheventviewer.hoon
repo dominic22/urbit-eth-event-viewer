@@ -58,7 +58,7 @@
 +$  versioned-state
   $%  state-zero
   ==
-+$  state-zero  [%0 contracts=(map @ux contract-type)]
++$  state-zero  [%0 contracts=(map @ux contract-type) t=@t]
 --
 =|  state-zero
 =*  state  -
@@ -91,9 +91,8 @@
   ?.  ?=(%fact -.sign)
     ~&  'no fact received'
     (on-agent:def wire sign)
-  ~&  '%fact / update from publisher received'
   ?.  ?=(%eth-watcher-diff p.cage.sign)
-    ~&  'close since not eth-watcher-diff'
+    ~&  'no eth-watcher-diff received'
     (on-agent:def wire sign)
   ~&  '%eth-watcher-diff'
   =+  !<(diff=diff:eth-watcher q.cage.sign)
@@ -105,9 +104,10 @@
 ::              (event-logs-card loglist.diff)
 ::              [[%give %fact [/state/update ~] %json !>((event-logs-to-json loglist.diff))]~ state]
     %log      ~&  %got-log
-              =^  cards  state
-                (event-logs-card [event-log.diff ~])
-              [cards this]
+::              =^  cards  state
+::                (event-logs-card [event-log.diff ~])
+::              [cards this]
+              [~ this]
     %disavow  ~&  %disavow-unimplemented
               [~ this]
   ==
@@ -115,10 +115,8 @@
   ++  on-arvo
     |=  [=wire =sign-arvo]
     ^-  (quip card _this)
-    ~&  '%on-arvo'
     ?:  ?=(%bound +<.sign-arvo)
       [~ this]
-    ~&  '%after bound'
     ?:  ?=(%http-response +<.sign-arvo)
       =^  cards  state
         (http-response:cc wire client-response.sign-arvo)
@@ -182,19 +180,24 @@
 ++  event-logs-card
   |=  event-logs=loglist:eth-watcher
   ^-  (quip card _state)
-::  =/  logs=json  (event-logs-to-json event-logs)
   ~&  '%event-logs-card'
-::  =/  modified-contract contract.act
-::  =/  contract-address  address.+2:event-logs
   ?~  event-logs
     ~&  'history is null'
     [~ state]
   =/  address  address:`event-log:rpc:ethereum`+2:event-logs
+  ~&  'address'
+  ~&  address
   =/  contract  (~(got by contracts.state) address)
-  =/  updated-contract  contract(event-logs (weld (flop event-logs.contract) event-logs))
+  ~&  'contract'
+::  =/  updated-contract  contract(event-logs (weld (flop event-logs.contract) event-logs))
+  =/  updated-contract  contract(event-logs event-logs)
+  ~&  'updated'
   =/  filtered-contracts  (~(del by contracts.state) address)
+  ~&  'filtered'
   =/  new-contracts  (~(put by contracts.state) address updated-contract)
+  ~&  'new-contracts'
   =/  new-state  state(contracts new-contracts)
+  ~&  'new-state'
 ::  =/  new-state  state(contracts (~(put in contracts.state) [address.modified-contract modified-contract]))
   [[%give %fact [/state/update ~] %json !>((make-tile-json new-state))]~ new-state]
 ::
@@ -233,20 +236,7 @@
       [%block-number (numb block-number:mined)]
       [%block-hash (tape (trip (ux-to-cord block-hash:mined)))]
   ==
-::  ~&  '%event-log-decoder'
-::  ?~  mined.event-log
-::    ~&  'mined is null'
-::    ~
-::  ~&  'address'
-::  ~&  address.event-log
-::  ~&  'from'
-::  ~&  -.t.topics.event-log
-::  ~&  'to'
-::  ~&  +.t.topics.event-log
-::  ~&  'block-information'
-::  ~&  mined.event-log
-::  ~&  (decode-topics t.topics.event-log ~[%uint %uint])
-::  ~
+::
 ++  transform-event-string-to-hex
   |=  event-string=tape
   ^-  @ux
@@ -262,7 +252,7 @@
 ++  ux-to-cord
   |=  address=@ux
   ^-  @t
-::  crip to transform tape to cord
+::  crip transforms tape to cord
   (cat 3 '0x' (crip ((x-co:co 4) address)))
 ::
 ++  to-eth-watcher
@@ -271,21 +261,28 @@
   [%pass wire %agent [our.bol %eth-watcher] task]
 ::
 ++  setup-eth-watcher
-  |=  contract=@ux
+  |=  contract=contract-type
   =/  url  'http://eth-mainnet.urbit.org:8545'
   ~&  '%setup eth-watcher for path:'
-  ~&  (get-path contract)
+  ~&  (get-path address.contract)
+  ~&  'TOPICS: '
+  ~&  (get-topics specific-events.contract)
   %+  to-eth-watcher  /setup
   :+  %poke   %eth-watcher-poke
   !>  ^-  poke:eth-watcher
-  :+  %watch  (get-path contract)
+  :+  %watch  (get-path address.contract)
   :*  url
       |
       ~m1
-      9.825.780
-      ~[contract]
-      ~
+      9.853.277 
+      ~[address.contract]
+      (get-topics specific-events.contract)
   ==
+::
+++  get-topics
+  |=  specific-events=(list @t)
+  ^-  (list @ux)
+  `(list @ux)`(turn specific-events |=(e=@t `@ux`(transform-event-string-to-hex (trip e))))
 ::
 ++  get-path
   |=  contract=@ux
@@ -316,32 +313,11 @@
   !>  ^-  poke:eth-watcher
   [%clear (get-logs-path contract)]
 ::
-++  subscribe
-  |=  contract=@ux
-  ^-  card:agent:gall
-  ~&  '%subscribe'
-  =/  url  'http://eth-mainnet.urbit.org:8545'
-  =/  path  /[dap.bol]
-  ~&  'to following contract'
-  ~&  contract
-  =/  topics  ~
-  =/  args=vase  !>
-    :*  %watch  path
-        url
-        %.n
-        ~m1
-        9.825.780
-        ~[contract]
-        topics
-    ==
-  [%pass /ethviewer %agent [our.bol %eth-watcher] %poke %eth-watcher-poke args]
-::
 ++  unsubscribe
   |=  contract=@ux
   ^-  card:agent:gall
   ~&  '%unsubscribe'
   =/  path  /logs/[dap.bol]
-::  =/  path  /etheventviewer/eth-watcher-update
   =/  args  !>([%clear path])
   [%pass /clear %agent [our.bol %eth-watcher] %poke %eth-watcher-poke args]
 ::
@@ -415,7 +391,6 @@
   ^-  (quip card _state)
   ~&  '%handle-watch'
   ?>  ?=(%watch -.act)
-::  =/  parsed-contract  (contract-cord-to-hex contract.act)
   ~&  contract.act
   [[(watch-eth-watcher contract.act)]~ state]
 ::
@@ -425,7 +400,6 @@
   ~&  '%handle-create'
   ~&  '%contract-cord-to-hex'
   ?>  ?=(%create -.act)
-::  ~&  (contract-cord-to-hex contract.act)
   :-  [%give %fact [/state/update ~] %json !>((make-tile-json state))]~
   state
 ::
@@ -443,7 +417,7 @@
   ~&  '%handle-subscribe'
   ?>  ?=(%subscribe -.act)
 ::  =/  parsed-contract  (contract-cord-to-hex contract.act)
-  :-  [(setup-eth-watcher contract.act) ~]
+  :-  ~
   state
 ::
 ++  handle-unsubscribe
@@ -468,17 +442,19 @@
 ::  :~  (request-ethereum-abi -.act)
 ::      [%give %fact [/state/update ~] %json !>((make-tile-json new-state))]
 ::  ==
+  ~&  'new state done contracts:'
   =/  lismov  [%give %fact [/state/update ~] %json !>((make-tile-json new-state))]
   :_  new-state
   :~  (request-ethereum-abi address.contract.act)
       lismov
-      (setup-eth-watcher address.contract.act)
+      (setup-eth-watcher contract.act)
   ==
 ::
 ++  handle-remove-contract
   |=  act=eth-event-viewer-action
   ^-  (quip card _state)
   ~&  '%handle-remove-contract'
+  ~&  contract.act
   ~&  act
   ?>  ?=(%remove-contract -.act)
 ::  =/  contract-addr=@ux  (contract-cord-to-hex contract.act)
@@ -488,6 +464,8 @@
 ::  :~  (unsubscribe (contract-cord-to-hex contract.act))
 ::      [%give %fact [/state/update ~] %json !>((make-tile-json new-state))]
 ::  ==
+  ~&  '%new state'
+  ~&  new-state
   :_  new-state
   :~  [%give %fact [/state/update ~] %json !>((make-tile-json new-state))]
       (clear-eth-watcher contract.act)
@@ -510,9 +488,7 @@
   |=  new-state=_state
   ^-  json
   =,  enjs:format
-  =/  contracts  contracts.new-state
-  =/  keys  `(list @ux)`~(tap in ~(key by contracts))
-  =/  contract-type-list  `(list contract-type)`(turn keys |=(key=@ux u.+:(~(get by contracts) key)))
+  =/  contract-type-list  `(list contract-type)`~(val by contracts.new-state)
   `json`a+(turn contract-type-list |=(=contract-type (contract-encoder contract-type)))
 ::
 ++  contract-encoder
