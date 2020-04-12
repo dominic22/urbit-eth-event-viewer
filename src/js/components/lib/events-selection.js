@@ -59,6 +59,7 @@ export class EventsSelection extends Component {
   }
 
   toggleFromEvents(eventName) {
+    const { abi } = this.props;
     const { selectedEvents } = this.state;
     if (selectedEvents.some(event => event === eventName)) {
       // remove
@@ -67,7 +68,7 @@ export class EventsSelection extends Component {
       }, this.toggleEventChanged);
     } else {
       // add
-      getEventStructureByName(eventName);
+      getEventStructureByName(abi, eventName);
       this.setState({
         selectedEvents: [...selectedEvents, eventName],
       }, this.toggleEventChanged);
@@ -75,12 +76,14 @@ export class EventsSelection extends Component {
   }
 
   toggleEventChanged() {
+    const { abi } = this.props;
+
     if (this.props.onEventsChanged) {
       if(this.state.listenToAllEvents) {
         this.props.onEventsChanged([]);
       } else {
         const structuredEvents = this.state.selectedEvents
-          .map(eventName => getEventStructureByName(eventName));
+          .map(eventName => getEventStructureByName(abi, eventName));
         this.props.onEventsChanged(structuredEvents);
       }
     }

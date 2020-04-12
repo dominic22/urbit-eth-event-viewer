@@ -16,19 +16,14 @@ export class EventLogs extends Component {
     const { contract } = this.props;
     const { showAllEvents, filters } = this.state;
 
-    if (!contract || !contract.eventLogs) {
-      return <div className="pl3 pr3 pt2 dt pb3 w-100 h-100">
-        <div className="f8 pt3 gray2 w-100 h-100 dtc v-mid tc">
-          <p className="w-100 tc mb2">No contract data available.</p>
-          <p className="w-100 tc">It might need some time, pick a coffee and lean back.</p>
-        </div>
-      </div>
+    if (!contract) {
+      return this.renderNoDataAvailable();
     }
     console.log('current contract: ', contract);
     const hashPairs = getEventHashPairs(contract.abiEvents);
     console.log('Hash pairs ', hashPairs);
 
-    let logs = contract.eventLogs;
+    let logs = contract.eventLogs || [];
 
     if (!showAllEvents && filters.length > 0) {
       logs = this.filterLogs(logs, hashPairs);
@@ -50,31 +45,54 @@ export class EventLogs extends Component {
             showAllEvents || (hashPairs && this.renderFilters(hashPairs))
           }
         </div>
-        <div className="h-100-minus-60 overflow-auto pa4">
-          <ul className="list pl0 ma0">
-            {
-              logs
-                .map(eventLog => {
-                  return (
-                    <a
-                      href={`https://etherscan.io/tx/${eventLog.mined['transaction-hash']}`}
-                      key={Math.random()}
-                      target={'_blank'}
-                    >
-                      {this.renderListItem(eventLog, hashPairs, contract.abiEvents)}
-                    </a>
-                  );
-                })
-            }
-          </ul>
-        </div>
+        {
+          logs.length > 0 ? this.renderLog(logs, hashPairs, contract) : this.renderNoDataAvailable()
+        }
       </div>
     )
   }
 
+  renderLog(logs, hashPairs, contract) {
+    return <div className="h-100-minus-60 overflow-auto pa4">
+      <ul className="list pl0 ma0">
+        {
+          logs
+            .map(eventLog => {
+              return (
+                <a
+                  href={`https://etherscan.io/tx/${eventLog.mined['transaction-hash']}`}
+                  key={Math.random()}
+                  target={'_blank'}
+                >
+                  {this.renderListItem(eventLog, hashPairs, contract.abiEvents)}
+                </a>
+              );
+            })
+        }
+      </ul>
+    </div>;
+  }
+
+  renderNoDataAvailable() {
+    return <div className="pl3 pr3 pt2 dt pb3 w-100 h-100">
+      <div className="f8 pt3 gray2 w-100 h-100 dtc v-mid tc">
+        <p className="w-100 tc mb2">No contract data available.</p>
+        <p className="w-100 tc">It might need some time, pick a coffee and lean back.</p>
+      </div>
+    </div>;
+  }
+
   renderFilters(hashPairs) {
     const { filters } = this.state;
-    return hashPairs.map(pair => {
+    const { contract } = this.props;
+    const specificEvents = contract.specificEvents.map(event => {
+      const name = event.split('(');
+      return name ? name[0] : null;
+    }).filter(name => name);
+
+    return hashPairs
+      .filter(p => specificEvents.length > 0 ? specificEvents.some(ev => ev === p.name) : true)
+      .map(pair => {
       return (
         <Filter key={pair.name}
                 isActive={filters.some(filter => filter === pair.name)}

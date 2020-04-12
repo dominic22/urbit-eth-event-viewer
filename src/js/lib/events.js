@@ -14,7 +14,7 @@ export function getEventHashPairs(events) {
 
 export function getEventStructureByName(abi, eventName) {
   const event = abi.find(event => event.name === eventName);
-  reduceToEventDefinition(event);
+  return reduceToEventDefinition(event);
 }
 
 // example: "ChangedKeys(uint32,bytes32,bytes32,uint32,uint32)"

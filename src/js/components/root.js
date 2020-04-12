@@ -55,8 +55,8 @@ export class Root extends Component {
                         "add-contract": {
                           address: state.address,
                           name: state.name,
-                          'abi-events': JSON.stringify(state.abiEvents),
                           'specific-events': state.specificEvents,
+                          'abi-events': JSON.stringify(state.abiEvents),
                           'event-logs': null,
                         }
                       });

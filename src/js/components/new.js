@@ -4,16 +4,18 @@ import { Link } from 'react-router-dom';
 import _ from 'lodash';
 import web3Utils from 'web3-utils';
 
+const initialState = {
+  address: '',
+  name: '',
+  abiEvents: '',
+  specificEvents: [],
+  validAddress: false,
+};
+
 export class NewContract extends Component {
   constructor(props) {
     super(props);
-    this.state = {
-      address: '',
-      name: '',
-      abiEvents: '',
-      specificEvents: [],
-      validAddress: false,
-    }
+    this.state = initialState;
   }
 
   componentDidUpdate(prevProps) {
@@ -27,6 +29,7 @@ export class NewContract extends Component {
   }
 
   renderNewContractForm() {
+    const { address, abiEvents, name } = this.state;
     return (<div className="flex flex-column pa3">
       <div className="flex flex-row">
         <div>
@@ -36,7 +39,7 @@ export class NewContract extends Component {
             className="ba b--black-20 pa3 db w-70 b--gray4 f9 flex-basis-full-s focus-b--black focus-b--white-d"
             rows={1}
             placeholder="Beginning with 0x..."
-            value={this.state.address}
+            value={address}
             style={{ resize: 'none', width: '382px' }}
             onChange={this.handleContractChange.bind(this)}
             aria-describedby="name-desc"
@@ -48,7 +51,7 @@ export class NewContract extends Component {
             className="ba b--black-20 pa3 db w-70 b--gray4 f9 flex-basis-full-s focus-b--black focus-b--white-d"
             rows={1}
             placeholder="My Contract Name"
-            value={this.state.name}
+            value={name}
             style={{ resize: 'none', width: '382px' }}
             onChange={this.handleNameChange.bind(this)}
             aria-describedby="name-desc"
@@ -59,7 +62,7 @@ export class NewContract extends Component {
             onEventsChanged={selectedEvents => {
               this.setState({specificEvents:selectedEvents})
             }}
-            abi={this.props.abi}/>
+            abi={abiEvents}/>
         </div>
       </div>
       <div className="flex mt3">
@@ -71,7 +74,7 @@ export class NewContract extends Component {
         </Link>
         <Link to="/~etheventviewer">
         <button className="f9 ml3 ba pa2 b--black pointer bg-transparent b--white-d white-d"
-                onClick={() => console.log('ca')}>
+                onClick={() => this.setState({...initialState})}>
           Cancel
         </button>
         </Link>
@@ -82,9 +85,11 @@ export class NewContract extends Component {
     if(this.props.contracts.some(contract => contract.address === this.state.address)) {
       console.error('Contract already added.');
     } else if(this.state.address && this.state.validAddress) {
-      this.props.onAcceptClicked(this.state)
+      this.props.onAcceptClicked(this.state);
+      this.setState({...initialState});
     } else {
       console.error('No valid address');
+      this.setState({...initialState});
     }
   }
   renderInputStatus() {
