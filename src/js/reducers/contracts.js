@@ -1,6 +1,5 @@
 import _ from 'lodash';
 
-
 export class ContractsReducer {
     reduce(json, state) {
         let data = json;

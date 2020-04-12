@@ -117,7 +117,7 @@ export class EventLogs extends Component {
   filterLogs(logs, hashPairs) {
     const { filters } = this.state;
 
-    logs.filter(log => {
+    return logs.filter(log => {
       const filterHash = filter => hashPairs.find(pair => pair.name === filter) || { hash: null };
       return !filters.some(filter => filterHash(filter).hash === log.topics[0])
     });

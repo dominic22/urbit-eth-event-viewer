@@ -26,21 +26,6 @@ export class Subscription {
       this.handleStateUpdateEvent.bind(this),
       this.handleError.bind(this)
     );
-    api.bind(
-      "/etheventviewer/eth-watcher-update",
-      "PUT",
-      api.authTokens.ship,
-      "etheventviewer",
-      this.handleEthWatcherUpdate.bind(this),
-    );
-    // TODO
-    api.bind(
-      "/" + api.authTokens.ship +"/etheventviewer",
-      "PUT",
-      api.authTokens.ship,
-      "etheventviewer",
-      this.handleEthWatcherUpdate.bind(this),
-    );
   }
 
   handleEvent(diff) {
@@ -50,9 +35,6 @@ export class Subscription {
   handleStateUpdateEvent(diff) {
     console.log('update from gall received ', diff);
     store.handleStateUpdateEvent(diff);
-  }
-  handleEthWatcherUpdate(diff) {
-    store.handleEthWatcherUpdate(diff);
   }
 
   handleError(err) {

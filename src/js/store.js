@@ -2,7 +2,6 @@ import { InitialReducer } from '/reducers/initial';
 import { ContractsReducer } from "/reducers/contracts";
 import { ConfigReducer } from '/reducers/config';
 import { UpdateReducer } from '/reducers/update';
-import { EthWatcherReducer } from '/reducers/eth-watcher';
 
 
 class Store {
@@ -12,7 +11,6 @@ class Store {
         };
 
         this.initialReducer = new InitialReducer();
-        this.ethWatcherReducer = new EthWatcherReducer();
         this.contractsReducer = new ContractsReducer();
         this.configReducer = new ConfigReducer();
         this.updateReducer = new UpdateReducer();
@@ -41,14 +39,6 @@ class Store {
         this.configReducer.reduce(json, this.state);
         this.contractsReducer.reduce(json, this.state);
         this.updateReducer.reduce(json, this.state);
-
-        this.setState(this.state);
-    }
-
-    handleEthWatcherUpdate(data) {
-        let json = data.data;
-        console.log('handle ethwatcher update');
-        this.ethWatcherReducer.reduce(json, this.state);
 
         this.setState(this.state);
     }

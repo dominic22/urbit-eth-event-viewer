@@ -44801,21 +44801,6 @@
                 }
             }
 
-            class EthWatcherReducer {
-                reduce(json, state) {
-                    const data = json;
-                    console.log('received data', data);
-                    if(data) {
-                        this.events(data, state);
-                    }
-                }
-                events(obj, state) {
-                    if (data) {
-                        state.events = obj;
-                    }
-                }
-            }
-
             class Store {
                 constructor() {
                     this.state = {
@@ -44823,7 +44808,6 @@
                     };
 
                     this.initialReducer = new InitialReducer();
-                    this.ethWatcherReducer = new EthWatcherReducer();
                     this.contractsReducer = new ContractsReducer();
                     this.configReducer = new ConfigReducer();
                     this.updateReducer = new UpdateReducer();
@@ -44852,14 +44836,6 @@
                     this.configReducer.reduce(json, this.state);
                     this.contractsReducer.reduce(json, this.state);
                     this.updateReducer.reduce(json, this.state);
-
-                    this.setState(this.state);
-                }
-
-                handleEthWatcherUpdate(data) {
-                    let json = data.data;
-                    console.log('handle ethwatcher update');
-                    this.ethWatcherReducer.reduce(json, this.state);
 
                     this.setState(this.state);
                 }
@@ -66451,7 +66427,7 @@
               filterLogs(logs, hashPairs) {
                 const { filters } = this.state;
 
-                logs.filter(log => {
+                return logs.filter(log => {
                   const filterHash = filter => hashPairs.find(pair => pair.name === filter) || { hash: null };
                   return !filters.some(filter => filterHash(filter).hash === log.topics[0])
                 });
@@ -69686,21 +69662,6 @@ lyrtesmudnytbyrsenwegfyrmurtelreptegpecnelnevfes\
                   this.handleStateUpdateEvent.bind(this),
                   this.handleError.bind(this)
                 );
-                api$1.bind(
-                  "/etheventviewer/eth-watcher-update",
-                  "PUT",
-                  api$1.authTokens.ship,
-                  "etheventviewer",
-                  this.handleEthWatcherUpdate.bind(this),
-                );
-                // TODO
-                api$1.bind(
-                  "/" + api$1.authTokens.ship +"/etheventviewer",
-                  "PUT",
-                  api$1.authTokens.ship,
-                  "etheventviewer",
-                  this.handleEthWatcherUpdate.bind(this),
-                );
               }
 
               handleEvent(diff) {
@@ -69710,9 +69671,6 @@ lyrtesmudnytbyrsenwegfyrmurtelreptegpecnelnevfes\
               handleStateUpdateEvent(diff) {
                 console.log('update from gall received ', diff);
                 store$1.handleStateUpdateEvent(diff);
-              }
-              handleEthWatcherUpdate(diff) {
-                store$1.handleEthWatcherUpdate(diff);
               }
 
               handleError(err) {
