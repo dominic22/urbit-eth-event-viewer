@@ -68,7 +68,7 @@ export class ContractsSidebar extends Component {
   }
 
   removeContract(contract) {
-    const { address, name, specificEvents } = contract;
+    const { address } = contract;
     const { api } = this.props;
     api.action('etheventviewer', 'json', {
       'remove-contract': {

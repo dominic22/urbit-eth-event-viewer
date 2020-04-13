@@ -81,14 +81,15 @@ export class NewContract extends Component {
       </div>
     </div>)
   }
+
   accept() {
     if(this.props.contracts.some(contract => contract.address === this.state.address)) {
       console.error('Contract already added.');
-    } else if(this.state.address && this.state.validAddress) {
+    } else if(this.state.address && this.state.validAddress && this.state.abiEvents) {
       this.props.onAcceptClicked(this.state);
       this.setState({...initialState});
     } else {
-      console.error('No valid address');
+      console.error('No valid address or abiEvents...');
       this.setState({...initialState});
     }
   }

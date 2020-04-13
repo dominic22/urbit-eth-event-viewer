@@ -61875,20 +61875,21 @@
                   )
                 ))
               }
+
               accept() {
                 if(this.props.contracts.some(contract => contract.address === this.state.address)) {
                   console.error('Contract already added.');
-                } else if(this.state.address && this.state.validAddress) {
+                } else if(this.state.address && this.state.validAddress && this.state.abiEvents) {
                   this.props.onAcceptClicked(this.state);
                   this.setState({...initialState});
                 } else {
-                  console.error('No valid address');
+                  console.error('No valid address or abiEvents...');
                   this.setState({...initialState});
                 }
               }
               renderInputStatus() {
                 if(!this.state.validAddress && this.state.address) {
-                  return (react.createElement('span', { className: "f9 inter red2 db pt2"    , __self: this, __source: {fileName: _jsxFileName$2, lineNumber: 97}}, "Must be a valid contract address."     ));
+                  return (react.createElement('span', { className: "f9 inter red2 db pt2"    , __self: this, __source: {fileName: _jsxFileName$2, lineNumber: 98}}, "Must be a valid contract address."     ));
                 }
                 return null;
               }
@@ -66186,7 +66187,7 @@
               }
 
               removeContract(contract) {
-                const { address, name, specificEvents } = contract;
+                const { address } = contract;
                 const { api } = this.props;
                 api.action('etheventviewer', 'json', {
                   'remove-contract': {
@@ -66392,7 +66393,7 @@
               }
 
               renderNoDataAvailable() {
-                return react.createElement('div', { className: "pl3 pr3 pt2 dt pb3 w-100 h-100"      , __self: this, __source: {fileName: _jsxFileName$9, lineNumber: 77}}
+                return react.createElement('div', { className: "pl3 pr3 pt2 dt pb3 w-100 h-100-minus-56"      , __self: this, __source: {fileName: _jsxFileName$9, lineNumber: 77}}
                   , react.createElement('div', { className: "f8 pt3 gray2 w-100 h-100 dtc v-mid tc"       , __self: this, __source: {fileName: _jsxFileName$9, lineNumber: 78}}
                     , react.createElement('p', { className: "w-100 tc mb2"  , __self: this, __source: {fileName: _jsxFileName$9, lineNumber: 79}}, "No contract data available."   )
                     , react.createElement('p', { className: "w-100 tc" , __self: this, __source: {fileName: _jsxFileName$9, lineNumber: 80}}, "It might need some time, pick a coffee and lean back."          )

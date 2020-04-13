@@ -74,7 +74,7 @@ export class EventLogs extends Component {
   }
 
   renderNoDataAvailable() {
-    return <div className="pl3 pr3 pt2 dt pb3 w-100 h-100">
+    return <div className="pl3 pr3 pt2 dt pb3 w-100 h-100-minus-56">
       <div className="f8 pt3 gray2 w-100 h-100 dtc v-mid tc">
         <p className="w-100 tc mb2">No contract data available.</p>
         <p className="w-100 tc">It might need some time, pick a coffee and lean back.</p>
