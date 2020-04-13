@@ -2,31 +2,26 @@ import React, { Component } from 'react';
 import { getEventHashPairs } from '../lib/events';
 import { Filter } from './lib/filter';
 import _ from 'lodash';
+import { api } from '/api';
 
 export class EventLogs extends Component {
-  constructor(props) {
-    super(props);
-    this.state = {
-      showAllEvents: true,
-      filters: [],
-    };
-  }
 
   render() {
-    const { contract } = this.props;
-    const { showAllEvents, filters } = this.state;
+    const { contract, filterOptions } = this.props;
 
     if (!contract) {
       return this.renderNoDataAvailable();
     }
-    console.log('current contract: ', contract);
+
+    let { showAllEvents, filters } = filterOptions || { filters: [], showAllEvents: true };
     const hashPairs = getEventHashPairs(contract.abiEvents);
+    console.log('current contract: ', contract);
     console.log('Hash pairs ', hashPairs);
 
     let logs = contract.eventLogs || [];
 
     if (!showAllEvents && filters.length > 0) {
-      logs = this.filterLogs(logs, hashPairs);
+      logs = this.filterLogs(logs, hashPairs, filters);
     }
 
     // show max 100 entries
@@ -35,21 +30,26 @@ export class EventLogs extends Component {
     // Displays events, per contract+config or for all watched, in readable format
     // (ie, "Transfer: from: 0xabc, to: 0xdef, value: 123", with block number or timestamp, link to transaction on Etherscan.")
     return (<div className="h-100">
-        <div className="flex flex-column flex-row ba bl-0 bt-0 br-0 b--solid b--gray4 b--gray1-d overflow-scroll"
-             style={{ overflowY: 'hidden' }}>
-          <Filter label="Show all Events" isActive={!showAllEvents} onClick={() => {
-            this.setState({ showAllEvents: !showAllEvents })
-            console.log('toggle');
-          }}/>
-          {
-            showAllEvents || (hashPairs && this.renderFilters(hashPairs))
-          }
-        </div>
+        {this.renderFilterBar(contract.address, showAllEvents, hashPairs, filters)}
         {
           logs.length > 0 ? this.renderLog(logs, hashPairs, contract) : this.renderNoDataAvailable()
         }
       </div>
     )
+  }
+
+  renderFilterBar(address, showAllEvents, hashPairs, filters) {
+    return <div className="flex flex-column flex-row ba bl-0 bt-0 br-0 b--solid b--gray4 b--gray1-d overflow-scroll"
+                style={{ overflowY: 'hidden' }}>
+      <Filter label="Show all Events" isActive={!showAllEvents} onClick={() => {
+        // this.setState({ showAllEvents: !showAllEvents })
+        api.setShowAllEvents(address, !showAllEvents);
+        console.log('toggle');
+      }}/>
+      {
+        showAllEvents || (hashPairs && this.renderFilters(hashPairs, filters))
+      }
+    </div>
   }
 
   renderLog(logs, hashPairs, contract) {
@@ -82,8 +82,7 @@ export class EventLogs extends Component {
     </div>;
   }
 
-  renderFilters(hashPairs) {
-    const { filters } = this.state;
+  renderFilters(hashPairs, filters) {
     const { contract } = this.props;
     const specificEvents = contract.specificEvents.map(event => {
       const name = event.split('(');
@@ -93,13 +92,13 @@ export class EventLogs extends Component {
     return hashPairs
       .filter(p => specificEvents.length > 0 ? specificEvents.some(ev => ev === p.name) : true)
       .map(pair => {
-      return (
-        <Filter key={pair.name}
-                isActive={filters.some(filter => filter === pair.name)}
-                label={pair.name}
-                onClick={() => this.toggleFilter(pair.name)}/>
-      )
-    })
+        return (
+          <Filter key={pair.name}
+                  isActive={filters.some(filter => filter === pair.name)}
+                  label={pair.name}
+                  onClick={() => this.toggleFilter(pair.name, filters)}/>
+        )
+      })
   }
 
   renderListItem(eventLog, hashPairs) {
@@ -132,31 +131,26 @@ export class EventLogs extends Component {
     );
   }
 
-  filterLogs(logs, hashPairs) {
-    const { filters } = this.state;
-
+  filterLogs(logs, hashPairs, filters) {
     return logs.filter(log => {
       const filterHash = filter => hashPairs.find(pair => pair.name === filter) || { hash: null };
       return !filters.some(filter => filterHash(filter).hash === log.topics[0])
     });
   }
 
-  toggleFilter(eventName) {
-    const { filters } = this.state;
+  toggleFilter(eventName, filters) {
     if (filters.some(filter => filter === eventName)) {
-      this.removeFilter(eventName);
+      this.removeFilter(eventName, filters);
     } else {
-      this.addFilter(eventName);
+      this.addFilter(eventName, filters);
     }
   }
 
-  addFilter(eventName) {
-    const { filters } = this.state;
-    this.setState({ filters: [...filters, eventName] })
+  addFilter(eventName, filters) {
+    api.setEventFilters(this.props.contract.address, [...filters, eventName]);
   }
 
-  removeFilter(eventName) {
-    const { filters } = this.state;
-    this.setState({ filters: filters.filter(filter => filter !== eventName) })
+  removeFilter(eventName, filters) {
+    api.setEventFilters(this.props.contract.address, filters.filter(filter => filter !== eventName));
   }
 }

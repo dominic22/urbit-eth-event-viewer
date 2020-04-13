@@ -1,9 +1,9 @@
-import React, { Component } from "react";
-import { BrowserRouter, Switch, Route } from "react-router-dom";
-import { api } from "/api";
-import { store } from "/store";
-import { NewContract } from "./new";
-import { Skeleton } from "./skeleton";
+import React, { Component } from 'react';
+import { BrowserRouter, Switch, Route } from 'react-router-dom';
+import { api } from '/api';
+import { store } from '/store';
+import { NewContract } from './new';
+import { Skeleton } from './skeleton';
 import { EventLogs } from './log';
 
 export class Root extends Component {
@@ -15,9 +15,9 @@ export class Root extends Component {
 
   renderBaseViewContent() {
     const { contracts } = this.state;
-    let message = "There are no contracts, feel free to add one.";
+    let message = 'There are no contracts, feel free to add one.';
     if (contracts && contracts.length > 0) {
-      message = "Please select a contract.";
+      message = 'Please select a contract.';
     }
     return <div className="pl3 pr3 pt2 dt pb3 w-100 h-100">
       <p className="f8 pt3 gray2 w-100 h-100 dtc v-mid tc">{message}</p>
@@ -25,7 +25,8 @@ export class Root extends Component {
   }
 
   render() {
-    const { contracts } = this.state;
+    const { contracts, eventFilters } = this.state;
+    console.log('THIS AT', this.state);
     return (
       <BrowserRouter>
         <Switch>
@@ -50,13 +51,13 @@ export class Root extends Component {
                     abi={this.state.abi}
                     api={api}
                     contracts={contracts}
-                    onAcceptClicked={state => {
-                      api.action("etheventviewer", "json", {
-                        "add-contract": {
-                          address: state.address,
-                          name: state.name,
-                          'specific-events': state.specificEvents,
-                          'abi-events': JSON.stringify(state.abiEvents),
+                    onAcceptClicked={contract => {
+                      api.action('etheventviewer', 'json', {
+                        'add-contract': {
+                          address: contract.address,
+                          name: contract.name,
+                          'specific-events': contract.specificEvents,
+                          'abi-events': JSON.stringify(contract.abiEvents),
                           'event-logs': null,
                         }
                       });
@@ -78,6 +79,7 @@ export class Root extends Component {
                 >
                   <EventLogs
                     contract={contracts && contracts.find(contract => contract.address === props.match.params.contract)}
+                    filterOptions={eventFilters.find(filter => filter.address === props.match.params.contract)}
                   />
                 </Skeleton>
               );

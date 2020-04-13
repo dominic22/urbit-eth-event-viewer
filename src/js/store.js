@@ -2,18 +2,20 @@ import { InitialReducer } from '/reducers/initial';
 import { ContractsReducer } from "/reducers/contracts";
 import { ConfigReducer } from '/reducers/config';
 import { UpdateReducer } from '/reducers/update';
+import { LocalReducer } from '/reducers/local';
 
 
 class Store {
     constructor() {
         this.state = {
-            selectedEvents: [],
+            eventFilters: [],
         };
 
         this.initialReducer = new InitialReducer();
         this.contractsReducer = new ContractsReducer();
         this.configReducer = new ConfigReducer();
         this.updateReducer = new UpdateReducer();
+        this.localReducer = new LocalReducer();
         this.setState = () => { };
     }
 
@@ -29,6 +31,7 @@ class Store {
         this.configReducer.reduce(json, this.state);
         this.updateReducer.reduce(json, this.state);
         this.contractsReducer.reduce(json, this.state);
+        this.localReducer.reduce(json, this.state);
 
         this.setState(this.state);
     }
@@ -39,6 +42,7 @@ class Store {
         this.configReducer.reduce(json, this.state);
         this.contractsReducer.reduce(json, this.state);
         this.updateReducer.reduce(json, this.state);
+        this.localReducer.reduce(json, this.state);
 
         this.setState(this.state);
     }

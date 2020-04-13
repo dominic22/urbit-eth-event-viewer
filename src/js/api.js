@@ -59,7 +59,41 @@ class UrbitApi {
     store.state.selectedEvents = store.state.selectedEvents.filter(event => event !== eventName)
     store.setState({selectedEvents: store.state.selectedEvents});
   }
+
+  setShowAllEvents(address, value) {
+    const currFilter = store.state.eventFilters.find(filter => filter.address === address) || {address, showAllEvents:true, filters:[]};
+    console.log('setShowAllEvents ,', address, value);
+    store.handleEvent({
+      data: {
+        local: {
+          'eventFilters': [
+            ...store.state.eventFilters.filter(filter => filter.address !== address),
+            {
+              ...currFilter,
+              showAllEvents: value,
+            }
+          ]
+        }
+      }
+    });
+  }
+
+  setEventFilters(address, value) {
+    const currFilter = store.state.eventFilters.find(filter => filter.address === address) || {address, showAllEvents:true, filters:[]};
+    store.handleEvent({
+      data: {
+        local: {
+          'eventFilters': [
+            ...store.state.eventFilters.filter(filter => filter.address !== address),
+            {
+              ...currFilter,
+              filters: value,
+            }
+          ]
+        }
+      }
+    });
+  }
 }
 export let api = new UrbitApi();
-console.log('api ', api.events);
 window.api = api;
