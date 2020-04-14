@@ -6,6 +6,7 @@ export class ContractsReducer {
         if(data) {
             this.contracts(data, state);
             this.abi(data, state);
+            this.eventLog(data, state);
             this.eventLogs(data, state);
         }
     }
@@ -31,6 +32,22 @@ export class ContractsReducer {
         }
     }
 
+    eventLog(obj, state) {
+        let data = _.has(obj, 'event-log', false);
+        if (data) {
+            const eventLog = obj['event-log'];
+            const filteredContracts = state.contracts.filter(contract => contract.address !== eventLog.address);
+            const contract = state.contracts.find(contract => contract.address === eventLog.address);
+            const currentLogs = contract.eventLogs || []
+            const updatedContract = {
+                ...contract,
+                eventLogs: [...currentLogs, eventLog]
+            };
+            if(contract) {
+                state.contracts = [...filteredContracts, updatedContract];
+            }
+        }
+    }
     eventLogs(obj, state) {
         let data = _.has(obj, 'event-logs', false);
         if (data) {
