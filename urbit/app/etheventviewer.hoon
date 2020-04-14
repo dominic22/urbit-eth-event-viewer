@@ -104,11 +104,9 @@
 ::              (event-logs-card loglist.diff)
 ::              [[%give %fact [/state/update ~] %json !>((event-logs-to-json loglist.diff))]~ state]
     %log      ~&  %got-log
-              ~&  address.event-log.diff
-::              =^  cards  state
-::                (add-event-log-to-state [event-log.diff ~])
-::              [cards this]
-              [~ this]
+              =^  cards  state
+                (add-event-log-to-state event-log.diff)
+              [cards this]
     %disavow  ~&  %disavow-unimplemented
               [~ this]
   ==
@@ -195,6 +193,28 @@
 ::  =/  new-state  state(contracts (~(put by contracts.state) address.modified-contract modified-contract))
   [[%give %fact [/state/update ~] %json !>((make-tile-json new-state))]~ new-state]
 ::
+++  add-event-log-to-state
+  |=  =event-log:rpc:ethereum
+  ^-  (quip card _state)
+  ~&  '%event-logs-card'
+  =/  address  address.event-log
+  =/  contract  (~(got by contracts.state) address)
+  =/  updated-contract  contract(event-logs (weld (flop event-logs.contract) [event-log ~]))
+  =/  filtered-contracts  (~(del by contracts.state) address)
+  =/  new-contracts  (~(put by filtered-contracts) address updated-contract)
+  =/  new-state  state(contracts new-contracts)
+::  =/  new-state  state(contracts (~(put by contracts.state) address.modified-contract modified-contract))
+  [[%give %fact [/state/update ~] %json !>((make-event-log-json event-log))]~ new-state]
+::
+++  make-event-log-json
+  |=  =event-log:rpc:ethereum
+  ^-  json
+  ~&  'make-event-log-json'
+  =,  enjs:format
+  %-  pairs
+  :~  [%event-log (event-log-encoder event-log)]
+  ==
+
 ++  event-logs-to-json
   |=  event-logs=loglist:eth-watcher
   ~&  '%event-logs-to-json'
@@ -234,7 +254,7 @@
 ++  transform-event-string-to-hex
   |=  event-string=tape
   ^-  @ux
-  `@ux`(keccak-256:keccak:crypto (as-octt:mimes:html "ChangedKeys(uint32,bytes32,bytes32,uint32,uint32)"))
+  `@ux`(keccak-256:keccak:crypto (as-octt:mimes:html event-string))
 ::
 ++  request-ethereum-abi
   |=  address=@ux
@@ -275,8 +295,9 @@
 ::
 ++  get-topics
   |=  specific-events=(list @t)
-  ^-  (list @ux)
-  `(list @ux)`(turn specific-events |=(e=@t `@ux`(transform-event-string-to-hex (trip e))))
+  ^-  (list ?(@ux (list @ux)))
+  :~  `(list @ux)`(turn specific-events |=(e=@t `@ux`(transform-event-string-to-hex (trip e))))
+  ==
 ::
 ++  get-path
   |=  contract=@ux
