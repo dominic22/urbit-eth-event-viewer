@@ -9,10 +9,9 @@ export class LocalReducer {
   }
 
   setFilters(obj, state) {
-    let data = _.get(obj, 'eventFilters', false);
-    if (data) {
-      console.log('eventFilters eventFilters ', data.eventFilters);
-      state.eventFilters = data.eventFilters;
+    let eventFilters = _.get(obj, 'eventFilters', false);
+    if (eventFilters) {
+      state.eventFilters = eventFilters;
     }
   }
 }

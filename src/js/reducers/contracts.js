@@ -9,7 +9,7 @@ export class ContractsReducer {
       this.contracts(data, state);
       this.abi(data, state);
       this.eventLog(data, state);
-      this.eventLogs(data, state);
+      this.history(data, state);
     }
   }
 
@@ -65,23 +65,39 @@ export class ContractsReducer {
     let data = _.get(obj, 'event-log', false);
     if (data) {
       const eventLog = data;
-      const filteredContracts = state.contracts.filter(contract => contract.address !== eventLog.address);
-      const contract = state.contracts.find(contract => contract.address === eventLog.address);
-      const currentLogs = contract.eventLogs || []
+      const { existingContracts, currentContract } = this.splitContracts(state.contracts, eventLog.address);
+      const currentLogs = currentContract.eventLogs || []
+
       const updatedContract = {
-        ...contract,
+        ...currentContract,
         eventLogs: [...currentLogs, eventLog]
       };
-      if (contract) {
-        state.contracts = [...filteredContracts, updatedContract];
+
+      if (currentContract) {
+        state.contracts = [...existingContracts, updatedContract];
       }
     }
   }
 
-  eventLogs(obj, state) {
-    let data = _.get(obj, 'event-logs', false);
-    if (data) {
-      state.eventLogs = data;
+  history(obj, state) {
+    let history = _.get(obj, 'history', false);
+    if (history && history[0].address) {
+      const address = history[0].address;
+
+      const { existingContracts, currentContract } = this.splitContracts(state.contracts, address);
+      const updatedContract = {
+        ...currentContract,
+        eventLogs: [...history]
+      };
+      if (currentContract) {
+        state.contracts = [...existingContracts, updatedContract];
+      }
     }
   }
+
+  splitContracts(contracts, address) {
+    const existingContracts = contracts.filter(contract => contract.address !== address);
+    const currentContract = contracts.find(contract => contract.address === address);
+    return { existingContracts, currentContract };
+  };
 }
