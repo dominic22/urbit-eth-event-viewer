@@ -38,10 +38,10 @@
 ::
 +$  eth-event-viewer-action
   $%  [%add-contract contract=contract-type]
-      [%get-abi contract=@ux]
-      [%remove-contract contract=@ux]
-      [%watch contract=@ux]
-      [%leave contract=@ux]
+      [%get-abi address=@ux]
+      [%remove-contract address=@ux]
+      [%watch address=@ux]
+      [%leave address=@ux]
   ==
 ::
 +$  contract-type
@@ -305,34 +305,34 @@
   ==
 ::
 ++  get-path
-  |=  contract=@ux
+  |=  address=@ux
   ^-  path
-  `path`/[dap.bol]/(scot %tas (ux-to-cord contract))
+  `path`/[dap.bol]/(scot %tas (ux-to-cord address))
 ::
 ++  get-logs-path
-  |=  contract=@ux
+  |=  address=@ux
   ^-  path
-  `path`/logs/[dap.bol]/(scot %tas (ux-to-cord contract))
+  `path`/logs/[dap.bol]/(scot %tas (ux-to-cord address))
 ::
 ++  watch-eth-watcher
-  |=  contract=@ux
+  |=  address=@ux
   ~&  'watch eth watcher'
-  %+  to-eth-watcher  (get-path contract)
-  [%watch (get-logs-path contract)]
+  %+  to-eth-watcher  (get-path address)
+  [%watch (get-logs-path address)]
 ::
 ++  leave-eth-watcher
-  |=  contract=@ux
+  |=  address=@ux
   ~&  'leave eth watcher'
-  %+  to-eth-watcher  (get-path contract)
+  %+  to-eth-watcher  (get-path address)
   [%leave ~]
 ::
 ++  clear-eth-watcher
-  |=  contract=@ux
+  |=  address=@ux
 :: TODO use logs path...
   %+  to-eth-watcher  /clear
   :+  %poke  %eth-watcher-poke
   !>  ^-  poke:eth-watcher
-  [%clear (get-logs-path contract)]
+  [%clear (get-logs-path address)]
 ::
 ++  json-to-action
   |=  jon=json
@@ -350,7 +350,7 @@
     ==
 ::
   ++  parse-cord
-    (ot contract+parse-hex-result:rpc:ethereum ~)
+    (ot address+parse-hex-result:rpc:ethereum ~)
 ::
   ++  parse-contract
     %-  ot
@@ -364,10 +364,10 @@
   --
 ::
 ++  contract-cord-to-hex
-  |=  contract=@t
+  |=  address=@t
   ^-  @ux
-  =/  contract-tape  (cass q:(trim 2 (trip contract)))
-  `@ux`(scan contract-tape hex)
+  =/  address-tape  (cass q:(trim 2 (trip address)))
+  `@ux`(scan address-tape hex)
 ::
 ++  poke-action-name
   |=  jon=json
@@ -391,22 +391,22 @@
   ~&  '%handle-leave'
   ?>  ?=(%leave -.act)
   ~&  leave-eth-watcher
-  [[(leave-eth-watcher contract.act) ~] state]
+  [[(leave-eth-watcher address.act) ~] state]
 ::
 ++  handle-watch
   |=  act=eth-event-viewer-action
   ^-  (quip card _state)
   ~&  '%handle-watch'
   ?>  ?=(%watch -.act)
-  ~&  contract.act
-  [[(watch-eth-watcher contract.act)]~ state]
+  ~&  address.act
+  [[(watch-eth-watcher address.act)]~ state]
 ::
 ++  handle-get-abi
   |=  act=eth-event-viewer-action
   ^-  (quip card _state)
   ~&  '%handle-get-abi'
   ?>  ?=(%get-abi -.act)
-  :-  [(request-ethereum-abi contract.act) ~]
+  :-  [(request-ethereum-abi address.act) ~]
   state
 ::
 ++  handle-add-contract
@@ -438,10 +438,11 @@
   ~&  '%handle-remove-contract'
   ~&  act
   ?>  ?=(%remove-contract -.act)
-  =/  new-state  state(contracts (~(del by contracts.state) contract.act))
+  =/  new-state  state(contracts (~(del by contracts.state) address.act))
   :_  new-state
-  :~  [%give %fact [/state/update ~] %json !>((make-remove-contract-json contract.act))]
-      (clear-eth-watcher contract.act)
+  :~  [%give %fact [/state/update ~] %json !>((make-remove-contract-json address.act))]
+      (leave-eth-watcher address.act)
+      (clear-eth-watcher address.act)
   ==
 ::
 ++  make-remove-contract-json

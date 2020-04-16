@@ -44715,6 +44715,14 @@
                 });
               }
 
+              getAbi(address) {
+                api$1.action('etheventviewer', 'json', {
+                  'get-abi': {
+                    address
+                  }
+                });
+              }
+
               add(eventName) {
                 store.state.selectedEvents = [...store.state.selectedEvents, eventName];
                 store.setState({selectedEvents : store.state.selectedEvents});
@@ -62022,7 +62030,7 @@
                 } else {
                   this.props.api.action('etheventviewer', 'json', {
                     'get-abi': {
-                      contract: address
+                      address
                     }
                   });
                   this.setState({validAddress:true});
@@ -66307,7 +66315,7 @@
                 const { api } = this.props;
                 api.action('etheventviewer', 'json', {
                   'remove-contract': {
-                    contract:address,
+                    address,
                   }
                 });
               }
@@ -66360,7 +66368,7 @@
                         console.log("Send watch");
                         api.action("etheventviewer", "json", {
                           watch: {
-                            contract: selectedContract
+                            address: selectedContract
                           }
                         });
                       }, __self: this, __source: {fileName: _jsxFileName$7, lineNumber: 44}}
@@ -66374,7 +66382,7 @@
                         console.log("Send leave");
                         api.action("etheventviewer", "json", {
                           leave: {
-                            contract: selectedContract
+                            address: selectedContract
                           }
                         });
                       }, __self: this, __source: {fileName: _jsxFileName$7, lineNumber: 58}}
@@ -66513,7 +66521,7 @@
                             return null;
                           }
                           const topicIndex = index - 1;
-                          return (react.createElement('div', { className: "ml2", key: topic + topicIndex, style: { minWidth: '100px' }, __self: this, __source: {fileName: _jsxFileName$9, lineNumber: 123}}
+                          return (react.createElement('div', { className: "ml2", key: topic + topicIndex, style: { minWidth: '310px' }, __self: this, __source: {fileName: _jsxFileName$9, lineNumber: 123}}
                             , react.createElement('p', { className: "f9", __self: this, __source: {fileName: _jsxFileName$9, lineNumber: 124}}, hashPair && hashPair.inputs[topicIndex] && hashPair.inputs[topicIndex].name)
                             , react.createElement('p', { className: "f9 gray3" , __self: this, __source: {fileName: _jsxFileName$9, lineNumber: 125}}, topic)
                           ))
