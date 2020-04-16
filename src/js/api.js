@@ -6,11 +6,6 @@ class UrbitApi {
   setAuthTokens(authTokens) {
     this.authTokens = authTokens;
     this.bindPaths = [];
-
-    this.events = {
-      add: this.add.bind(this),
-      remove: this.remove.bind(this)
-    };
   }
 
   bind(path, method, ship = this.authTokens.ship, appl = "etheventviewer", success, fail) {
@@ -58,14 +53,32 @@ class UrbitApi {
     })
   }
 
-  add(eventName) {
-    store.state.selectedEvents = [...store.state.selectedEvents, eventName]
-    store.setState({selectedEvents : store.state.selectedEvents});
+  reloadEvents(address) {
+    api.action('etheventviewer', 'json', {
+      'reload-events': {
+        address
+      }
+    })
   }
 
-  remove(eventName) {
-    store.state.selectedEvents = store.state.selectedEvents.filter(event => event !== eventName)
-    store.setState({selectedEvents: store.state.selectedEvents});
+  removeContract(address) {
+    api.action('etheventviewer', 'json', {
+      'remove-contract': {
+        address
+      }
+    })
+  }
+
+  newContract(contract) {
+    api.action('etheventviewer', 'json', {
+      'add-contract': {
+        address: contract.address,
+        name: contract.name,
+        'specific-events': contract.specificEvents,
+        'abi-events': JSON.stringify(contract.abiEvents),
+        'event-logs': null,
+      }
+    })
   }
 
   setShowAllEvents(address, value) {

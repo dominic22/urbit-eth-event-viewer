@@ -1,12 +1,11 @@
 import React, { Component } from 'react';
 import { Link } from 'react-router-dom';
+import { api } from '/api';
 
 export class ContractsSidebar extends Component {
   render() {
     return (
-      <div
-        className="flex-basis-full-s flex-basis-300-m flex-basis-300-l
-              flex-basis-300-xl ba bl-0 bt-0 bb-0 b--solid b--gray4 b--gray1-d"
+      <div className="ba bl-0 bt-0 bb-0 b--solid b--gray4 b--gray1-d" style={{ width: '320px' }}
       >
         <div
           className="w-100 bg-transparent pa4 bb b--gray4 b--gray1-d"
@@ -51,17 +50,9 @@ export class ContractsSidebar extends Component {
           selectedContract === contract.address ? 'bg-gray5' : 'bg-white'
         }`}
       >
-        <div className="flex flex-column flex-row justify-between ">
-          <div>
-            {contract.name && <p className="f8">{contract.name}</p>}
-            <p className="f9 gray3">{contract.address}</p>
-          </div>
-          <div
-            className="dib f9 pa3 tc pl4 pointer mr3"
-            onClick={() => this.removeContract(contract)}
-          >
-            remove
-          </div>
+        <div>
+          {contract.name && <p className="f8">{contract.name}</p>}
+          <p className="f9 gray3">{contract.address}</p>
         </div>
       </li>
     );
@@ -69,11 +60,6 @@ export class ContractsSidebar extends Component {
 
   removeContract(contract) {
     const { address } = contract;
-    const { api } = this.props;
-    api.action('etheventviewer', 'json', {
-      'remove-contract': {
-        address,
-      }
-    });
+    api.removeContract(address);
   }
 }

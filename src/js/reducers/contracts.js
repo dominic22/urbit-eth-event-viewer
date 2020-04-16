@@ -29,7 +29,7 @@ export class ContractsReducer {
         address: data.address,
         abiEvents: JSON.parse(data['abi-events']),
         specificEvents: data['specific-events'],
-        eventLogs: data['event-logs']
+        eventLogs: this.getReversedLogs(data['event-logs'])
       };
       state.contracts = [
         ...state.contracts,
@@ -47,7 +47,7 @@ export class ContractsReducer {
           address: contract.address,
           abiEvents: JSON.parse(contract['abi-events']),
           specificEvents: contract['specific-events'],
-          eventLogs: contract['event-logs']
+          eventLogs: this.getReversedLogs(contract['event-logs'])
         }
       });
     }
@@ -68,15 +68,23 @@ export class ContractsReducer {
       const { existingContracts, currentContract } = this.splitContracts(state.contracts, eventLog.address);
       const currentLogs = currentContract.eventLogs || []
 
+      const logs = [...currentLogs, eventLog];
       const updatedContract = {
         ...currentContract,
-        eventLogs: [...currentLogs, eventLog]
+        eventLogs: this.getReversedLogs(logs)
       };
 
       if (currentContract) {
         state.contracts = [...existingContracts, updatedContract];
       }
     }
+  }
+
+  getReversedLogs(logs) {
+    if(!logs || logs.length === 0) {
+      return [];
+    }
+    return _.uniqWith(logs, _.isEqual).reverse();
   }
 
   history(obj, state) {
@@ -87,7 +95,7 @@ export class ContractsReducer {
       const { existingContracts, currentContract } = this.splitContracts(state.contracts, address);
       const updatedContract = {
         ...currentContract,
-        eventLogs: [...history]
+        eventLogs: this.getReversedLogs(history)
       };
       if (currentContract) {
         state.contracts = [...existingContracts, updatedContract];

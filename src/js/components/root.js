@@ -35,7 +35,7 @@ export class Root extends Component {
             path="/~etheventviewer"
             render={() => {
               return (
-                <Skeleton api={api} contracts={contracts}>
+                <Skeleton contracts={contracts}>
                   {this.renderBaseViewContent()}
                 </Skeleton>
               );
@@ -46,22 +46,11 @@ export class Root extends Component {
             path="/~etheventviewer/new"
             render={() => {
               return (
-                <Skeleton api={api} contracts={this.state.contracts}>
+                <Skeleton contracts={this.state.contracts}>
                   <NewContract
                     abi={this.state.abi}
-                    api={api}
                     contracts={contracts}
-                    onAcceptClicked={contract => {
-                      api.action('etheventviewer', 'json', {
-                        'add-contract': {
-                          address: contract.address,
-                          name: contract.name,
-                          'specific-events': contract.specificEvents,
-                          'abi-events': JSON.stringify(contract.abiEvents),
-                          'event-logs': null,
-                        }
-                      });
-                    }}
+                    onAcceptClicked={contract => api.newContract(contract)}
                   />
                 </Skeleton>
               );
@@ -73,7 +62,6 @@ export class Root extends Component {
             render={props => {
               return (
                 <Skeleton
-                  api={api}
                   selectedContract={props.match.params.contract}
                   contracts={contracts}
                 >

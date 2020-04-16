@@ -3,6 +3,7 @@ import { EventsSelection } from './lib/events-selection';
 import { Link } from 'react-router-dom';
 import _ from 'lodash';
 import web3Utils from 'web3-utils';
+import { api } from '/api';
 
 const initialState = {
   address: '',
@@ -110,11 +111,7 @@ export class NewContract extends Component {
     if(!this.isValidAddress(address)) {
       this.setState({validAddress:false});
     } else {
-      this.props.api.action('etheventviewer', 'json', {
-        'get-abi': {
-          address
-        }
-      });
+      api.getAbi(address);
       this.setState({validAddress:true});
     }
   }

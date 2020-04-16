@@ -40,8 +40,7 @@
   $%  [%add-contract contract=contract-type]
       [%get-abi address=@ux]
       [%remove-contract address=@ux]
-      [%watch address=@ux]
-      [%leave address=@ux]
+      [%reload-events address=@ux]
   ==
 ::
 +$  contract-type
@@ -345,8 +344,7 @@
     :~  [%add-contract parse-contract]
         [%get-abi parse-cord]
         [%remove-contract parse-cord]
-        [%watch parse-cord]
-        [%leave parse-cord]
+        [%reload-events parse-cord]
     ==
 ::
   ++  parse-cord
@@ -381,25 +379,19 @@
       %add-contract  (handle-add-contract action)
       %get-abi  (handle-get-abi action)
       %remove-contract  (handle-remove-contract action)
-      %watch  (handle-watch action)
-      %leave  (handle-leave action)
+      %reload-events  (handle-reload-events action)
   ==
 ::
-++  handle-leave
+++  handle-reload-events
   |=  act=eth-event-viewer-action
   ^-  (quip card _state)
-  ~&  '%handle-leave'
-  ?>  ?=(%leave -.act)
-  ~&  leave-eth-watcher
-  [[(leave-eth-watcher address.act) ~] state]
-::
-++  handle-watch
-  |=  act=eth-event-viewer-action
-  ^-  (quip card _state)
-  ~&  '%handle-watch'
-  ?>  ?=(%watch -.act)
+  ~&  '%handle-reload-events'
+  ?>  ?=(%reload-events -.act)
   ~&  address.act
-  [[(watch-eth-watcher address.act)]~ state]
+  :_  state
+  :~  (leave-eth-watcher address.act)
+      (watch-eth-watcher address.act)
+  ==
 ::
 ++  handle-get-abi
   |=  act=eth-event-viewer-action
