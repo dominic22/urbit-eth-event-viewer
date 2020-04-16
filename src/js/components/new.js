@@ -111,7 +111,7 @@ export class NewContract extends Component {
       this.setState({validAddress:false});
     } else {
       this.props.api.action('etheventviewer', 'json', {
-        'get-contract-events': {
+        'get-abi': {
           contract: address
         }
       });

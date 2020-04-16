@@ -61,7 +61,7 @@ export class EventLogs extends Component {
               return (
                 <a
                   href={`https://etherscan.io/tx/${eventLog.mined['transaction-hash']}`}
-                  key={eventLog.mined['transaction-hash'] + eventLog.mined['block-number'] + eventLog.mined['log-index']}
+                  key={contract.address + '-' + eventLog.mined['transaction-hash'] + '-' + eventLog.mined['block-number'] + '-' + eventLog.mined['log-index']}
                   target={'_blank'}
                 >
                   {this.renderListItem(eventLog, hashPairs, contract.abiEvents)}

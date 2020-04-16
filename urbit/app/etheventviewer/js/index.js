@@ -44773,42 +44773,89 @@
             }
 
             class ContractsReducer {
-                reduce(json, state) {
-                    let data = json;
-                    if(data) {
-                        this.contracts(data, state);
-                        this.abi(data, state);
-                        this.eventLogs(data, state);
-                    }
+              reduce(json, state) {
+                let data = json;
+                if (data) {
+                  this.newContract(data, state);
+                  this.removeContract(data, state);
+                  this.contracts(data, state);
+                  this.abi(data, state);
+                  this.eventLog(data, state);
+                  this.eventLogs(data, state);
                 }
-                contracts(obj, state) {
-                    let data = lodash.has(obj, 'contracts', false);
-                    if (data) {
-                        state.contracts = obj.contracts.map(contract => {
-                            return {
-                                name: contract.name,
-                                address: contract.address,
-                                abiEvents: JSON.parse(contract['abi-events']),
-                                specificEvents: contract['specific-events'],
-                                eventLogs: contract['event-logs']
-                            }
-                        });
-                    }
-                }
-                abi(obj, state) {
-                    let data = lodash.has(obj, 'abi-result', false);
-                    console.log('abi- ', obj['abi-result']);
-                    if (data) {
-                        state.abi = obj['abi-result'] && JSON.parse(obj['abi-result']);
-                    }
-                }
+              }
 
-                eventLogs(obj, state) {
-                    let data = lodash.has(obj, 'event-logs', false);
-                    if (data) {
-                        state.eventLogs = obj['event-logs'];
-                    }
+              removeContract(obj, state) {
+                let data = lodash.get(obj, 'remove-contract', false);
+                if (data) {
+                  state.contracts = state.contracts.filter(contract => contract.address !== data);
                 }
+              }
+
+              newContract(obj, state) {
+                let data = lodash.get(obj, 'new-contract', false);
+                if (data) {
+                  console.log('new contract: ', data);
+                  const newContract = {
+                    name: data.name,
+                    address: data.address,
+                    abiEvents: JSON.parse(data['abi-events']),
+                    specificEvents: data['specific-events'],
+                    eventLogs: data['event-logs']
+                  };
+                  state.contracts = [
+                    ...state.contracts,
+                    newContract
+                  ];
+                }
+              }
+
+              contracts(obj, state) {
+                let data = lodash.get(obj, 'contracts', false);
+                if (data) {
+                  state.contracts = data.map(contract => {
+                    return {
+                      name: contract.name,
+                      address: contract.address,
+                      abiEvents: JSON.parse(contract['abi-events']),
+                      specificEvents: contract['specific-events'],
+                      eventLogs: contract['event-logs']
+                    }
+                  });
+                }
+              }
+
+              abi(obj, state) {
+                let data = lodash.get(obj, 'abi-result', false);
+                console.log('abi- ', data);
+                if (data) {
+                  state.abi = data && JSON.parse(data);
+                }
+              }
+
+              eventLog(obj, state) {
+                let data = lodash.get(obj, 'event-log', false);
+                if (data) {
+                  const eventLog = data;
+                  const filteredContracts = state.contracts.filter(contract => contract.address !== eventLog.address);
+                  const contract = state.contracts.find(contract => contract.address === eventLog.address);
+                  const currentLogs = contract.eventLogs || [];
+                  const updatedContract = {
+                    ...contract,
+                    eventLogs: [...currentLogs, eventLog]
+                  };
+                  if (contract) {
+                    state.contracts = [...filteredContracts, updatedContract];
+                  }
+                }
+              }
+
+              eventLogs(obj, state) {
+                let data = lodash.get(obj, 'event-logs', false);
+                if (data) {
+                  state.eventLogs = data;
+                }
+              }
             }
 
             class ConfigReducer {
@@ -44844,10 +44891,10 @@
               }
 
               setFilters(obj, state) {
-                let data = lodash.has(obj, 'eventFilters', false);
+                let data = lodash.get(obj, 'eventFilters', false);
                 if (data) {
-                  console.log('eventFilters eventFilters ', obj.eventFilters);
-                  state.eventFilters = obj.eventFilters;
+                  console.log('eventFilters eventFilters ', data.eventFilters);
+                  state.eventFilters = data.eventFilters;
                 }
               }
             }
@@ -61959,7 +62006,7 @@
                   this.setState({validAddress:false});
                 } else {
                   this.props.api.action('etheventviewer', 'json', {
-                    'get-contract-events': {
+                    'get-abi': {
                       contract: address
                     }
                   });
@@ -66292,33 +66339,6 @@
                 return (
                   react.createElement(react.Fragment, null
                     , react.createElement('a', {
-                      key: "initial",
-                      className: "dib f9 pa3 bt bb bl br tc pointer bg-white b--gray4"          ,
-                      onClick: () => {
-                        console.log("Send contract action json 2s");
-                        api.action("etheventviewer", "json", {
-                          create: {
-                          }
-                        });
-                      }, __self: this, __source: {fileName: _jsxFileName$7, lineNumber: 44}}
-                    , "initial1"
-
-                    )
-                    , react.createElement('a', {
-                      key: "subscribe",
-                      className: "dib f9 pa3 bt bb bl br tc pointer bg-white b--gray4"          ,
-                      onClick: () => {
-                        console.log("Send subscribe");
-                        api.action("etheventviewer", "json", {
-                          subscribe: {
-                            contract: selectedContract
-                          }
-                        });
-                      }, __self: this, __source: {fileName: _jsxFileName$7, lineNumber: 57}}
-                    , "subscribe"
-
-                    )
-                    , react.createElement('a', {
                       key: "watch",
                       className: "dib f9 pa3 bt bb bl br tc pointer bg-white b--gray4"          ,
                       onClick: () => {
@@ -66328,7 +66348,7 @@
                             contract: selectedContract
                           }
                         });
-                      }, __self: this, __source: {fileName: _jsxFileName$7, lineNumber: 71}}
+                      }, __self: this, __source: {fileName: _jsxFileName$7, lineNumber: 44}}
                     , "watch"
 
                     )
@@ -66342,22 +66362,8 @@
                             contract: selectedContract
                           }
                         });
-                      }, __self: this, __source: {fileName: _jsxFileName$7, lineNumber: 85}}
+                      }, __self: this, __source: {fileName: _jsxFileName$7, lineNumber: 58}}
                     , "leave"
-
-                    )
-                    , react.createElement('a', {
-                      key: "unsubscribe",
-                      className: "dib f9 pa3 bt bb bl br tc pointer bg-white b--gray4"          ,
-                      onClick: () => {
-                        console.log("Send unsubscribe");
-                        api.action("etheventviewer", "json", {
-                          unsubscribe: {
-                            contract: selectedContract
-                          }
-                        });
-                      }, __self: this, __source: {fileName: _jsxFileName$7, lineNumber: 99}}
-                    , "unsubscribe"
 
                     )
                   )
@@ -66433,7 +66439,7 @@
                           return (
                             react.createElement('a', {
                               href: `https://etherscan.io/tx/${eventLog.mined['transaction-hash']}`,
-                              key: Math.random(),
+                              key: contract.address + '-' + eventLog.mined['transaction-hash'] + '-' + eventLog.mined['block-number'] + '-' + eventLog.mined['log-index'],
                               target: '_blank', __self: this, __source: {fileName: _jsxFileName$9, lineNumber: 62}}
                             
                               , this.renderListItem(eventLog, hashPairs, contract.abiEvents)

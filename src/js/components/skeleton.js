@@ -42,33 +42,6 @@ export class Skeleton extends Component {
     return (
       <>
         <a
-          key="initial"
-          className="dib f9 pa3 bt bb bl br tc pointer bg-white b--gray4"
-          onClick={() => {
-            console.log("Send contract action json 2s");
-            api.action("etheventviewer", "json", {
-              create: {
-              }
-            });
-          }}
-        >
-          initial1
-        </a>
-        <a
-          key="subscribe"
-          className="dib f9 pa3 bt bb bl br tc pointer bg-white b--gray4"
-          onClick={() => {
-            console.log("Send subscribe");
-            api.action("etheventviewer", "json", {
-              subscribe: {
-                contract: selectedContract
-              }
-            });
-          }}
-        >
-          subscribe
-        </a>
-        <a
           key="watch"
           className="dib f9 pa3 bt bb bl br tc pointer bg-white b--gray4"
           onClick={() => {
@@ -95,20 +68,6 @@ export class Skeleton extends Component {
           }}
         >
           leave
-        </a>
-        <a
-          key="unsubscribe"
-          className="dib f9 pa3 bt bb bl br tc pointer bg-white b--gray4"
-          onClick={() => {
-            console.log("Send unsubscribe");
-            api.action("etheventviewer", "json", {
-              unsubscribe: {
-                contract: selectedContract
-              }
-            });
-          }}
-        >
-          unsubscribe
         </a>
       </>
     );
