@@ -112,7 +112,7 @@ export class NewContract extends Component {
     } else {
       this.props.api.action('etheventviewer', 'json', {
         'get-abi': {
-          contract: address
+          address
         }
       });
       this.setState({validAddress:true});

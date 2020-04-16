@@ -50,6 +50,14 @@ class UrbitApi {
     });
   }
 
+  getAbi(address) {
+    api.action('etheventviewer', 'json', {
+      'get-abi': {
+        address
+      }
+    })
+  }
+
   add(eventName) {
     store.state.selectedEvents = [...store.state.selectedEvents, eventName]
     store.setState({selectedEvents : store.state.selectedEvents});

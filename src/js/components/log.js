@@ -120,7 +120,7 @@ export class EventLogs extends Component {
                 return null;
               }
               const topicIndex = index - 1;
-              return (<div className="ml2" key={topic + topicIndex} style={{ minWidth: '100px' }}>
+              return (<div className="ml2" key={topic + topicIndex} style={{ minWidth: '310px' }}>
                 <p className="f9">{hashPair && hashPair.inputs[topicIndex] && hashPair.inputs[topicIndex].name}</p>
                 <p className="f9 gray3">{topic}</p>
               </div>)

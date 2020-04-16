@@ -48,7 +48,7 @@ export class Skeleton extends Component {
             console.log("Send watch");
             api.action("etheventviewer", "json", {
               watch: {
-                contract: selectedContract
+                address: selectedContract
               }
             });
           }}
@@ -62,7 +62,7 @@ export class Skeleton extends Component {
             console.log("Send leave");
             api.action("etheventviewer", "json", {
               leave: {
-                contract: selectedContract
+                address: selectedContract
               }
             });
           }}

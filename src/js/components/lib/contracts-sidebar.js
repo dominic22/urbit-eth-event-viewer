@@ -72,7 +72,7 @@ export class ContractsSidebar extends Component {
     const { api } = this.props;
     api.action('etheventviewer', 'json', {
       'remove-contract': {
-        contract:address,
+        address,
       }
     });
   }
