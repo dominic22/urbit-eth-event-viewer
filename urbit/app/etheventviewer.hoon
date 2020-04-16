@@ -80,10 +80,6 @@
   ^-  (quip card _this)
   ~&  '%on-agent'
   ~&  wire
-::  ?.  ?=([%eth-watcher ~] wire)
-::    ~&  '%eth-watcher not found'
-::    (on-agent:def wire sign)
-::  ~&  '%eth-watcher found'
   ?.  ?=(%fact -.sign)
     ~&  'no fact received'
     (on-agent:def wire sign)
@@ -184,9 +180,7 @@
   =/  updated-contract  contract(event-logs event-logs)
   =/  filtered-contracts  (~(del by contracts.state) address)
   =/  new-contracts  (~(put by filtered-contracts) address updated-contract)
-  =/  new-state  state(contracts new-contracts)
-::  =/  new-state  state(contracts (~(put by contracts.state) address.modified-contract modified-contract))
-  [[%give %fact [/state/update ~] %json !>((make-history-json event-logs))]~ new-state]
+  [[%give %fact [/state/update ~] %json !>((make-history-json event-logs))]~ state(contracts new-contracts)]
 ::
 ++  add-event-log-to-state
   |=  =event-log:rpc:ethereum
@@ -197,14 +191,12 @@
   =/  updated-contract  contract(event-logs (weld (flop event-logs.contract) [event-log ~]))
   =/  filtered-contracts  (~(del by contracts.state) address)
   =/  new-contracts  (~(put by filtered-contracts) address updated-contract)
-  =/  new-state  state(contracts new-contracts)
-::  =/  new-state  state(contracts (~(put by contracts.state) address.modified-contract modified-contract))
-  [[%give %fact [/state/update ~] %json !>((make-event-log-json event-log))]~ new-state]
+  [[%give %fact [/state/update ~] %json !>((make-event-log-json event-log))]~ state(contracts new-contracts)]
 ::
 ++  make-event-log-json
   |=  =event-log:rpc:ethereum
   ^-  json
-  ~&  'make-event-log-json'
+  ~&  '%make-event-log-json'
   =,  enjs:format
   %-  pairs
   :~  [%event-log (event-log-encoder event-log)]
@@ -213,7 +205,7 @@
 ++  make-history-json
   |=  event-logs=loglist:eth-watcher
   ^-  json
-  ~&  'make-history-json'
+  ~&  '%make-history-json'
   =,  enjs:format
   %-  pairs
   :~  [%history (event-logs-to-json event-logs)]
@@ -407,11 +399,9 @@
   ~&  '%handle-add-contract'
   ~&  act
   ?>  ?=(%add-contract -.act)
-  =/  new-state  state(contracts (~(put by contracts.state) address.contract.act contract.act))
-  =/  lismov  [%give %fact [/state/update ~] %json !>((make-new-contract-json contract.act))]
-  :_  new-state
+  :_  state(contracts (~(put by contracts.state) address.contract.act contract.act))
   :~  (request-ethereum-abi address.contract.act)
-      lismov
+      [%give %fact [/state/update ~] %json !>((make-new-contract-json contract.act))]
       (setup-eth-watcher contract.act)
   ==
 ::
@@ -430,8 +420,7 @@
   ~&  '%handle-remove-contract'
   ~&  act
   ?>  ?=(%remove-contract -.act)
-  =/  new-state  state(contracts (~(del by contracts.state) address.act))
-  :_  new-state
+  :_  state(contracts (~(del by contracts.state) address.act))
   :~  [%give %fact [/state/update ~] %json !>((make-remove-contract-json address.act))]
       (leave-eth-watcher address.act)
       (clear-eth-watcher address.act)
@@ -447,21 +436,19 @@
   ==
 ::
 ++  make-tile-json
-  |=  new-state=_state
+  |=  =_state
   ^-  json
   ~&  'make tile json'
   =,  enjs:format
-::  =/  contracts-list  ~(tap in contracts.new-state)
   %-  pairs
-  :~  [%contracts (contracts-encoder new-state)]
-::      [%contracts `json`a+(turn `wain`contracts-list |=(=cord s+cord))]
+  :~  [%contracts (contracts-encoder state)]
   ==
 ::
 ++  contracts-encoder
-  |=  new-state=_state
+  |=  =_state
   ^-  json
   =,  enjs:format
-  =/  contract-type-list  `(list contract-type)`~(val by contracts.new-state)
+  =/  contract-type-list  `(list contract-type)`~(val by contracts.state)
   `json`a+(turn contract-type-list |=(=contract-type (contract-encoder contract-type)))
 ::
 ++  contract-encoder
