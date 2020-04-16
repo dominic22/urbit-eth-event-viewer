@@ -187,7 +187,7 @@
   =/  new-contracts  (~(put by filtered-contracts) address updated-contract)
   =/  new-state  state(contracts new-contracts)
 ::  =/  new-state  state(contracts (~(put by contracts.state) address.modified-contract modified-contract))
-  [[%give %fact [/state/update ~] %json !>((make-tile-json new-state))]~ new-state]
+  [[%give %fact [/state/update ~] %json !>((make-history-json event-logs))]~ new-state]
 ::
 ++  add-event-log-to-state
   |=  =event-log:rpc:ethereum
@@ -210,7 +210,16 @@
   %-  pairs
   :~  [%event-log (event-log-encoder event-log)]
   ==
-
+::
+++  make-history-json
+  |=  event-logs=loglist:eth-watcher
+  ^-  json
+  ~&  'make-history-json'
+  =,  enjs:format
+  %-  pairs
+  :~  [%history (event-logs-to-json event-logs)]
+  ==
+::
 ++  event-logs-to-json
   |=  event-logs=loglist:eth-watcher
   ~&  '%event-logs-to-json'
