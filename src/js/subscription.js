@@ -23,18 +23,14 @@ export class Subscription {
       "PUT",
       api.authTokens.ship,
       "etheventviewer",
-      this.handleStateUpdateEvent.bind(this),
+      this.handleEvent.bind(this),
       this.handleError.bind(this)
     );
   }
 
   handleEvent(diff) {
-    store.handleEvent(diff);
-  }
-
-  handleStateUpdateEvent(diff) {
     console.log('update from gall received ', diff);
-    store.handleStateUpdateEvent(diff);
+    store.handleEvent(diff);
   }
 
   handleError(err) {

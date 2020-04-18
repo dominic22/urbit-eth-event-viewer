@@ -1,6 +1,5 @@
 import React, { Component } from 'react';
 import { Link } from 'react-router-dom';
-import { api } from '/api';
 
 export class ContractsSidebar extends Component {
   render() {
@@ -56,10 +55,5 @@ export class ContractsSidebar extends Component {
         </div>
       </li>
     );
-  }
-
-  removeContract(contract) {
-    const { address } = contract;
-    api.removeContract(address);
   }
 }

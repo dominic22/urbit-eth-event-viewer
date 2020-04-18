@@ -25,23 +25,10 @@ class Store {
 
     handleEvent(data) {
         let json = data.data;
-
-        console.log(json);
         this.initialReducer.reduce(json, this.state);
         this.configReducer.reduce(json, this.state);
         this.updateReducer.reduce(json, this.state);
         this.contractsReducer.reduce(json, this.state);
-        this.localReducer.reduce(json, this.state);
-
-        this.setState(this.state);
-    }
-
-    handleStateUpdateEvent(data) {
-        let json = data.data;
-        this.initialReducer.reduce(json, this.state);
-        this.configReducer.reduce(json, this.state);
-        this.contractsReducer.reduce(json, this.state);
-        this.updateReducer.reduce(json, this.state);
         this.localReducer.reduce(json, this.state);
 
         this.setState(this.state);

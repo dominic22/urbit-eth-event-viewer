@@ -29,7 +29,7 @@ export class ContractsReducer {
         address: data.address,
         abiEvents: JSON.parse(data['abi-events']),
         specificEvents: data['specific-events'],
-        eventLogs: this.getReversedLogs(data['event-logs'])
+        eventLogs: this.getUniqueOrderedLogs(data['event-logs'])
       };
       state.contracts = [
         ...state.contracts,
@@ -47,7 +47,7 @@ export class ContractsReducer {
           address: contract.address,
           abiEvents: JSON.parse(contract['abi-events']),
           specificEvents: contract['specific-events'],
-          eventLogs: this.getReversedLogs(contract['event-logs'])
+          eventLogs: this.getUniqueOrderedLogs(contract['event-logs'])
         }
       });
     }
@@ -66,25 +66,41 @@ export class ContractsReducer {
     if (data) {
       const eventLog = data;
       const { existingContracts, currentContract } = this.splitContracts(state.contracts, eventLog.address);
-      const currentLogs = currentContract.eventLogs || []
-
-      const logs = [...currentLogs, eventLog];
-      const updatedContract = {
-        ...currentContract,
-        eventLogs: this.getReversedLogs(logs)
-      };
-
+      console.log('got log', eventLog);
       if (currentContract) {
-        state.contracts = [...existingContracts, updatedContract];
+        this.setContractsState(state, existingContracts, currentContract, eventLog)
+
+        // checking every received log for uniqness would take too long so it will be debounce
+        // and the state set to unique keys
+        _.debounce(() => this.setContractsState(state, existingContracts, currentContract, eventLog, true), 100)();
       }
     }
   }
 
-  getReversedLogs(logs) {
+  setContractsState(state, existingContracts, currentContract, eventLog, unique) {
+    const currentLogs = currentContract.eventLogs || []
+    const logs = [...currentLogs, eventLog];
+
+    const updatedContract = {
+      ...currentContract,
+      eventLogs: unique ? this.getUniqueOrderedLogs(logs, eventLog) : this.getOrderedLogs(logs)
+    };
+    state.contracts = [...existingContracts, updatedContract];
+  }
+
+  getOrderedLogs(logs) {
     if(!logs || logs.length === 0) {
       return [];
     }
-    return _.uniqWith(logs, _.isEqual).reverse();
+    return _.orderBy(logs, 'mined.block-number', ['desc']);
+  }
+
+  getUniqueOrderedLogs(logs, eventLog) {
+    if(!logs || logs.length === 0) {
+      return [];
+    }
+    console.log('get uniq reversed log for log: ', eventLog);
+    return _.uniqWith(this.getOrderedLogs(logs), _.isEqual);
   }
 
   history(obj, state) {
@@ -95,7 +111,7 @@ export class ContractsReducer {
       const { existingContracts, currentContract } = this.splitContracts(state.contracts, address);
       const updatedContract = {
         ...currentContract,
-        eventLogs: this.getReversedLogs(history)
+        eventLogs: this.getUniqueOrderedLogs(history)
       };
       if (currentContract) {
         state.contracts = [...existingContracts, updatedContract];

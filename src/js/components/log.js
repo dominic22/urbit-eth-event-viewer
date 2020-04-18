@@ -24,11 +24,9 @@ export class EventLogs extends Component {
       logs = this.filterLogs(logs, hashPairs, filters);
     }
 
-    // show max 100 entries
-    logs = _.take(logs, 100);
+    // show max 200 entries
+    logs = _.take(logs, 200);
 
-    // Displays events, per contract+config or for all watched, in readable format
-    // (ie, "Transfer: from: 0xabc, to: 0xdef, value: 123", with block number or timestamp, link to transaction on Etherscan.")
     return (<div className="h-100-minus-2 relative">
         {this.renderFilterBar(contract.address, showAllEvents, hashPairs, filters)}
         {
@@ -87,15 +85,6 @@ export class EventLogs extends Component {
     </div>;
   }
 
-  renderNoDataAvailable() {
-    return <div className="pl3 pr3 pt2 dt pb3 w-100 h-100-minus-56">
-      <div className="f8 pt3 gray2 w-100 h-100 dtc v-mid tc">
-        <p className="w-100 tc mb2">No contract data available.</p>
-        <p className="w-100 tc">It might need some time, take a coffee and lean back.</p>
-      </div>
-    </div>;
-  }
-
   renderFilters(hashPairs, filters) {
     const { contract } = this.props;
     const specificEvents = contract.specificEvents.map(event => {
@@ -128,21 +117,34 @@ export class EventLogs extends Component {
             <p className="f9 gray3">Block No. {eventLog.mined['block-number']}</p>
           </div>
           {
-            eventLog.topics.map((topic, index) => {
-              // first index is hash of topics
-              if (index === 0) {
-                return null;
-              }
-              const topicIndex = index - 1;
-              return (<div className="ml2" key={topic + topicIndex} style={{ minWidth: '310px' }}>
-                <p className="f9">{hashPair && hashPair.inputs[topicIndex] && hashPair.inputs[topicIndex].name}</p>
-                <p className="f9 gray3">{topic}</p>
-              </div>)
-            })
+            this.renderEventTopics(eventLog, hashPair)
           }
         </div>
       </li>
     );
+  }
+
+  renderEventTopics(eventLog, hashPair) {
+    return eventLog.topics.map((topic, index) => {
+      // first index is hash of topics
+      if (index === 0) {
+        return null;
+      }
+      const topicIndex = index - 1;
+      return (<div className="ml2" key={topic + topicIndex} style={{ minWidth: '310px' }}>
+        <p className="f9">{hashPair && hashPair.inputs[topicIndex] && hashPair.inputs[topicIndex].name}</p>
+        <p className="f9 gray3">{topic}</p>
+      </div>)
+    })
+  }
+
+  renderNoDataAvailable() {
+    return <div className="pl3 pr3 pt2 dt pb3 w-100 h-100-minus-56">
+      <div className="f8 pt3 gray2 w-100 h-100 dtc v-mid tc">
+        <p className="w-100 tc mb2">No contract data available.</p>
+        <p className="w-100 tc">It might need some time, take a coffee and lean back.</p>
+      </div>
+    </div>;
   }
 
   filterLogs(logs, hashPairs, filters) {

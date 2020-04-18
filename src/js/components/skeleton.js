@@ -1,7 +1,6 @@
 import React, { Component } from "react";
 import { HeaderBar } from "./lib/header-bar";
 import { ContractsSidebar } from "./lib/contracts-sidebar";
-import { api } from '/api';
 
 export class Skeleton extends Component {
   render() {
@@ -26,42 +25,6 @@ export class Skeleton extends Component {
         />
         <div className="mb0 w-100-minus-320">{children}</div>
       </div>
-    );
-  }
-
-  renderActionButtons() {
-    const {selectedContract} = this.props;
-    return (
-      <>
-        <a
-          key="watch"
-          className="dib f9 pa3 bt bb bl br tc pointer bg-white b--gray4"
-          onClick={() => {
-            console.log("Send watch");
-            api.action("etheventviewer", "json", {
-              watch: {
-                address: selectedContract
-              }
-            });
-          }}
-        >
-          watch
-        </a>
-        <a
-          key="leave"
-          className="dib f9 pa3 bt bb bl br tc pointer bg-white b--gray4"
-          onClick={() => {
-            console.log("Send leave");
-            api.action("etheventviewer", "json", {
-              leave: {
-                address: selectedContract
-              }
-            });
-          }}
-        >
-          leave
-        </a>
-      </>
     );
   }
 }

@@ -17,6 +17,8 @@ export class NewContract extends Component {
   constructor(props) {
     super(props);
     this.state = initialState;
+    this.handleContractChangeBound = this.handleContractChange.bind(this);
+    this.handleNameChangeBound = this.handleNameChange.bind(this);
   }
 
   componentDidUpdate(prevProps) {
@@ -26,10 +28,6 @@ export class NewContract extends Component {
   }
 
   render() {
-    return this.renderNewContractForm();
-  }
-
-  renderNewContractForm() {
     const { address, abiEvents, name } = this.state;
     return (<div className="flex flex-column pa3">
       <div className="flex flex-row">
@@ -42,7 +40,7 @@ export class NewContract extends Component {
             placeholder="Beginning with 0x..."
             value={address}
             style={{ resize: 'none', width: '382px' }}
-            onChange={this.handleContractChange.bind(this)}
+            onChange={this.handleContractChangeBound}
             aria-describedby="name-desc"
           />
           {this.renderInputStatus()}
@@ -54,7 +52,7 @@ export class NewContract extends Component {
             placeholder="My Contract Name"
             value={name}
             style={{ resize: 'none', width: '382px' }}
-            onChange={this.handleNameChange.bind(this)}
+            onChange={this.handleNameChangeBound}
             aria-describedby="name-desc"
           />
         </div>
@@ -90,21 +88,23 @@ export class NewContract extends Component {
       this.props.onAcceptClicked(this.state);
       this.setState({...initialState});
     } else {
-      console.error('No valid address or abiEvents...');
+      console.error('No valid address or abi data...');
       this.setState({...initialState});
     }
   }
+
   renderInputStatus() {
     if(!this.state.validAddress && this.state.address) {
       return (<span className="f9 inter red2 db pt2">Must be a valid contract address.</span>);
     }
     return null;
   }
+
   isValidAddress(address) {
     return web3Utils.isAddress(address);
   };
 
-  checkContractAddress(address) {
+  validateContractAddress(address) {
     if(!address){
       return
     }
@@ -118,9 +118,10 @@ export class NewContract extends Component {
 
   handleContractChange(event) {
     const address = event.target.value;
-    _.debounce(() => this.checkContractAddress(address), 100)();
+    _.debounce(() => this.validateContractAddress(address), 100)();
     this.setState({ address });
   }
+
   handleNameChange(event) {
     this.setState({ name: event.target.value });
   }
