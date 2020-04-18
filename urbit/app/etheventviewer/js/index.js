@@ -44793,6 +44793,34 @@
                 }
             }
 
+            function mapContract(contract) {
+              return {
+                name: contract.name,
+                address: contract.address,
+                abiEvents: JSON.parse(contract['abi-events']),
+                specificEvents: contract['specific-events'],
+                eventLogs: getUniqueOrderedLogs(contract['event-logs'])
+              }
+            }
+
+            function getOrderedLogs(logs) {
+              if(!logs || logs.length === 0) {
+                return [];
+              }
+              return lodash.orderBy(logs, 'mined.block-number', ['desc']);
+            }
+
+            function getUniqueOrderedLogs(logs, eventLog) {
+              if(!logs || logs.length === 0) {
+                return [];
+              }
+              console.log('get uniq reversed log for log: ', eventLog);
+              return lodash.uniqWith(this.getOrderedLogs(logs), lodash.isEqual);
+            }
+            function getOrderedContracts(contracts) {
+              return lodash.orderBy(contracts, 'name', ['asc']);
+            }
+
             class ContractsReducer {
               reduce(json, state) {
                 let data = json;
@@ -44809,7 +44837,7 @@
               removeContract(obj, state) {
                 let data = lodash.get(obj, 'remove-contract', false);
                 if (data) {
-                  state.contracts = state.contracts.filter(contract => contract.address !== data);
+                  state.contracts = getOrderedContracts(state.contracts.filter(contract => contract.address !== data));
                 }
               }
 
@@ -44822,33 +44850,25 @@
                     address: data.address,
                     abiEvents: JSON.parse(data['abi-events']),
                     specificEvents: data['specific-events'],
-                    eventLogs: this.getUniqueOrderedLogs(data['event-logs'])
+                    eventLogs: getUniqueOrderedLogs(data['event-logs'])
                   };
-                  state.contracts = [
+                  state.contracts = getOrderedContracts([
                     ...state.contracts,
                     newContract
-                  ];
+                  ]);
                 }
               }
 
               contracts(obj, state) {
                 let data = lodash.get(obj, 'contracts', false);
                 if (data) {
-                  state.contracts = data.map(contract => {
-                    return {
-                      name: contract.name,
-                      address: contract.address,
-                      abiEvents: JSON.parse(contract['abi-events']),
-                      specificEvents: contract['specific-events'],
-                      eventLogs: this.getUniqueOrderedLogs(contract['event-logs'])
-                    }
-                  });
+                  state.contracts = getOrderedContracts(data.map(contract => mapContract(contract)));
                 }
               }
 
               abi(obj, state) {
                 let data = lodash.get(obj, 'abi-result', false);
-                console.log('abi- ', data);
+
                 if (data) {
                   state.abi = data && JSON.parse(data);
                 }
@@ -44858,13 +44878,12 @@
                 let data = lodash.get(obj, 'event-log', false);
                 if (data) {
                   const eventLog = data;
-                  const { existingContracts, currentContract } = this.splitContracts(state.contracts, eventLog.address);
+                  const { existingContracts, currentContract } = splitContracts(state.contracts, eventLog.address);
                   console.log('got log', eventLog);
                   if (currentContract) {
                     this.setContractsState(state, existingContracts, currentContract, eventLog);
 
-                    // checking every received log for uniqness would take too long so it will be debounce
-                    // and the state set to unique keys
+                    // checking every received log for uniqueness would take too long so it will be debounced
                     lodash.debounce(() => this.setContractsState(state, existingContracts, currentContract, eventLog, true), 100)();
                   }
                 }
@@ -44876,24 +44895,10 @@
 
                 const updatedContract = {
                   ...currentContract,
-                  eventLogs: unique ? this.getUniqueOrderedLogs(logs, eventLog) : this.getOrderedLogs(logs)
+                  eventLogs: unique ? getUniqueOrderedLogs(logs, eventLog) : getOrderedLogs(logs)
+                  // eventLogs: getOrderedLogs(logs)
                 };
-                state.contracts = [...existingContracts, updatedContract];
-              }
-
-              getOrderedLogs(logs) {
-                if(!logs || logs.length === 0) {
-                  return [];
-                }
-                return lodash.orderBy(logs, 'mined.block-number', ['desc']);
-              }
-
-              getUniqueOrderedLogs(logs, eventLog) {
-                if(!logs || logs.length === 0) {
-                  return [];
-                }
-                console.log('get uniq reversed log for log: ', eventLog);
-                return lodash.uniqWith(this.getOrderedLogs(logs), lodash.isEqual);
+                state.contracts = getOrderedContracts([...existingContracts, updatedContract]);
               }
 
               history(obj, state) {
@@ -44901,22 +44906,16 @@
                 if (history && history[0].address) {
                   const address = history[0].address;
 
-                  const { existingContracts, currentContract } = this.splitContracts(state.contracts, address);
+                  const { existingContracts, currentContract } = splitContracts(state.contracts, address);
                   const updatedContract = {
                     ...currentContract,
-                    eventLogs: this.getUniqueOrderedLogs(history)
+                    eventLogs: getUniqueOrderedLogs(history)
                   };
                   if (currentContract) {
-                    state.contracts = [...existingContracts, updatedContract];
+                    state.contracts = getOrderedContracts([...existingContracts, updatedContract]);
                   }
                 }
               }
-
-              splitContracts(contracts, address) {
-                const existingContracts = contracts.filter(contract => contract.address !== address);
-                const currentContract = contracts.find(contract => contract.address === address);
-                return { existingContracts, currentContract };
-              };
             }
 
             class ConfigReducer {
