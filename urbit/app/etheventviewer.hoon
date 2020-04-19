@@ -217,7 +217,7 @@
   =,  enjs:format
   ^-  json
   ?~  event-logs
-    ~&  'history is null'
+    ~&  'event-logs are null'
     ~
   `json`a+(turn event-logs |=(=event-log:rpc:ethereum (event-log-encoder event-log)))
 ::
@@ -284,7 +284,7 @@
   :*  url
       |
       ~m1
-      9.860.017
+      9.899.017
       ~[address.contract]
       (get-topics specific-events.contract)
   ==
@@ -292,6 +292,9 @@
 ++  get-topics
   |=  specific-events=(list @t)
   ^-  (list ?(@ux (list @ux)))
+  ?~  specific-events
+    ~&  'no specific events'
+    ~
   :~  `(list @ux)`(turn specific-events |=(e=@t `@ux`(transform-event-string-to-hex (trip e))))
   ==
 ::
@@ -319,11 +322,10 @@
 ::
 ++  clear-eth-watcher
   |=  address=@ux
-:: TODO use logs path...
   %+  to-eth-watcher  /clear
   :+  %poke  %eth-watcher-poke
   !>  ^-  poke:eth-watcher
-  [%clear (get-logs-path address)]
+  [%clear (get-path address)]
 ::
 ++  json-to-action
   |=  jon=json
@@ -403,6 +405,9 @@
   :~  (request-ethereum-abi address.contract.act)
       [%give %fact [/state/update ~] %json !>((make-new-contract-json contract.act))]
       (setup-eth-watcher contract.act)
+::    reload events from history as well
+::      (leave-eth-watcher address.contract.act)
+::      (watch-eth-watcher address.contract.act)
   ==
 ::
 ++  make-new-contract-json
