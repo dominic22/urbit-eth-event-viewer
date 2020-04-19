@@ -3,12 +3,50 @@ import { getEventHashPairs } from '../lib/events';
 import { Filter } from './lib/filter';
 import _ from 'lodash';
 import { api } from '/api';
+import { getUniqueOrderedLogs } from '../reducers/utils';
+
 
 export class EventLogs extends Component {
+  constructor(props) {
+    super(props);
+    this.state= {
+      contract: props.contract
+    }
+    this.updateContractWithUniqueEventsBound = this.updateContractWithUniqueEvents.bind(this);
+    this.updateContractEventsDebounce =  _.debounce(this.updateContractWithUniqueEventsBound, 300);
+  }
+
+  componentDidUpdate(prevProps) {
+    const prevContract = prevProps.contract;
+    const {contract} = this.props;
+    if(prevContract && contract) {
+      if(prevContract.address !== contract.address) {
+        this.setState({contract});
+      }
+      if (prevContract.eventLogs.length !== contract.eventLogs.length) {
+        // render only after received a bulk of new events, not every new event
+        // furthermore events are checked for uniqueness since it might be possible to receive them twice
+        this.updateContractEventsDebounce(contract);
+      }
+    } else if(contract) {
+      this.setState({contract})
+    }
+  }
+
+  updateContractWithUniqueEvents(contract) {
+    console.log('events have changed!');
+    const newContract= {
+      ...contract,
+      eventLog: {
+        ...getUniqueOrderedLogs(contract)
+      }
+    }
+    this.setState({contract: newContract});
+  }
 
   render() {
-    const { contract, filterOptions } = this.props;
-
+    const { filterOptions } = this.props;
+    const { contract } = this.state;
     if (!contract) {
       return this.renderNoDataAvailable();
     }
@@ -69,11 +107,12 @@ export class EventLogs extends Component {
       <ul className="list pl0 ma0">
         {
           logs
-            .map(eventLog => {
+            .map((eventLog, index) => {
               return (
                 <a
                   href={`https://etherscan.io/tx/${eventLog.mined['transaction-hash']}`}
-                  key={contract.address + '-' + eventLog.mined['transaction-hash'] + '-' + eventLog.mined['block-number'] + '-' + eventLog.mined['log-index']}
+                  // key={contract.address + '-' + eventLog.mined['transaction-hash'] + '-' + eventLog.mined['block-number'] + '-' + eventLog.mined['log-index']}
+                  key={contract.address + '-' + index}
                   target={'_blank'}
                 >
                   {this.renderListItem(eventLog, hashPairs, contract.abiEvents)}
@@ -86,7 +125,7 @@ export class EventLogs extends Component {
   }
 
   renderFilters(hashPairs, filters) {
-    const { contract } = this.props;
+    const { contract } = this.state;
     const specificEvents = contract.specificEvents.map(event => {
       const name = event.split('(');
       return name ? name[0] : null;
@@ -163,10 +202,10 @@ export class EventLogs extends Component {
   }
 
   addFilter(eventName, filters) {
-    api.setEventFilters(this.props.contract.address, [...filters, eventName]);
+    api.setEventFilters(this.state.contract.address, [...filters, eventName]);
   }
 
   removeFilter(eventName, filters) {
-    api.setEventFilters(this.props.contract.address, filters.filter(filter => filter !== eventName));
+    api.setEventFilters(this.state.contract.address, filters.filter(filter => filter !== eventName));
   }
 }

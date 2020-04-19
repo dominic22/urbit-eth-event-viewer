@@ -12,10 +12,6 @@ export class EventsSelection extends Component {
   }
 
   render() {
-    return this.renderEventsSelection();
-  }
-
-  renderEventsSelection() {
     const { abi } = this.props;
     const { selectedEvents, listenToAllEvents } = this.state;
     if (!abi || abi.length === 0) {
@@ -59,32 +55,37 @@ export class EventsSelection extends Component {
   }
 
   toggleFromEvents(eventName) {
-    const { abi } = this.props;
     const { selectedEvents } = this.state;
     if (selectedEvents.some(event => event === eventName)) {
-      // remove
-      this.setState({
-        selectedEvents: selectedEvents.filter(event => event !== eventName),
-      }, this.toggleEventChanged);
+      this.remove(selectedEvents, eventName);
     } else {
-      // add
-      getEventStructureByName(abi, eventName);
-      this.setState({
-        selectedEvents: [...selectedEvents, eventName],
-      }, this.toggleEventChanged);
+      this.add(selectedEvents, eventName);
     }
   }
 
-  toggleEventChanged() {
-    const { abi } = this.props;
+  add(selectedEvents, eventName) {
+    this.setState({
+      selectedEvents: [...selectedEvents, eventName],
+    }, this.toggleEventChanged);
+  }
 
-    if (this.props.onEventsChanged) {
-      if(this.state.listenToAllEvents) {
-        this.props.onEventsChanged([]);
+  remove(selectedEvents, eventName) {
+    this.setState({
+      selectedEvents: selectedEvents.filter(event => event !== eventName),
+    }, this.toggleEventChanged);
+  }
+
+  toggleEventChanged() {
+    const { abi, onEventsChanged } = this.props;
+    const { selectedEvents, listenToAllEvents } = this.state;
+
+    if (onEventsChanged) {
+      if(listenToAllEvents) {
+        onEventsChanged([]);
       } else {
-        const structuredEvents = this.state.selectedEvents
+        const structuredEvents = selectedEvents
           .map(eventName => getEventStructureByName(abi, eventName));
-        this.props.onEventsChanged(structuredEvents);
+        onEventsChanged(structuredEvents);
       }
     }
   }

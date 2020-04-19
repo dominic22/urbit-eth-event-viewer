@@ -1,5 +1,5 @@
 import _ from 'lodash';
-import { getOrderedContracts, getOrderedLogs, getUniqueOrderedLogs, mapContract } from './utils';
+import { getOrderedContracts, getOrderedLogs, getUniqueOrderedLogs, mapContract, splitContracts } from './utils';
 
 export class ContractsReducer {
   reduce(json, state) {
@@ -62,9 +62,6 @@ export class ContractsReducer {
       console.log('got log', eventLog);
       if (currentContract) {
         this.setContractsState(state, existingContracts, currentContract, eventLog)
-
-        // checking every received log for uniqueness would take too long so it will be debounced
-        _.debounce(() => this.setContractsState(state, existingContracts, currentContract, eventLog, true), 100)();
       }
     }
   }
@@ -75,8 +72,7 @@ export class ContractsReducer {
 
     const updatedContract = {
       ...currentContract,
-      eventLogs: unique ? getUniqueOrderedLogs(logs, eventLog) : getOrderedLogs(logs)
-      // eventLogs: getOrderedLogs(logs)
+      eventLogs: getOrderedLogs(logs)
     };
     state.contracts = getOrderedContracts([...existingContracts, updatedContract]);
   }

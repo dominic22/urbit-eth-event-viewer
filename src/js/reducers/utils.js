@@ -17,12 +17,11 @@ export function getOrderedLogs(logs) {
   return _.orderBy(logs, 'mined.block-number', ['desc']);
 }
 
-export function getUniqueOrderedLogs(logs, eventLog) {
+export function getUniqueOrderedLogs(logs) {
   if(!logs || logs.length === 0) {
     return [];
   }
-  console.log('get uniq reversed log for log: ', eventLog);
-  return _.uniqWith(this.getOrderedLogs(logs), _.isEqual);
+  return _.uniqWith(getOrderedLogs(logs), _.isEqual);
 }
 
 export function splitContracts(contracts, address) {
