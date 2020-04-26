@@ -53,14 +53,6 @@ class UrbitApi {
     })
   }
 
-  reloadEvents(address) {
-    api.action('etheventviewer', 'json', {
-      'reload-events': {
-        address
-      }
-    })
-  }
-
   removeContract(address) {
     api.action('etheventviewer', 'json', {
       'remove-contract': {
@@ -75,7 +67,7 @@ class UrbitApi {
         address: contract.address,
         name: contract.name,
         'specific-events': contract.specificEvents,
-        'abi-events': JSON.stringify(contract.abiEvents),
+        'abi-events': contract.abiEvents ? JSON.stringify(contract.abiEvents) : null,
         'event-logs': null,
       }
     })
@@ -83,7 +75,6 @@ class UrbitApi {
 
   setShowAllEvents(address, value) {
     const currFilter = store.state.eventFilters.find(filter => filter.address === address) || {address, showAllEvents:true, filters:[]};
-    console.log('setShowAllEvents ,', address, value);
     store.handleEvent({
       data: {
         local: {

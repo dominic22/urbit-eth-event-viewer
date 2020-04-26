@@ -24,7 +24,6 @@ export class ContractsReducer {
   newContract(obj, state) {
     let data = _.get(obj, 'new-contract', false);
     if (data) {
-      console.log('new contract: ', data);
       const newContract = {
         name: data.name,
         address: data.address,
@@ -59,7 +58,6 @@ export class ContractsReducer {
     if (data) {
       const eventLog = data;
       const { existingContracts, currentContract } = splitContracts(state.contracts, eventLog.address);
-      console.log('got log', eventLog);
       if (currentContract) {
         this.setContractsState(state, existingContracts, currentContract, eventLog)
       }

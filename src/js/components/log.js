@@ -4,44 +4,44 @@ import { Filter } from './lib/filter';
 import _ from 'lodash';
 import { api } from '/api';
 import { getUniqueOrderedLogs } from '../reducers/utils';
+import { Link } from 'react-router-dom';
 
 
 export class EventLogs extends Component {
   constructor(props) {
     super(props);
-    this.state= {
+    this.state = {
       contract: props.contract
     }
     this.updateContractWithUniqueEventsBound = this.updateContractWithUniqueEvents.bind(this);
-    this.updateContractEventsDebounce =  _.debounce(this.updateContractWithUniqueEventsBound, 300);
+    this.updateContractEventsDebounce = _.debounce(this.updateContractWithUniqueEventsBound, 300);
   }
 
   componentDidUpdate(prevProps) {
     const prevContract = prevProps.contract;
-    const {contract} = this.props;
-    if(prevContract && contract) {
-      if(prevContract.address !== contract.address) {
-        this.setState({contract});
+    const { contract } = this.props;
+    if (prevContract && contract) {
+      if (prevContract.address !== contract.address) {
+        this.setState({ contract });
       }
       if (prevContract.eventLogs.length !== contract.eventLogs.length) {
         // render only after received a bulk of new events, not every new event
         // furthermore events are checked for uniqueness since it might be possible to receive them twice
         this.updateContractEventsDebounce(contract);
       }
-    } else if(contract) {
-      this.setState({contract})
+    } else if (contract) {
+      this.setState({ contract })
     }
   }
 
   updateContractWithUniqueEvents(contract) {
-    console.log('events have changed!');
-    const newContract= {
+    const newContract = {
       ...contract,
       eventLog: {
         ...getUniqueOrderedLogs(contract)
       }
     }
-    this.setState({contract: newContract});
+    this.setState({ contract: newContract });
   }
 
   render() {
@@ -53,8 +53,6 @@ export class EventLogs extends Component {
 
     let { showAllEvents, filters } = filterOptions || { filters: [], showAllEvents: true };
     const hashPairs = getEventHashPairs(contract.abiEvents);
-    console.log('current contract: ', contract);
-    console.log('Hash pairs ', hashPairs);
 
     let logs = contract.eventLogs || [];
 
@@ -77,27 +75,24 @@ export class EventLogs extends Component {
   renderFilterBar(address, showAllEvents, hashPairs, filters) {
     return <div className="flex flex-column flex-row ba bl-0 bt-0 br-0 b--solid b--gray4 b--gray1-d overflow-scroll"
                 style={{ overflowY: 'hidden' }}>
-      <div className="flex flex-column flex-row" style={{paddingRight: '150px'}}>
+      <div className="flex flex-column flex-row" style={{ paddingRight: '75px' }}>
         <Filter label="Show all Events" isActive={!showAllEvents} onClick={() => {
-          // this.setState({ showAllEvents: !showAllEvents })
           api.setShowAllEvents(address, !showAllEvents);
-          console.log('toggle');
         }}/>
         {
           showAllEvents || (hashPairs && this.renderFilters(hashPairs, filters))
         }
       </div>
       <div className="flex flex-column flex-row absolute bg-white right-0 top-0">
-        <div className="f9 pointer gray3"
-             style={{padding:'16px'}}
-             onClick={() => api.removeContract(address)}>
-          remove
-        </div>
-        <div className="f9 pointer gray3"
-             style={{padding:'16px'}}
-             onClick={() => api.reloadEvents(address)}>
-          reload
-        </div>
+        <Link
+          to={`/~etheventviewer/`}
+        >
+          <div className="f9 gray3"
+               style={{ padding: '16px' }}
+               onClick={() => api.removeContract(address)}>
+            remove
+          </div>
+        </Link>
       </div>
     </div>
   }
@@ -111,7 +106,6 @@ export class EventLogs extends Component {
               return (
                 <a
                   href={`https://etherscan.io/tx/${eventLog.mined['transaction-hash']}`}
-                  // key={contract.address + '-' + eventLog.mined['transaction-hash'] + '-' + eventLog.mined['block-number'] + '-' + eventLog.mined['log-index']}
                   key={contract.address + '-' + index}
                   target={'_blank'}
                 >
@@ -179,7 +173,7 @@ export class EventLogs extends Component {
 
   renderNoDataAvailable() {
     return <div className="pl3 pr3 pt2 dt pb3 w-100 h-100-minus-56">
-      <div className="f8 pt3 gray2 w-100 h-100 dtc v-mid tc">
+      <div className="f9 pt3 gray2 w-100 h-100 dtc v-mid tc">
         <p className="w-100 tc mb2">No contract data available.</p>
         <p className="w-100 tc">It might need some time, take a coffee and lean back.</p>
       </div>

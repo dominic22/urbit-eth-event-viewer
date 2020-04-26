@@ -15,7 +15,6 @@ export class Root extends Component {
 
   render() {
     const { contracts, eventFilters } = this.state;
-    console.log('THIS AT', this.state);
     return (
       <BrowserRouter>
         <Switch>
@@ -74,7 +73,7 @@ export class Root extends Component {
       message = 'Please select a contract.';
     }
     return <div className="pl3 pr3 pt2 dt pb3 w-100 h-100">
-      <p className="f8 pt3 gray2 w-100 h-100 dtc v-mid tc">{message}</p>
+      <p className="f9 pt3 gray2 w-100 h-100 dtc v-mid tc">{message}</p>
     </div>
   }
 }

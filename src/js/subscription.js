@@ -29,7 +29,6 @@ export class Subscription {
   }
 
   handleEvent(diff) {
-    console.log('update from gall received ', diff);
     store.handleEvent(diff);
   }
 
