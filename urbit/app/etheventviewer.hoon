@@ -1,5 +1,5 @@
-/-  eth-watcher
-/+  *server, default-agent, dbug, eth-watcher-lib
+/-  eth-watcher-sur=eth-watcher
+/+  *server, default-agent, dbug, eth-watcher-lib=eth-watcher
 /=  index
   /^  octs
   /;  as-octs:mimes:html
@@ -48,7 +48,7 @@
       name=@t
       specific-events=(list @t)
       abi-events=@t
-      event-logs=loglist:eth-watcher
+      event-logs=loglist:eth-watcher-sur
   ==
 
 +$  versioned-state
@@ -88,7 +88,7 @@
     ~&  'no eth-watcher-diff received'
     (on-agent:def wire sign)
   ~&  '%eth-watcher-diff'
-  =+  !<(diff=diff:eth-watcher q.cage.sign)
+  =+  !<(diff=diff:eth-watcher-sur q.cage.sign)
   ?-  -.diff
     %history  ~&  [%got-history (lent loglist.diff)]
               =^  cards  state
@@ -158,7 +158,7 @@
 |_  bol=bowl:gall
 ::
 ++  event-logs-card
-  |=  event-logs=loglist:eth-watcher
+  |=  event-logs=loglist:eth-watcher-sur
   ^-  (quip card _state)
   ~&  '%event-logs-card'
   ?~  event-logs
@@ -181,7 +181,6 @@
   |=  =event-log:rpc:ethereum
   ^-  (quip card _state)
   ~&  '%event-log-card'
-  =,  eth-watcher
   =/  address
     address.event-log
   =/  contract
@@ -195,18 +194,13 @@
   :_  state(contracts new-contracts)
   [%give %fact [/state/update ~] %json !>((event-log-json:eth-watcher-lib event-log))]~
 ::
-++  transform-event-string-to-hex
-  |=  event-string=tape
-  ^-  @ux
-  `@ux`(keccak-256:keccak:crypto (as-octt:mimes:html event-string))
-::
 ++  request-ethereum-abi
   |=  address=@ux
   ^-  card:agent:gall
   ~&  '%request-ethereum-abi'
   =/  req=request:http
     (get-request (ux-to-cord address))
-  [%pass /etheventviewer/ethereum-abi-response %arvo %i %request req *outbound-config:iris]
+  [%pass /etheventviewer/abi-res %arvo %i %request req *outbound-config:iris]
 ::
 ++  get-request
   |=  address=@t
@@ -235,7 +229,7 @@
   ~&  (get-path address.contract)
   %+  to-eth-watcher  (get-path address.contract)
   :+  %poke   %eth-watcher-poke
-  !>  ^-  poke:eth-watcher
+  !>  ^-  poke:eth-watcher-sur
   :+  %watch  (get-path address.contract)
   :*  url
       |
@@ -262,7 +256,7 @@
   |=  address=@ux
   %+  to-eth-watcher  /clear
   :+  %poke  %eth-watcher-poke
-  !>  ^-  poke:eth-watcher
+  !>  ^-  poke:eth-watcher-sur
   [%clear (get-path address)]
 ::
 ++  get-topics
@@ -271,8 +265,15 @@
   ?~  specific-events
     ~&  'no specific events'
     ~
-  :~  `(list @ux)`(turn specific-events |=(e=@t `@ux`(transform-event-string-to-hex (trip e))))
+  :~  `(list @ux)`(turn specific-events hex-list)
   ==
+::
+++  hex-list  |=(e=@t `@ux`(event-string-to-hex (trip e)))
+::
+++  event-string-to-hex
+  |=  event-string=tape
+  ^-  @ux
+  `@ux`(keccak-256:keccak:crypto (as-octt:mimes:html event-string))
 ::
 ++  get-path
   |=  address=@ux
@@ -413,9 +414,11 @@
   |=  =_state
   ^-  json
   =,  enjs:format
-  =/  contract-type-list
+  =/  contract-list
     `(list contract-type)`~(val by contracts.state)
-  `json`a+(turn contract-type-list |=(=contract-type (contract-encoder contract-type)))
+  `json`a+(turn contract-list contract-list-encoder)
+::
+++  contract-list-encoder  |=(=contract-type (contract-encoder contract-type))
 ::
 ++  contract-encoder
   |=  =contract-type
@@ -455,7 +458,7 @@
   ?.  ?=(%finished -.response)
     ~&  'unfinished response'
     [~ state]
-    =/  data=(unit mime-data:iris)  full-file.response
+  =/  data=(unit mime-data:iris)  full-file.response
   ?~  data
     ~&  'data is null'
     [~ state]
