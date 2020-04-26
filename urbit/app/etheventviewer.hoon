@@ -1,5 +1,5 @@
-/-  eth-watcher-sur=eth-watcher
-/+  *server, default-agent, dbug, eth-watcher-lib=eth-watcher
+/-  ew-sur=eth-watcher
+/+  *server, default-agent, dbug, ew-lib=eth-watcher
 /=  index
   /^  octs
   /;  as-octs:mimes:html
@@ -48,7 +48,7 @@
       name=@t
       specific-events=(list @t)
       abi-events=@t
-      event-logs=loglist:eth-watcher-sur
+      event-logs=loglist:ew-sur
   ==
 
 +$  versioned-state
@@ -58,7 +58,6 @@
 --
 =|  state-zero
 =*  state  -
-%-  agent:dbug
 ^-  agent:gall
 =<
   |_  bol=bowl:gall
@@ -69,33 +68,29 @@
   ::
   ++  on-init
     ^-  (quip card _this)
-    =/  launcha  [%launch-action !>([%etheventviewer / '/~etheventviewer/js/tile.js'])]
+    =/  eev  /etheventviewer
+    =/  tile-js  '/~etheventviewer/js/tile.js'
+    =/  launcha  [%launch-action !>([%etheventviewer / tile-js])]
     :_  this
-    :~  [%pass /etheventviewer %agent [our.bol %etheventviewer] %watch /etheventviewer]
+    :~  [%pass eev %agent [our.bol %etheventviewer] %watch eev]
         [%pass / %arvo %e %connect [~ /'~etheventviewer'] %etheventviewer]
-        [%pass /etheventviewer %agent [our.bol %launch] %poke launcha]
+        [%pass eev %agent [our.bol %launch] %poke launcha]
     ==
 ::
   ++  on-agent
   |=  [=wire =sign:agent:gall]
   ^-  (quip card _this)
-  ~&  '%on-agent'
-  ~&  wire
   ?.  ?=(%fact -.sign)
-    ~&  'no fact received'
     (on-agent:def wire sign)
   ?.  ?=(%eth-watcher-diff p.cage.sign)
     ~&  'no eth-watcher-diff received'
     (on-agent:def wire sign)
-  ~&  '%eth-watcher-diff'
-  =+  !<(diff=diff:eth-watcher-sur q.cage.sign)
+  =+  !<(diff=diff:ew-sur q.cage.sign)
   ?-  -.diff
-    %history  ~&  [%got-history (lent loglist.diff)]
-              =^  cards  state
+    %history  =^  cards  state
                 (event-logs-card loglist.diff)
               [cards this]
-    %log      ~&  %got-log
-              =^  cards  state
+    %log      =^  cards  state
                 (event-log-card event-log.diff)
               [cards this]
     %disavow  ~&  %disavow-unimplemented
@@ -158,11 +153,9 @@
 |_  bol=bowl:gall
 ::
 ++  event-logs-card
-  |=  event-logs=loglist:eth-watcher-sur
+  |=  event-logs=loglist:ew-sur
   ^-  (quip card _state)
-  ~&  '%event-logs-card'
   ?~  event-logs
-    ~&  'history is null'
     [~ state]
   =/  address
     address:`event-log:rpc:ethereum`+2:event-logs
@@ -175,12 +168,11 @@
   =/  new-contracts
     (~(put by filtered-contracts) address updated-contract)
   :_  state(contracts new-contracts)
-  [%give %fact [/state/update ~] %json !>((history-json:eth-watcher-lib event-logs))]~
+  [%give %fact [/state/update ~] %json !>((history-json:ew-lib event-logs))]~
 ::
 ++  event-log-card
   |=  =event-log:rpc:ethereum
   ^-  (quip card _state)
-  ~&  '%event-log-card'
   =/  address
     address.event-log
   =/  contract
@@ -192,12 +184,11 @@
   =/  new-contracts
     (~(put by filtered-contracts) address updated-contract)
   :_  state(contracts new-contracts)
-  [%give %fact [/state/update ~] %json !>((event-log-json:eth-watcher-lib event-log))]~
+  [%give %fact [/state/update ~] %json !>((event-log-json:ew-lib event-log))]~
 ::
 ++  request-ethereum-abi
   |=  address=@ux
   ^-  card:agent:gall
-  ~&  '%request-ethereum-abi'
   =/  req=request:http
     (get-request (ux-to-cord address))
   [%pass /etheventviewer/abi-res %arvo %i %request req *outbound-config:iris]
@@ -225,11 +216,9 @@
 ++  setup-eth-watcher
   |=  contract=contract-type
   =/  url  'http://eth-mainnet.urbit.org:8545'
-  ~&  'setup eth-watcher on path:'
-  ~&  (get-path address.contract)
   %+  to-eth-watcher  (get-path address.contract)
   :+  %poke   %eth-watcher-poke
-  !>  ^-  poke:eth-watcher-sur
+  !>  ^-  poke:ew-sur
   :+  %watch  (get-path address.contract)
   :*  url
       |
@@ -242,13 +231,11 @@
 ::
 ++  watch-eth-watcher
   |=  address=@ux
-  ~&  '%watch-eth-watcher'
   %+  to-eth-watcher  (get-path address)
   [%watch (get-logs-path address)]
 ::
 ++  leave-eth-watcher
   |=  address=@ux
-  ~&  '%leave-eth-watcher'
   %+  to-eth-watcher  (get-path address)
   [%leave ~]
 ::
@@ -256,14 +243,13 @@
   |=  address=@ux
   %+  to-eth-watcher  /clear
   :+  %poke  %eth-watcher-poke
-  !>  ^-  poke:eth-watcher-sur
+  !>  ^-  poke:ew-sur
   [%clear (get-path address)]
 ::
 ++  get-topics
   |=  specific-events=(list @t)
   ^-  (list ?(@ux (list @ux)))
   ?~  specific-events
-    ~&  'no specific events'
     ~
   :~  `(list @ux)`(turn specific-events hex-list)
   ==
@@ -338,9 +324,7 @@
 ++  handle-reload-events
   |=  act=eth-event-viewer-action
   ^-  (quip card _state)
-  ~&  '%handle-reload-events'
   ?>  ?=(%reload-events -.act)
-  ~&  address.act
   :_  state
   :~  (leave-eth-watcher address.act)
       (watch-eth-watcher address.act)
@@ -349,7 +333,6 @@
 ++  handle-get-abi
   |=  act=eth-event-viewer-action
   ^-  (quip card _state)
-  ~&  '%handle-get-abi'
   ?>  ?=(%get-abi -.act)
   :_  state
   [(request-ethereum-abi address.act) ~]
@@ -357,25 +340,20 @@
 ++  handle-add-contract
   |=  act=eth-event-viewer-action
   ^-  (quip card _state)
-  ~&  '%handle-add-contract'
-  ~&  act
   ?>  ?=(%add-contract -.act)
-  ~&  abi-events.contract.act
-  ?:  =(%.y (~(has by contracts.state) address.contract.act)) 
-      ~&  "contract already added"
+  ?:  =(%.y (~(has by contracts.state) address.contract.act))
       [~ state]
   =/  address  address.contract.act
   :_  state(contracts (~(put by contracts.state) address contract.act))
   :~  (request-ethereum-abi address.contract.act)
-      [%give %fact [/state/update ~] %json !>((new-contract-json contract.act))]
+      [%give %fact [/state/update ~] %json !>((new-json contract.act))]
       (setup-eth-watcher contract.act)
       (watch-eth-watcher address.contract.act)
   ==
 ::
-++  new-contract-json
+++  new-json
   |=  new-contract=contract-type
   ^-  json
-  ~&  '%make-new-contract-json'
   =,  enjs:format
   %-  pairs
   [%new-contract (contract-encoder new-contract)]~
@@ -384,18 +362,16 @@
 ++  handle-remove-contract
   |=  act=eth-event-viewer-action
   ^-  (quip card _state)
-  ~&  '%handle-remove-contract'
   ?>  ?=(%remove-contract -.act)
   :_  state(contracts (~(del by contracts.state) address.act))
-  :~  [%give %fact [/state/update ~] %json !>((remove-contract-json address.act))]
+  :~  [%give %fact [/state/update ~] %json !>((remove-json address.act))]
       (leave-eth-watcher address.act)
       (clear-eth-watcher address.act)
   ==
 ::
-++  remove-contract-json
+++  remove-json
   |=  address=@ux
   ^-  json
-  ~&  'make-remove-contract-json'
   =,  enjs:format
   %-  pairs
   :~  [%remove-contract (tape (trip (ux-to-cord address)))]
@@ -404,7 +380,6 @@
 ++  contracts-json
   |=  =_state
   ^-  json
-  ~&  'make tile json'
   =,  enjs:format
   %-  pairs
   :~  [%contracts (contracts-encoder state)]
@@ -429,7 +404,7 @@
       [%name (tape (trip name.contract-type))]
       [%abi-events (tape (trip abi-events.contract-type))]
       [%specific-events `json`a+(turn `wain`specific-events.contract-type |=(=cord s+cord))]
-      [%event-logs (event-logs-encoder:eth-watcher-lib event-logs.contract-type)]
+      [%event-logs (event-logs-encoder:ew-lib event-logs.contract-type)]
   ==
 ::
 ++  poke-handle-http-request

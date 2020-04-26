@@ -5,7 +5,6 @@
 ++  event-log-json
   |=  =event-log:rpc:ethereum
   ^-  json
-  ~&  '%make-event-log-json'
   =,  enjs:format
   %-  pairs
   :~  [%event-log (event-log-encoder event-log)]
@@ -14,7 +13,6 @@
 ++  history-json
   |=  event-logs=loglist:eth-watcher
   ^-  json
-  ~&  '%make-history-json'
   =,  enjs:format
   %-  pairs
   :~  [%history (event-logs-encoder event-logs)]
@@ -22,11 +20,9 @@
 ::
 ++  event-logs-encoder
   |=  event-logs=loglist:eth-watcher
-  ~&  '%history222-to-json'
   =,  enjs:format
   ^-  json
   ?~  event-logs
-    ~&  'history is null'
     ~
   `json`a+(turn event-logs |=(=event-log:rpc:ethereum (event-log-encoder event-log)))
 ::
