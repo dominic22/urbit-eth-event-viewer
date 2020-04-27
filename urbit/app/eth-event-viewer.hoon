@@ -71,7 +71,6 @@
     =/  eev  /eth-event-viewer
     =/  tile-js  '/~eth-event-viewer/js/tile.js'
     =/  launcha  [%launch-action !>([%add %eth-event-viewer / tile-js])]
-    ~&  '%launcha #########'
     :_  this
     :~  [%pass eev %agent [our.bol %eth-event-viewer] %watch eev]
         [%pass / %arvo %e %connect [~ /'~eth-event-viewer'] %eth-event-viewer]
