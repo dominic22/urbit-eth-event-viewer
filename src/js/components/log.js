@@ -85,7 +85,7 @@ export class EventLogs extends Component {
       </div>
       <div className="flex flex-column flex-row absolute bg-white right-0 top-0">
         <Link
-          to={`/~etheventviewer/`}
+          to={`/~eth-event-viewer/`}
         >
           <div className="f9 gray3"
                style={{ padding: '16px' }}

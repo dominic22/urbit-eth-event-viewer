@@ -65,13 +65,13 @@ export class NewContract extends Component {
         </div>
       </div>
       <div className="flex mt3">
-        <Link to="/~etheventviewer">
+        <Link to="/~eth-event-viewer">
           <button className="db f9 green2 ba pa2 b--green2 bg-gray0-d pointer"
                   onClick={() => this.accept() }>
             Add Contract
           </button>
         </Link>
-        <Link to="/~etheventviewer">
+        <Link to="/~eth-event-viewer">
         <button className="f9 ml3 ba pa2 b--black pointer bg-transparent b--white-d white-d"
                 onClick={() => this.setState({...initialState})}>
           Cancel

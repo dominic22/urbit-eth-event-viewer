@@ -20,7 +20,7 @@ export class Root extends Component {
         <Switch>
           <Route
             exact
-            path="/~etheventviewer"
+            path="/~eth-event-viewer"
             render={() => {
               return (
                 <Skeleton contracts={contracts}>
@@ -31,7 +31,7 @@ export class Root extends Component {
           />
           <Route
             exact
-            path="/~etheventviewer/new"
+            path="/~eth-event-viewer/new"
             render={() => {
               return (
                 <Skeleton contracts={this.state.contracts}>
@@ -46,7 +46,7 @@ export class Root extends Component {
           />
           <Route
             exact
-            path="/~etheventviewer/:contract"
+            path="/~eth-event-viewer/:contract"
             render={props => {
               return (
                 <Skeleton

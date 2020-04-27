@@ -7,9 +7,9 @@ export default class etheventviewerTile extends Component {
   render() {
     return (
       <div className="w-100 h-100 relative bg-white bg-gray0-d ba b--black b--gray1-d">
-        <a className="w-100 h-100 db pa2 no-underline" href="/~etheventviewer">
+        <a className="w-100 h-100 db pa2 no-underline" href="/~eth-event-viewer">
           <p className="black white-d absolute f9" style={{ left: 8, top: 8 }}>Ethereum Event Viewer</p>
-          <img className="absolute" src="/~etheventviewer/img/Tile.png" style={{top: 48, left: 48}}/>
+          <img className="absolute" src="/~eth-event-viewer/img/Tile.png" style={{top: 48, left: 48}}/>
         </a>
       </div>
     );
@@ -17,4 +17,4 @@ export default class etheventviewerTile extends Component {
 
 }
 
-window.etheventviewerTile = etheventviewerTile;
+window['eth-event-viewerTile'] = etheventviewerTile;

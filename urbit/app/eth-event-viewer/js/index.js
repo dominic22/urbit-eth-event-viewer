@@ -44673,7 +44673,7 @@
                 this.bindPaths = [];
               }
 
-              bind(path, method, ship = this.authTokens.ship, appl = "etheventviewer", success, fail) {
+              bind(path, method, ship = this.authTokens.ship, appl = "eth-event-viewer", success, fail) {
                 this.bindPaths = lodash.uniq([...this.bindPaths, path]);
 
                 window.subscriptionId = window.urb.subscribe(ship, appl, path, 
@@ -44695,7 +44695,7 @@
               }
 
               etheventviewer(data) {
-                this.action("etheventviewer", "json", data);
+                this.action("eth-event-viewer", "json", data);
               }
 
               action(appl, mark, data) {
@@ -44711,7 +44711,7 @@
               }
 
               getAbi(address) {
-                api.action('etheventviewer', 'json', {
+                api.action('eth-event-viewer', 'json', {
                   'get-abi': {
                     address
                   }
@@ -44719,7 +44719,7 @@
               }
 
               removeContract(address) {
-                api.action('etheventviewer', 'json', {
+                api.action('eth-event-viewer', 'json', {
                   'remove-contract': {
                     address
                   }
@@ -44727,7 +44727,7 @@
               }
 
               newContract(contract) {
-                api.action('etheventviewer', 'json', {
+                api.action('eth-event-viewer', 'json', {
                   'add-contract': {
                     address: contract.address,
                     name: contract.name,
@@ -44910,7 +44910,7 @@
 
             class ConfigReducer {
                 reduce(json, state) {
-                    let data = lodash.get(json, 'etheventviewer', false);
+                    let data = lodash.get(json, 'eth-event-viewer', false);
                     if (data) {
                         state.inbox = data.inbox;
                     }
@@ -61997,13 +61997,13 @@
                     )
                   )
                   , react.createElement('div', { className: "flex mt3" , __self: this, __source: {fileName: _jsxFileName$2, lineNumber: 67}}
-                    , react.createElement(Link, { to: "/~etheventviewer", __self: this, __source: {fileName: _jsxFileName$2, lineNumber: 68}}
+                    , react.createElement(Link, { to: "/~eth-event-viewer", __self: this, __source: {fileName: _jsxFileName$2, lineNumber: 68}}
                       , react.createElement('button', { className: "db f9 green2 ba pa2 b--green2 bg-gray0-d pointer"       ,
                               onClick: () => this.accept() , __self: this, __source: {fileName: _jsxFileName$2, lineNumber: 69}}, "Add Contract"
 
                       )
                     )
-                    , react.createElement(Link, { to: "/~etheventviewer", __self: this, __source: {fileName: _jsxFileName$2, lineNumber: 74}}
+                    , react.createElement(Link, { to: "/~eth-event-viewer", __self: this, __source: {fileName: _jsxFileName$2, lineNumber: 74}}
                     , react.createElement('button', { className: "f9 ml3 ba pa2 b--black pointer bg-transparent b--white-d white-d"        ,
                             onClick: () => this.setState({...initialState}), __self: this, __source: {fileName: _jsxFileName$2, lineNumber: 75}}, "Cancel"
 
@@ -62134,7 +62134,7 @@
                 return (
                   react.createElement('img', {
                     className: "invert-d " + classes,
-                    src: "/~etheventviewer/img/Home.png",
+                    src: "/~eth-event-viewer/img/Home.png",
                     width: 16,
                     height: 16, __self: this, __source: {fileName: _jsxFileName$3, lineNumber: 7}}
                   )
@@ -66265,7 +66265,7 @@
                       className: "w-100 bg-transparent pa4 bb b--gray4 b--gray1-d"     ,
                       style: { paddingBottom: '13px' }, __self: this, __source: {fileName: _jsxFileName$6, lineNumber: 9}}
                     
-                      , react.createElement(Link, { to: "/~etheventviewer/new", __self: this, __source: {fileName: _jsxFileName$6, lineNumber: 13}}
+                      , react.createElement(Link, { to: "/~eth-event-viewer/new", __self: this, __source: {fileName: _jsxFileName$6, lineNumber: 13}}
                         , react.createElement('p', { className: "dib f9 pointer green2 gray4-d mr4"     , __self: this, __source: {fileName: _jsxFileName$6, lineNumber: 14}}, "New Contract" )
                       )
                     )
@@ -66285,7 +66285,7 @@
                     , contracts.map(contract => {
                       return (
                         react.createElement(Link, {
-                          to: `/~etheventviewer/${contract.address}`,
+                          to: `/~eth-event-viewer/${contract.address}`,
                           key: contract.address + contract.name, __self: this, __source: {fileName: _jsxFileName$6, lineNumber: 32}}
                         
                           , this.renderListItem(contract)
@@ -66431,7 +66431,7 @@
                   )
                   , react.createElement('div', { className: "flex flex-column flex-row absolute bg-white right-0 top-0"      , __self: this, __source: {fileName: _jsxFileName$9, lineNumber: 86}}
                     , react.createElement(Link, {
-                      to: `/~etheventviewer/`, __self: this, __source: {fileName: _jsxFileName$9, lineNumber: 87}}
+                      to: `/~eth-event-viewer/`, __self: this, __source: {fileName: _jsxFileName$9, lineNumber: 87}}
                     
                       , react.createElement('div', { className: "f9 gray3" ,
                            style: { padding: '16px' },
@@ -66565,7 +66565,7 @@
                     , react.createElement(Switch, {__self: this, __source: {fileName: _jsxFileName$a, lineNumber: 20}}
                       , react.createElement(Route, {
                         exact: true,
-                        path: "/~etheventviewer",
+                        path: "/~eth-event-viewer",
                         render: () => {
                           return (
                             react.createElement(Skeleton, { contracts: contracts, __self: this, __source: {fileName: _jsxFileName$a, lineNumber: 26}}
@@ -66576,7 +66576,7 @@
                       )
                       , react.createElement(Route, {
                         exact: true,
-                        path: "/~etheventviewer/new",
+                        path: "/~eth-event-viewer/new",
                         render: () => {
                           return (
                             react.createElement(Skeleton, { contracts: this.state.contracts, __self: this, __source: {fileName: _jsxFileName$a, lineNumber: 37}}
@@ -66591,7 +66591,7 @@
                       )
                       , react.createElement(Route, {
                         exact: true,
-                        path: "/~etheventviewer/:contract",
+                        path: "/~eth-event-viewer/:contract",
                         render: props => {
                           return (
                             react.createElement(Skeleton, {
@@ -69736,7 +69736,7 @@ lyrtesmudnytbyrsenwegfyrmurtelreptegpecnelnevfes\
               }
 
               initializeetheventviewer() {
-                api.bind('/primary', 'PUT', api.authTokens.ship, 'etheventviewer',
+                api.bind('/primary', 'PUT', api.authTokens.ship, 'eth-event-viewer',
                   this.handleEvent.bind(this),
                   this.handleError.bind(this));
 
@@ -69744,7 +69744,7 @@ lyrtesmudnytbyrsenwegfyrmurtelreptegpecnelnevfes\
                   "/state/update",
                   "PUT",
                   api.authTokens.ship,
-                  "etheventviewer",
+                  "eth-event-viewer",
                   this.handleEvent.bind(this),
                   this.handleError.bind(this)
                 );
@@ -69756,7 +69756,7 @@ lyrtesmudnytbyrsenwegfyrmurtelreptegpecnelnevfes\
 
               handleError(err) {
                 console.error(err);
-                api.bind('/primary', 'PUT', api.authTokens.ship, 'etheventviewer',
+                api.bind('/primary', 'PUT', api.authTokens.ship, 'eth-event-viewer',
                   this.handleEvent.bind(this),
                   this.handleError.bind(this));
               }

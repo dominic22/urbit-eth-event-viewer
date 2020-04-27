@@ -3,34 +3,34 @@
 /=  index
   /^  octs
   /;  as-octs:mimes:html
-  /:  /===/app/etheventviewer/index
+  /:  /===/app/eth-event-viewer/index
   /|  /html/
       /~  ~
   ==
 /=  tile-js
   /^  octs
   /;  as-octs:mimes:html
-  /:  /===/app/etheventviewer/js/tile
+  /:  /===/app/eth-event-viewer/js/tile
   /|  /js/
       /~  ~
   ==
 /=  script
   /^  octs
   /;  as-octs:mimes:html
-  /:  /===/app/etheventviewer/js/index
+  /:  /===/app/eth-event-viewer/js/index
   /|  /js/
       /~  ~
   ==
 /=  style
   /^  octs
   /;  as-octs:mimes:html
-  /:  /===/app/etheventviewer/css/index
+  /:  /===/app/eth-event-viewer/css/index
   /|  /css/
       /~  ~
   ==
-/=  etheventviewer-png
+/=  eth-event-viewer-png
   /^  (map knot @)
-  /:  /===/app/etheventviewer/img  /_  /png/
+  /:  /===/app/eth-event-viewer/img  /_  /png/
 =,  format
 ::
 |%
@@ -62,18 +62,19 @@
 =<
   |_  bol=bowl:gall
   +*  this       .
-      etheventviewer-core  +>
-      cc         ~(. etheventviewer-core bol)
+      eth-event-viewer-core  +>
+      cc         ~(. eth-event-viewer-core bol)
       def        ~(. (default-agent this %|) bol)
   ::
   ++  on-init
     ^-  (quip card _this)
-    =/  eev  /etheventviewer
-    =/  tile-js  '/~etheventviewer/js/tile.js'
-    =/  launcha  [%launch-action !>([%add %etheventviewer / tile-js])]
+    =/  eev  /eth-event-viewer
+    =/  tile-js  '/~eth-event-viewer/js/tile.js'
+    =/  launcha  [%launch-action !>([%add %eth-event-viewer / tile-js])]
+    ~&  '%launcha #########'
     :_  this
-    :~  [%pass eev %agent [our.bol %etheventviewer] %watch eev]
-        [%pass / %arvo %e %connect [~ /'~etheventviewer'] %etheventviewer]
+    :~  [%pass eev %agent [our.bol %eth-event-viewer] %watch eev]
+        [%pass / %arvo %e %connect [~ /'~eth-event-viewer'] %eth-event-viewer]
         [%pass eev %agent [our.bol %launch] %poke launcha]
     ==
 ::
@@ -191,7 +192,7 @@
   ^-  card:agent:gall
   =/  req=request:http
     (get-request (ux-to-cord address))
-  [%pass /etheventviewer/abi-res %arvo %i %request req *outbound-config:iris]
+  [%pass /eth-event-viewer/abi-res %arvo %i %request req *outbound-config:iris]
 ::
 ++  get-request
   |=  address=@t
@@ -412,18 +413,18 @@
   ^-  simple-payload:http
   =+  url=(parse-request-line url.request.inbound-request)
   ?+  site.url  not-found:gen
-      [%'~etheventviewer' %css %index ~]  (css-response:gen style)
-      [%'~etheventviewer' %js %tile ~]    (js-response:gen tile-js)
-      [%'~etheventviewer' %js %index ~]   (js-response:gen script)
+      [%'~eth-event-viewer' %css %index ~]  (css-response:gen style)
+      [%'~eth-event-viewer' %js %tile ~]    (js-response:gen tile-js)
+      [%'~eth-event-viewer' %js %index ~]   (js-response:gen script)
   ::
-      [%'~etheventviewer' %img @t *]
+      [%'~eth-event-viewer' %img @t *]
     =/  name=@t  i.t.t.site.url
-    =/  img  (~(get by etheventviewer-png) name)
+    =/  img  (~(get by eth-event-viewer-png) name)
     ?~  img
       not-found:gen
     (png-response:gen (as-octs:mimes:html u.img))
   ::
-      [%'~etheventviewer' *]  (html-response:gen index)
+      [%'~eth-event-viewer' *]  (html-response:gen index)
   ==
 ::
 ++  http-response

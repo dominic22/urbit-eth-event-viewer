@@ -14,7 +14,7 @@ export class Subscription {
   }
 
   initializeetheventviewer() {
-    api.bind('/primary', 'PUT', api.authTokens.ship, 'etheventviewer',
+    api.bind('/primary', 'PUT', api.authTokens.ship, 'eth-event-viewer',
       this.handleEvent.bind(this),
       this.handleError.bind(this));
 
@@ -22,7 +22,7 @@ export class Subscription {
       "/state/update",
       "PUT",
       api.authTokens.ship,
-      "etheventviewer",
+      "eth-event-viewer",
       this.handleEvent.bind(this),
       this.handleError.bind(this)
     );
@@ -34,7 +34,7 @@ export class Subscription {
 
   handleError(err) {
     console.error(err);
-    api.bind('/primary', 'PUT', api.authTokens.ship, 'etheventviewer',
+    api.bind('/primary', 'PUT', api.authTokens.ship, 'eth-event-viewer',
       this.handleEvent.bind(this),
       this.handleError.bind(this));
   }

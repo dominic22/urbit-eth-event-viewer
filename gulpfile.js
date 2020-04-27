@@ -29,7 +29,7 @@ gulp.task('css-bundle', function() {
     .src('src/index.css')
     .pipe(cssimport())
     .pipe(postcss(plugins))
-    .pipe(gulp.dest('./urbit/app/etheventviewer/css'));
+    .pipe(gulp.dest('./urbit/app/eth-event-viewer/css'));
 });
 
 gulp.task('jsx-transform', function(cb) {
@@ -71,7 +71,7 @@ gulp.task('js-imports', function(cb) {
       console.log(e);
       cb();
     })
-    .pipe(gulp.dest('./urbit/app/etheventviewer/js/'))
+    .pipe(gulp.dest('./urbit/app/eth-event-viewer/js/'))
     .on('end', cb);
 });
 
@@ -97,21 +97,21 @@ gulp.task('tile-js-imports', function(cb) {
       console.log(e);
       cb();
     })
-    .pipe(gulp.dest('./urbit/app/etheventviewer/js/'))
+    .pipe(gulp.dest('./urbit/app/eth-event-viewer/js/'))
     .on('end', cb);
 });
 
 
 gulp.task('js-minify', function () {
-  return gulp.src('./urbit/app/etheventviewer/js/index.js')
+  return gulp.src('./urbit/app/eth-event-viewer/js/index.js')
     .pipe(minify())
-    .pipe(gulp.dest('./urbit/app/etheventviewer/js/'));
+    .pipe(gulp.dest('./urbit/app/eth-event-viewer/js/'));
 });
 
 gulp.task('tile-js-minify', function () {
-  return gulp.src('./urbit/app/etheventviewer/js/tile.js')
+  return gulp.src('./urbit/app/eth-event-viewer/js/tile.js')
     .pipe(minify())
-    .pipe(gulp.dest('./urbit/app/etheventviewer/js/'));
+    .pipe(gulp.dest('./urbit/app/eth-event-viewer/js/'));
 });
 
 gulp.task('urbit-copy', function () {

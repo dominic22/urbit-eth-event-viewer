@@ -8,7 +8,7 @@ class UrbitApi {
     this.bindPaths = [];
   }
 
-  bind(path, method, ship = this.authTokens.ship, appl = "etheventviewer", success, fail) {
+  bind(path, method, ship = this.authTokens.ship, appl = "eth-event-viewer", success, fail) {
     this.bindPaths = _.uniq([...this.bindPaths, path]);
 
     window.subscriptionId = window.urb.subscribe(ship, appl, path, 
@@ -30,7 +30,7 @@ class UrbitApi {
   }
 
   etheventviewer(data) {
-    this.action("etheventviewer", "json", data);
+    this.action("eth-event-viewer", "json", data);
   }
 
   action(appl, mark, data) {
@@ -46,7 +46,7 @@ class UrbitApi {
   }
 
   getAbi(address) {
-    api.action('etheventviewer', 'json', {
+    api.action('eth-event-viewer', 'json', {
       'get-abi': {
         address
       }
@@ -54,7 +54,7 @@ class UrbitApi {
   }
 
   removeContract(address) {
-    api.action('etheventviewer', 'json', {
+    api.action('eth-event-viewer', 'json', {
       'remove-contract': {
         address
       }
@@ -62,7 +62,7 @@ class UrbitApi {
   }
 
   newContract(contract) {
-    api.action('etheventviewer', 'json', {
+    api.action('eth-event-viewer', 'json', {
       'add-contract': {
         address: contract.address,
         name: contract.name,

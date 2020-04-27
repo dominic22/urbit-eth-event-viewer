@@ -10,7 +10,7 @@ export class ContractsSidebar extends Component {
           className="w-100 bg-transparent pa4 bb b--gray4 b--gray1-d"
           style={{ paddingBottom: '13px' }}
         >
-          <Link to="/~etheventviewer/new">
+          <Link to="/~eth-event-viewer/new">
             <p className="dib f9 pointer green2 gray4-d mr4">New Contract</p>
           </Link>
         </div>
@@ -30,7 +30,7 @@ export class ContractsSidebar extends Component {
         {contracts.map(contract => {
           return (
             <Link
-              to={`/~etheventviewer/${contract.address}`}
+              to={`/~eth-event-viewer/${contract.address}`}
               key={contract.address + contract.name}
             >
               {this.renderListItem(contract)}
