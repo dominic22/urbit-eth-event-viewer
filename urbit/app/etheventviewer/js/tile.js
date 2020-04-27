@@ -19178,6 +19178,7 @@
                   react.createElement('div', { className: "w-100 h-100 relative bg-white bg-gray0-d ba b--black b--gray1-d"       , __self: this, __source: {fileName: _jsxFileName, lineNumber: 9}}
                     , react.createElement('a', { className: "w-100 h-100 db pa2 no-underline"    , href: "/~etheventviewer", __self: this, __source: {fileName: _jsxFileName, lineNumber: 10}}
                       , react.createElement('p', { className: "black white-d absolute f9"   , style: { left: 8, top: 8 }, __self: this, __source: {fileName: _jsxFileName, lineNumber: 11}}, "Ethereum Event Viewer"  )
+                      , react.createElement('img', { className: "absolute", src: "/~etheventviewer/img/Tile.png", style: {top: 48, left: 48}, __self: this, __source: {fileName: _jsxFileName, lineNumber: 12}})
                     )
                   )
                 );

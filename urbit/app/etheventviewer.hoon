@@ -70,7 +70,7 @@
     ^-  (quip card _this)
     =/  eev  /etheventviewer
     =/  tile-js  '/~etheventviewer/js/tile.js'
-    =/  launcha  [%launch-action !>([%etheventviewer / tile-js])]
+    =/  launcha  [%launch-action !>([%add %etheventviewer / tile-js])]
     :_  this
     :~  [%pass eev %agent [our.bol %etheventviewer] %watch eev]
         [%pass / %arvo %e %connect [~ /'~etheventviewer'] %etheventviewer]
