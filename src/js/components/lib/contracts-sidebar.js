@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom';
 export class ContractsSidebar extends Component {
   render() {
     return (
-      <div className="ba bl-0 bt-0 bb-0 b--solid b--gray4 b--gray1-d" style={{ width: '320px' }}
+      <div className="ba bl-0 bt-0 bb-0 b--solid b--gray4 b--gray1-d w-320-px w-100-s ba-0-s"
       >
         <div
           className="w-100 bg-transparent pa4 bb b--gray4 b--gray1-d"
@@ -26,7 +26,7 @@ export class ContractsSidebar extends Component {
       return null;
     }
     return (
-      <ul className="list pl0 ma0">
+      <ul className="list pl0 ma0 mh-134-s">
         {contracts.map(contract => {
           return (
             <Link

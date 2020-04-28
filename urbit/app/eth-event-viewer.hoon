@@ -224,7 +224,7 @@
       |
       ~m2
       ~m2
-      9.920.593
+      9.960.593
       ~[address.contract]
       (get-topics specific-events.contract)
   ==

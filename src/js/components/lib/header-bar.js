@@ -15,7 +15,7 @@ export class HeaderBar extends Component {
         }
         style={{ height: 40 }}>
         <a
-          className="dib gray2 f9 inter absolute left-0"
+          className="dib gray2 f9 inter absolute left-0 ml-2-s"
           href="/"
           style={{ top: 14 }}>
           <IconHome/>
@@ -33,7 +33,7 @@ export class HeaderBar extends Component {
           }}>
           {title}
         </span>
-        <div className="absolute right-0 lh-copy" style={{ top: 8 }}>
+        <div className="absolute right-0 lh-copy mr-2-s" style={{ top: 8 }}>
           <Sigil
             ship={"~" + window.ship}
             classes="v-mid mix-blend-diff"

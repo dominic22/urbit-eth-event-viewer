@@ -30,16 +30,17 @@ export class NewContract extends Component {
   render() {
     const { address, abiEvents, name } = this.state;
     return (<div className="flex flex-column pa3">
-      <div className="flex flex-row">
-        <div>
+      <div className="flex flex-row flex-wrap">
+        <div className="w-100-s">
           <p className="f8 mt3 lh-copy db mb2">Contract Address</p>
           <textarea
             id="name"
-            className="ba b--black-20 pa3 db w-70 b--gray4 f9 flex-basis-full-s focus-b--black focus-b--white-d"
+            className="ba b--black-20 pa3 db w-70 b--gray4 f9 flex-basis-full-s focus-b--black focus-b--white-d
+                      w-382-px w-auto-s"
             rows={1}
             placeholder="Beginning with 0x..."
             value={address}
-            style={{ resize: 'none', width: '382px' }}
+            style={{ resize: 'none' }}
             onChange={this.handleContractChangeBound}
             aria-describedby="name-desc"
           />
@@ -47,16 +48,17 @@ export class NewContract extends Component {
           <p className="f8 mt3 lh-copy db mb2">Name<span className="gray3"> (Optional)</span></p>
           <textarea
             id="name"
-            className="ba b--black-20 pa3 db w-70 b--gray4 f9 flex-basis-full-s focus-b--black focus-b--white-d"
+            className="ba b--black-20 pa3 db w-70 b--gray4 f9 flex-basis-full-s focus-b--black focus-b--white-d
+                      w-382-px w-auto-s"
             rows={1}
             placeholder="My Contract Name"
             value={name}
-            style={{ resize: 'none', width: '382px' }}
+            style={{ resize: 'none' }}
             onChange={this.handleNameChangeBound}
             aria-describedby="name-desc"
           />
         </div>
-        <div className="ml8 mt3">
+        <div className="ml8 mt3 w-100-s ml0-s">
           <EventsSelection
             onEventsChanged={selectedEvents => {
               this.setState({specificEvents:selectedEvents})

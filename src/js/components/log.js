@@ -99,7 +99,7 @@ export class EventLogs extends Component {
 
   renderLog(logs, hashPairs, contract) {
     return <div className="h-100-minus-60 overflow-auto">
-      <ul className="list pl0 ma0">
+      <ul className="list pl0 ma0 dt w-100">
         {
           logs
             .map((eventLog, index) => {
@@ -145,7 +145,7 @@ export class EventLogs extends Component {
         className={'lh-copy pl3 pv3 ba bl-0 bt-0 br-0 b--solid b--gray4 b--gray1-d bg-animate pointer'}
       >
         <div className="flex flex-column flex-row nowrap">
-          <div key="transaction-info" style={{ width: '180px' }}>
+          <div key="transaction-info mw-180-px">
             <p className="f9 truncate">{hashPair ? hashPair.name : '-'}</p>
             <p className="f9 gray3">Block No. {eventLog.mined['block-number']}</p>
           </div>
@@ -164,7 +164,7 @@ export class EventLogs extends Component {
         return null;
       }
       const topicIndex = index - 1;
-      return (<div className="ml2" key={topic + topicIndex} style={{ minWidth: '310px' }}>
+      return (<div className="ml2 mw-310-px" key={topic + topicIndex}>
         <p className="f9">{hashPair && hashPair.inputs[topicIndex] && hashPair.inputs[topicIndex].name}</p>
         <p className="f9 gray3">{topic}</p>
       </div>)
