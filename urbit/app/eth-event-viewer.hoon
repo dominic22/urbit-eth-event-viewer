@@ -1,5 +1,5 @@
-/-  ew-sur=eth-watcher
-/+  *server, default-agent, dbug, ew-lib=eth-watcher
+/-  ew-sur=eth-watcher, *eth-event-viewer
+/+  *server, default-agent, dbug, ew-lib=eth-watcher, eev=eth-event-viewer
 /=  index
   /^  octs
   /;  as-octs:mimes:html
@@ -36,21 +36,6 @@
 |%
 +$  card  card:agent:gall
 ::
-+$  eth-event-viewer-action
-  $%  [%add-contract contract=contract-type]
-      [%get-abi address=@ux]
-      [%remove-contract address=@ux]
-      [%reload-events address=@ux]
-  ==
-::
-+$  contract-type
-  $:  address=@ux
-      name=@t
-      specific-events=(list @t)
-      abi-events=@t
-      event-logs=loglist:ew-sur
-  ==
-
 +$  versioned-state
   $%  state-zero
   ==
@@ -120,7 +105,9 @@
     =^  cards  state
       ?+    mark  (on-poke:def mark vase)
           %json
-        (poke-action-name:cc !<(json vase))
+        (poke-action:cc (json-to-view-action:eev !<(json vase)))
+          %eth-event-viewer
+        (poke-action:cc !<(eth-event-viewer-action vase))
           %handle-http-request
         =+  !<([eyre-id=@ta =inbound-request:eyre] vase)
         ^-  (quip card _state)
@@ -271,45 +258,12 @@
   ^-  path
   `path`/logs/[dap.bol]/(scot %tas (ux-to-cord address))
 ::
-++  json-to-action
-  |=  jon=json
-  ^-  eth-event-viewer-action
-  =,  dejs:format
-  =<  (parse-json jon)
-  |%
-  ++  parse-json
-    %-  of
-    :~  [%add-contract parse-contract]
-        [%get-abi parse-cord]
-        [%remove-contract parse-cord]
-        [%reload-events parse-cord]
-    ==
-::
-  ++  parse-cord
-    (ot address+parse-hex-result:rpc:ethereum ~)
-::
-  ++  parse-contract
-    %-  ot
-    :~  [%address parse-hex-result:rpc:ethereum]
-        [%name so]
-        [%specific-events (ar so)]
-        [%abi-events so]
-        [%event-logs ul]
-    ==
-::
-  --
-::
 ++  contract-cord-to-hex
   |=  address=@t
   ^-  @ux
   =/  address-tape
     (cass q:(trim 2 (trip address)))
   `@ux`(scan address-tape hex)
-::
-++  poke-action-name
-  |=  jon=json
-  ^-  (quip card _state)
-  (poke-action (json-to-action jon))
 ::
 ++  poke-action
   |=  action=eth-event-viewer-action
