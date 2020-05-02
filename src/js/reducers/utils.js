@@ -4,7 +4,7 @@ export function mapContract(contract) {
   return {
     name: contract.name,
     address: contract.address,
-    abiEvents: JSON.parse(contract['abi-events']),
+    abiEvents: contract['abi-events'] && JSON.parse(contract['abi-events']),
     specificEvents: contract['specific-events'],
     eventLogs: getUniqueOrderedLogs(contract['event-logs'])
   }

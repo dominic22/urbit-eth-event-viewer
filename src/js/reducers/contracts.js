@@ -24,13 +24,7 @@ export class ContractsReducer {
   newContract(obj, state) {
     let data = _.get(obj, 'new-contract', false);
     if (data) {
-      const newContract = {
-        name: data.name,
-        address: data.address,
-        abiEvents: JSON.parse(data['abi-events']),
-        specificEvents: data['specific-events'],
-        eventLogs: getUniqueOrderedLogs(data['event-logs'])
-      };
+      const newContract = mapContract(data);
       state.contracts = getOrderedContracts([
         ...state.contracts,
         newContract
@@ -64,7 +58,7 @@ export class ContractsReducer {
     }
   }
 
-  setContractsState(state, existingContracts, currentContract, eventLog, unique) {
+  setContractsState(state, existingContracts, currentContract, eventLog) {
     const currentLogs = currentContract.eventLogs || []
     const logs = [...currentLogs, eventLog];
 
