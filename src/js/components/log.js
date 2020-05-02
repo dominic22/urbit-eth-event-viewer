@@ -34,16 +34,6 @@ export class EventLogs extends Component {
     }
   }
 
-  updateContractWithUniqueEvents(contract) {
-    const newContract = {
-      ...contract,
-      eventLog: {
-        ...getUniqueOrderedLogs(contract)
-      }
-    }
-    this.setState({ contract: newContract });
-  }
-
   render() {
     const { filterOptions } = this.props;
     const { contract } = this.state;
@@ -80,7 +70,7 @@ export class EventLogs extends Component {
           api.setShowAllEvents(address, !showAllEvents);
         }}/>
         {
-          showAllEvents || (hashPairs && this.renderFilters(hashPairs, filters))
+          showAllEvents || (hashPairs && hashPairs.length > 0 && this.renderFilters(hashPairs, filters))
         }
       </div>
       <div className="flex flex-column flex-row absolute bg-white right-0 top-0">
@@ -145,8 +135,8 @@ export class EventLogs extends Component {
         className={'lh-copy pl3 pv3 ba bl-0 bt-0 br-0 b--solid b--gray4 b--gray1-d bg-animate pointer'}
       >
         <div className="flex flex-column flex-row nowrap">
-          <div key="transaction-info mw-180-px">
-            <p className="f9 truncate">{hashPair ? hashPair.name : '-'}</p>
+          <div key="transaction-info" className="mw-180-px">
+            <p className="f9 truncate">{hashPair ? hashPair.name : eventLog.topics[0]}</p>
             <p className="f9 gray3">Block No. {eventLog.mined['block-number']}</p>
           </div>
           {
@@ -164,8 +154,9 @@ export class EventLogs extends Component {
         return null;
       }
       const topicIndex = index - 1;
+      const topicName = hashPair && hashPair.inputs[topicIndex] && hashPair.inputs[topicIndex].name;
       return (<div className="ml2 mw-310-px" key={topic + topicIndex}>
-        <p className="f9">{hashPair && hashPair.inputs[topicIndex] && hashPair.inputs[topicIndex].name}</p>
+        <p className="f9">{topicName ? topicName : topic}</p>
         <p className="f9 gray3">{topic}</p>
       </div>)
     })
@@ -201,5 +192,15 @@ export class EventLogs extends Component {
 
   removeFilter(eventName, filters) {
     api.setEventFilters(this.state.contract.address, filters.filter(filter => filter !== eventName));
+  }
+
+  updateContractWithUniqueEvents(contract) {
+    const newContract = {
+      ...contract,
+      eventLog: {
+        ...getUniqueOrderedLogs(contract)
+      }
+    }
+    this.setState({ contract: newContract });
   }
 }

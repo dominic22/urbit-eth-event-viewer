@@ -2,7 +2,6 @@ import web3Utils from 'web3-utils';
 
 export function getEventHashPairs(events) {
   if(!events) {
-    console.error('No events found');
     return [];
   }
   return events.map(event => ({
