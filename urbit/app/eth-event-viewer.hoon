@@ -145,7 +145,7 @@
   ?~  event-logs
     [~ state]
   =/  address
-    address:`event-log:rpc:ethereum`+2:event-logs
+    address:(snag 0 `loglist:ew-sur`event-logs)
   =/  contract
     (~(got by contracts.state) address)
   =/  updated-contract
@@ -155,7 +155,7 @@
   =/  new-contracts
     (~(put by filtered-contracts) address updated-contract)
   :_  state(contracts new-contracts)
-  [%give %fact [/state/update ~] %json !>((history-json:ew-lib event-logs))]~
+  [%give %fact [/state/update ~] %json !>((history:dejs:ew-lib event-logs))]~
 ::
 ++  event-log-card
   |=  =event-log:rpc:ethereum
@@ -171,14 +171,14 @@
   =/  new-contracts
     (~(put by filtered-contracts) address updated-contract)
   :_  state(contracts new-contracts)
-  [%give %fact [/state/update ~] %json !>((event-log-json:ew-lib event-log))]~
+  [%give %fact [/state/update ~] %json !>((event-log:dejs:ew-lib event-log))]~
 ::
 ++  request-ethereum-abi
   |=  address=@ux
   ^-  card:agent:gall
   =/  req=request:http
     (get-request (ux-to-cord address))
-  [%pass /eth-event-viewer/abi-res %arvo %i %request req *outbound-config:iris]
+  [%pass /abi-res %arvo %i %request req *outbound-config:iris]
 ::
 ++  get-request
   |=  address=@t
@@ -210,8 +210,8 @@
   :*  url
       |
       ~m2
-      ~m2
-      9.960.593
+      ~m10
+      block-number.contract
       ~[address.contract]
       (get-topics specific-events.contract)
   ==
@@ -356,9 +356,10 @@
   %-  pairs
   :~  [%address (tape (trip (ux-to-cord address.contract-type)))]
       [%name (tape (trip name.contract-type))]
+      [%block-number (numb block-number.contract-type)]
       [%abi-events (tape (trip abi-events.contract-type))]
       [%specific-events `json`a+(turn `wain`specific-events.contract-type |=(=cord s+cord))]
-      [%event-logs (event-logs-encoder:ew-lib event-logs.contract-type)]
+      [%event-logs (event-logs-encoder:enjs:ew-lib event-logs.contract-type)]
   ==
 ::
 ++  poke-handle-http-request

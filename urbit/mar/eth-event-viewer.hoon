@@ -5,8 +5,6 @@
 ++  grab
   |%
   ++  noun  eth-event-viewer-action
-  ++  json
-    |=  jon=^json
-    (json-to-view-action:eev jon)
+  ++  json  json-to-view-action:eev
   --
 --

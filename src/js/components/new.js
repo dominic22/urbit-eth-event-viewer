@@ -9,6 +9,7 @@ const initialState = {
   address: '',
   name: '',
   abiEvents: '',
+  blockNumber: 10084435,
   specificEvents: [],
   validAddress: false,
 };
@@ -19,6 +20,7 @@ export class NewContract extends Component {
     this.state = initialState;
     this.handleContractChangeBound = this.handleContractChange.bind(this);
     this.handleNameChangeBound = this.handleNameChange.bind(this);
+    this.handleBlockNumberChangeBound = this.handleBlockNumberChange.bind(this);
   }
 
   componentDidUpdate(prevProps) {
@@ -28,7 +30,7 @@ export class NewContract extends Component {
   }
 
   render() {
-    const { address, abiEvents, name } = this.state;
+    const { address, abiEvents, name, blockNumber } = this.state;
     return (<div className="flex flex-column pa3">
       <div className="flex flex-row flex-wrap">
         <div className="w-100-s">
@@ -55,6 +57,19 @@ export class NewContract extends Component {
             value={name}
             style={{ resize: 'none' }}
             onChange={this.handleNameChangeBound}
+            aria-describedby="name-desc"
+          />
+
+          <p className="f8 mt3 lh-copy db mb2">Block Number</p>
+          <textarea
+            id="name"
+            className="ba b--black-20 pa3 db w-70 b--gray4 f9 flex-basis-full-s focus-b--black focus-b--white-d
+                      w-382-px w-auto-s"
+            rows={1}
+            placeholder="Block number"
+            value={blockNumber}
+            style={{ resize: 'none' }}
+            onChange={this.handleBlockNumberChangeBound}
             aria-describedby="name-desc"
           />
         </div>
@@ -126,5 +141,13 @@ export class NewContract extends Component {
 
   handleNameChange(event) {
     this.setState({ name: event.target.value });
+  }
+
+  handleBlockNumberChange(event) {
+    if(isNaN(Number(event.target.value))) {
+      console.error('Block number have to be a number!');
+      return;
+    }
+    this.setState({ blockNumber: Number(event.target.value) });
   }
 }

@@ -66,6 +66,7 @@ class UrbitApi {
       'add-contract': {
         address: contract.address,
         name: contract.name,
+        'block-number': contract.blockNumber,
         'specific-events': contract.specificEvents,
         'abi-events': contract.abiEvents ? JSON.stringify(contract.abiEvents) : null,
         'event-logs': null,

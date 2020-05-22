@@ -3,6 +3,7 @@
 +$  contract-type
   $:  address=@ux
       name=@t
+      block-number=@
       specific-events=(list @t)
       abi-events=@t
       event-logs=loglist

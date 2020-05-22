@@ -23,6 +23,7 @@
     %-  ot
     :~  [%address parse-hex-result:rpc:ethereum]
         [%name so]
+        [%block-number ni]
         [%specific-events (ar so)]
         [%abi-events so]
         [%event-logs ul]
