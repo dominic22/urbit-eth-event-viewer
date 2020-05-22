@@ -39,7 +39,9 @@
 +$  versioned-state
   $%  state-zero
   ==
-+$  state-zero  [%0 contracts=(map @ux contract-type)]
+::
++$  state-zero  [%0 contracts=contracts-type]
+::
 --
 =|  state-zero
 =*  state  -
@@ -144,15 +146,15 @@
   ^-  (quip card _state)
   ?~  event-logs
     [~ state]
-  =/  address
+  =/  address=address:ethereum
     address:(snag 0 `loglist:ew-sur`event-logs)
-  =/  contract
+  =/  contract=contract-type
     (~(got by contracts.state) address)
-  =/  updated-contract
+  =/  updated-contract=contract-type
     contract(event-logs event-logs)
-  =/  filtered-contracts
+  =/  filtered-contracts=contracts-type
     (~(del by contracts.state) address)
-  =/  new-contracts
+  =/  new-contracts=contracts-type
     (~(put by filtered-contracts) address updated-contract)
   :_  state(contracts new-contracts)
   [%give %fact [/state/update ~] %json !>((history:dejs:ew-lib event-logs))]~
@@ -160,21 +162,21 @@
 ++  event-log-card
   |=  =event-log:rpc:ethereum
   ^-  (quip card _state)
-  =/  address
+  =/  address=address:ethereum
     address.event-log
-  =/  contract
+  =/  contract=contract-type
     (~(got by contracts.state) address)
-  =/  updated-contract
+  =/  updated-contract=contract-type
     contract(event-logs (weld (flop event-logs.contract) [event-log ~]))
-  =/  filtered-contracts
+  =/  filtered-contracts=contracts-type
     (~(del by contracts.state) address)
-  =/  new-contracts
+  =/  new-contracts=contracts-type
     (~(put by filtered-contracts) address updated-contract)
   :_  state(contracts new-contracts)
   [%give %fact [/state/update ~] %json !>((event-log:dejs:ew-lib event-log))]~
 ::
 ++  request-ethereum-abi
-  |=  address=@ux
+  |=  address=address:ethereum
   ^-  card:agent:gall
   =/  req=request:http
     (get-request (ux-to-cord address))
@@ -190,7 +192,7 @@
   [%'GET' url hed *(unit octs)]
 ::
 ++  ux-to-cord
-  |=  address=@ux
+  |=  address=address:ethereum
   ^-  @t
 ::  crip transforms tape to cord
   (cat 3 '0x' (crip ((x-co:co 4) address)))
@@ -202,7 +204,7 @@
 ::
 ++  setup-eth-watcher
   |=  contract=contract-type
-  =/  url  'http://eth-mainnet.urbit.org:8545'
+  =/  url=@t  'http://eth-mainnet.urbit.org:8545'
   %+  to-eth-watcher  (get-path address.contract)
   :+  %poke   %eth-watcher-poke
   !>  ^-  poke:ew-sur
@@ -217,17 +219,17 @@
   ==
 ::
 ++  watch-eth-watcher
-  |=  address=@ux
+  |=  address=address:ethereum
   %+  to-eth-watcher  (get-path address)
   [%watch (get-logs-path address)]
 ::
 ++  leave-eth-watcher
-  |=  address=@ux
+  |=  address=address:ethereum
   %+  to-eth-watcher  (get-path address)
   [%leave ~]
 ::
 ++  clear-eth-watcher
-  |=  address=@ux
+  |=  address=address:ethereum
   %+  to-eth-watcher  /clear
   :+  %poke  %eth-watcher-poke
   !>  ^-  poke:ew-sur
@@ -235,35 +237,35 @@
 ::
 ++  get-topics
   |=  specific-events=(list @t)
-  ^-  (list ?(@ux (list @ux)))
+  ^-  (list ?(address:ethereum (list address:ethereum)))
   ?~  specific-events
     ~
-  :~  `(list @ux)`(turn specific-events hex-list)
+  :~  `(list address:ethereum)`(turn specific-events hex-list)
   ==
 ::
-++  hex-list  |=(e=@t `@ux`(event-string-to-hex (trip e)))
+++  hex-list  |=(e=@t `address:ethereum`(event-string-to-hex (trip e)))
 ::
 ++  event-string-to-hex
   |=  event-string=tape
-  ^-  @ux
-  `@ux`(keccak-256:keccak:crypto (as-octt:mimes:html event-string))
+  ^-  address:ethereum
+  `address:ethereum`(keccak-256:keccak:crypto (as-octt:mimes:html event-string))
 ::
 ++  get-path
-  |=  address=@ux
+  |=  address=address:ethereum
   ^-  path
   `path`/[dap.bol]/(scot %tas (ux-to-cord address))
 ::
 ++  get-logs-path
-  |=  address=@ux
+  |=  address=address:ethereum
   ^-  path
   `path`/logs/[dap.bol]/(scot %tas (ux-to-cord address))
 ::
 ++  contract-cord-to-hex
   |=  address=@t
-  ^-  @ux
-  =/  address-tape
+  ^-  address:ethereum
+  =/  address-tape=tape
     (cass q:(trim 2 (trip address)))
-  `@ux`(scan address-tape hex)
+  `address:ethereum`(scan address-tape hex)
 ::
 ++  poke-action
   |=  action=eth-event-viewer-action
@@ -297,7 +299,7 @@
   ?>  ?=(%add-contract -.act)
   ?:  =(%.y (~(has by contracts.state) address.contract.act))
       [~ state]
-  =/  address  address.contract.act
+  =/  address=address:ethereum  address.contract.act
   :_  state(contracts (~(put by contracts.state) address contract.act))
   :~  (request-ethereum-abi address.contract.act)
       [%give %fact [/state/update ~] %json !>((new-json contract.act))]
@@ -324,7 +326,7 @@
   ==
 ::
 ++  remove-json
-  |=  address=@ux
+  |=  address=address:ethereum
   ^-  json
   =,  enjs:format
   %-  pairs
@@ -343,7 +345,7 @@
   |=  =_state
   ^-  json
   =,  enjs:format
-  =/  contract-list
+  =/  contract-list=(list contract-type)
     `(list contract-type)`~(val by contracts.state)
   `json`a+(turn contract-list contract-list-encoder)
 ::

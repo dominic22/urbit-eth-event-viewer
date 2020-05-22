@@ -39,7 +39,7 @@
     %-  pairs
     :~  [%address (tape (trip (ux-to-cord address.event-log)))]
         [%data (tape (trip data.event-log))]
-        [%topics `json`a+(turn topics.event-log |=(addr=@ux (tape (trip (ux-to-cord addr)))))]
+        [%topics `json`a+(turn topics.event-log |=(addr=address:ethereum (tape (trip (ux-to-cord addr)))))]
         [%mined (mined-encoder event-log)]
     ==
 ::
@@ -59,7 +59,7 @@
 ::
   --
 ++  ux-to-cord
-  |=  address=@ux
+  |=  address=address:ethereum
   ^-  @t
 ::  crip transforms tape to cord
   (cat 3 '0x' (crip ((x-co:co 4) address)))

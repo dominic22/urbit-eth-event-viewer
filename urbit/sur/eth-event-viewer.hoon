@@ -1,7 +1,8 @@
 /-  *eth-watcher
 |%
++$  contracts-type  (map address:ethereum contract-type)
 +$  contract-type
-  $:  address=@ux
+  $:  address=address:ethereum
       name=@t
       block-number=@
       specific-events=(list @t)
@@ -10,8 +11,8 @@
   ==
 +$  eth-event-viewer-action
   $%  [%add-contract contract=contract-type]
-      [%get-abi address=@ux]
-      [%remove-contract address=@ux]
-      [%reload-events address=@ux]
+      [%get-abi address=address:ethereum]
+      [%remove-contract address=address:ethereum]
+      [%reload-events address=address:ethereum]
   ==
 --
