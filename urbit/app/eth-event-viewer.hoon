@@ -102,11 +102,10 @@
         [%give %fact [/state/update ~] %json !>((contracts-json state))]~
       [cards this]
     (on-watch:def path)
-  ::
+::
   ++  on-leave  on-leave:def
   ++  on-peek   on-peek:def
   ++  on-fail   on-fail:def
-  --
 ::
   ++  on-agent
     |=  [=wire =sign:agent:gall]
@@ -127,7 +126,7 @@
     %disavow  ~&  %disavow-unimplemented
               [~ this]
     ==
-  ::
+::
   ++  on-arvo
     |=  [=wire =sign-arvo]
     ^-  (quip card _this)
@@ -135,9 +134,11 @@
       [~ this]
     ?:  ?=(%http-response +<.sign-arvo)
       =^  cards  state
+        ?>  ?=([%abi-res ~] wire)
         (http-response:cc wire client-response.sign-arvo)
       [cards this]
     (on-arvo:def wire sign-arvo)
+  --
 ::
 |_  bol=bowl:gall
 ::
