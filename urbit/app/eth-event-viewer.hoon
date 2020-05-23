@@ -57,7 +57,7 @@
     ^-  (quip card _this)
     =/  eev  /eth-event-viewer
     =/  tile-js  '/~eth-event-viewer/js/tile.js'
-    =/  launcha  [%launch-action !>([%add %eth-event-viewer / tile-js])]
+    =/  launcha  [%launch-action !>([%add %eth-event-viewer /tile tile-js])]
     :_  this
     :~  [%pass eev %agent [our.bol %eth-event-viewer] %watch eev]
         [%pass / %arvo %e %connect [~ /'~eth-event-viewer'] %eth-event-viewer]
@@ -94,7 +94,9 @@
     ^-  (quip card _this)
     ?:  ?=([%http-response *] path)
       [~ this]
-    ?:  =(/primary path)
+    ?:  ?|  =(/primary path)
+            =(/tile path)
+        ==
       [[%give %fact ~ %json !>(*json)]~ this]
     ?:  =(/state/update path)
       =^  cards  state
@@ -118,10 +120,10 @@
     =+  !<(diff=diff:ew-sur q.cage.sign)
     ?-  -.diff
     %history  =^  cards  state
-                (event-logs-card loglist.diff)
+                (add-event-logs loglist.diff)
               [cards this]
     %log      =^  cards  state
-                (event-log-card event-log.diff)
+                (add-event-logs [event-log.diff ~])
               [cards this]
     %disavow  ~&  %disavow-unimplemented
               [~ this]
@@ -283,7 +285,7 @@
       [%event-logs (event-logs-encoder:enjs:ew-lib event-logs.contract-type)]
   ==
 ::
-++  event-logs-card
+++  add-event-logs
   |=  event-logs=loglist:ew-sur
   ^-  (quip card _state)
   ?~  event-logs
@@ -292,30 +294,16 @@
     address:(snag 0 `loglist:ew-sur`event-logs)
   =/  contract=contract-type
     (~(got by contracts.state) address)
+  ~&  'new logs'
+  ::    contract(event-logs event-logs)
   =/  updated-contract=contract-type
-    contract(event-logs event-logs)
+    contract(event-logs (weld (flop event-logs.contract) event-logs))
   =/  filtered-contracts=contracts-type
     (~(del by contracts.state) address)
   =/  new-contracts=contracts-type
     (~(put by filtered-contracts) address updated-contract)
   :_  state(contracts new-contracts)
-  [%give %fact [/state/update ~] %json !>((history:dejs:ew-lib event-logs))]~
-::
-++  event-log-card
-  |=  =event-log:rpc:ethereum
-  ^-  (quip card _state)
-  =/  address=address:ethereum
-    address.event-log
-  =/  contract=contract-type
-    (~(got by contracts.state) address)
-  =/  updated-contract=contract-type
-    contract(event-logs (weld (flop event-logs.contract) [event-log ~]))
-  =/  filtered-contracts=contracts-type
-    (~(del by contracts.state) address)
-  =/  new-contracts=contracts-type
-    (~(put by filtered-contracts) address updated-contract)
-  :_  state(contracts new-contracts)
-  [%give %fact [/state/update ~] %json !>((event-log:dejs:ew-lib event-log))]~
+  [%give %fact [/state/update ~] %json !>((event-logs:dejs:ew-lib event-logs))]~
 ::
 ++  request-ethereum-abi
   |=  address=address:ethereum

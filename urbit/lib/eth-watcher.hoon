@@ -3,20 +3,12 @@
 |%
 ++  dejs  |%
 ::
-  ++  event-log
-    |=  =event-log:rpc:ethereum
-    ^-  json
-    =,  enjs:format
-    %-  pairs
-    :~  [%event-log (event-log-encoder:enjs event-log)]
-    ==
-::
-  ++  history
+  ++  event-logs
     |=  event-logs=loglist:eth-watcher
     ^-  json
     =,  enjs:format
     %-  pairs
-    :~  [%history (event-logs-encoder:enjs event-logs)]
+    :~  [%event-logs (event-logs-encoder:enjs event-logs)]
     ==
 ::
 --

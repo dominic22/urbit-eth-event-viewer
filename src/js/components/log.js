@@ -6,12 +6,11 @@ import { api } from '/api';
 import { getUniqueOrderedLogs } from '../reducers/utils';
 import { Link } from 'react-router-dom';
 
-
 export class EventLogs extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      contract: props.contract
+      contract: props.contract,
     }
     this.updateContractWithUniqueEventsBound = this.updateContractWithUniqueEvents.bind(this);
     this.updateContractEventsDebounce = _.debounce(this.updateContractWithUniqueEventsBound, 300);
@@ -22,7 +21,7 @@ export class EventLogs extends Component {
     const { contract } = this.props;
     if (prevContract && contract) {
       if (prevContract.address !== contract.address) {
-        this.setState({ contract });
+        this.setState({ contract});
       }
       if (prevContract.eventLogs.length !== contract.eventLogs.length) {
         // render only after received a bulk of new events, not every new event
@@ -138,6 +137,10 @@ export class EventLogs extends Component {
           <div key="transaction-info" className="mw-180-px">
             <p className="f9 truncate">{hashPair ? hashPair.name : eventLog.topics[0]}</p>
             <p className="f9 gray3">Block No. {eventLog.mined['block-number']}</p>
+          </div>
+          <div key="data-info" className="mw-310-px">
+            <p className="f9 truncate">Data</p>
+            <p className="f9 gray3 truncate">{eventLog.data}</p>
           </div>
           {
             this.renderEventTopics(eventLog, hashPair)

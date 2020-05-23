@@ -50,7 +50,7 @@ export class ContractsSidebar extends Component {
         }`}
       >
         <div>
-          {contract.name && <p className="f8">{contract.name}</p>}
+          {contract.name && <p className="f8 truncate">{contract.name}</p>}
           <p className="f9 gray3">{contract.address}</p>
         </div>
       </li>

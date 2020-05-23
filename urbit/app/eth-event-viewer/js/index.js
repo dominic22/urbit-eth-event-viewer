@@ -44826,8 +44826,7 @@
                   this.removeContract(data, state);
                   this.contracts(data, state);
                   this.abi(data, state);
-                  this.eventLog(data, state);
-                  this.history(data, state);
+                  this.eventLogs(data, state);
                 }
               }
 
@@ -44852,6 +44851,7 @@
               contracts(obj, state) {
                 let data = lodash.get(obj, 'contracts', false);
                 if (data) {
+                  console.log('event log', data);
                   state.contracts = getOrderedContracts(data.map(contract => mapContract(contract)));
                 }
               }
@@ -44864,43 +44864,32 @@
                 }
               }
 
-              eventLog(obj, state) {
-                let data = lodash.get(obj, 'event-log', false);
+              eventLogs(obj, state) {
+                let data = lodash.get(obj, 'event-logs', false);
                 if (data) {
-                  console.log('event log', data);
-                  const eventLog = data;
-                  const { existingContracts, currentContract } = splitContracts(state.contracts, eventLog.address);
+                  console.log('event logs', data);
+                  const eventLogs = data;
+                  if (!eventLogs || !eventLogs[0].address) {
+                    console.error('no address found in event logs');
+                    return;
+                  }
+                  const address = eventLogs[0].address;
+                  const { existingContracts, currentContract } = splitContracts(state.contracts, address);
                   if (currentContract) {
-                    this.setContractsState(state, existingContracts, currentContract, eventLog);
+                    this.setContractsState(state, existingContracts, currentContract, eventLogs);
                   }
                 }
               }
 
-              setContractsState(state, existingContracts, currentContract, eventLog) {
+              setContractsState(state, existingContracts, currentContract, eventLogs) {
                 const currentLogs = currentContract.eventLogs || [];
-                const logs = [...currentLogs, eventLog];
+                const logs = [...currentLogs, ...eventLogs];
 
                 const updatedContract = {
                   ...currentContract,
                   eventLogs: getOrderedLogs(logs)
                 };
                 state.contracts = getOrderedContracts([...existingContracts, updatedContract]);
-              }
-
-              history(obj, state) {
-                let history = lodash.get(obj, 'history', false);
-                if (history && history[0].address) {
-                  const address = history[0].address;
-
-                  const { existingContracts, currentContract } = splitContracts(state.contracts, address);
-                  const updatedContract = {
-                    ...currentContract,
-                    eventLogs: getUniqueOrderedLogs(history)
-                  };
-                  if (currentContract) {
-                    state.contracts = getOrderedContracts([...existingContracts, updatedContract]);
-                  }
-                }
               }
             }
 
@@ -66325,7 +66314,7 @@
         }`, __self: this, __source: {fileName: _jsxFileName$6, lineNumber: 47}}
                   
                     , react.createElement('div', {__self: this, __source: {fileName: _jsxFileName$6, lineNumber: 52}}
-                      , contract.name && react.createElement('p', { className: "f8", __self: this, __source: {fileName: _jsxFileName$6, lineNumber: 53}}, contract.name)
+                      , contract.name && react.createElement('p', { className: "f8 truncate" , __self: this, __source: {fileName: _jsxFileName$6, lineNumber: 53}}, contract.name)
                       , react.createElement('p', { className: "f9 gray3" , __self: this, __source: {fileName: _jsxFileName$6, lineNumber: 54}}, contract.address)
                     )
                   )
@@ -66372,12 +66361,11 @@
             }
 
             const _jsxFileName$9 = "/home/do7ze5/urbit/development/urbit-eth-event-viewer/src/js/components/log.js";
-
             class EventLogs extends react_1 {
               constructor(props) {
                 super(props);
                 this.state = {
-                  contract: props.contract
+                  contract: props.contract,
                 };
                 this.updateContractWithUniqueEventsBound = this.updateContractWithUniqueEvents.bind(this);
                 this.updateContractEventsDebounce = lodash.debounce(this.updateContractWithUniqueEventsBound, 300);
@@ -66388,7 +66376,7 @@
                 const { contract } = this.props;
                 if (prevContract && contract) {
                   if (prevContract.address !== contract.address) {
-                    this.setState({ contract });
+                    this.setState({ contract});
                   }
                   if (prevContract.eventLogs.length !== contract.eventLogs.length) {
                     // render only after received a bulk of new events, not every new event
@@ -66419,7 +66407,7 @@
                 // show max 200 entries
                 logs = lodash.take(logs, 200);
 
-                return (react.createElement('div', { className: "h-100-minus-2 relative" , __self: this, __source: {fileName: _jsxFileName$9, lineNumber: 56}}
+                return (react.createElement('div', { className: "h-100-minus-2 relative" , __self: this, __source: {fileName: _jsxFileName$9, lineNumber: 55}}
                     , this.renderFilterBar(contract.address, showAllEvents, hashPairs, filters)
                     , 
                       logs.length > 0 ? this.renderLog(logs, hashPairs, contract) : this.renderNoDataAvailable()
@@ -66430,22 +66418,22 @@
 
               renderFilterBar(address, showAllEvents, hashPairs, filters) {
                 return react.createElement('div', { className: "flex flex-column flex-row ba bl-0 bt-0 br-0 b--solid b--gray4 b--gray1-d overflow-scroll"          ,
-                            style: { overflowY: 'hidden' }, __self: this, __source: {fileName: _jsxFileName$9, lineNumber: 66}}
-                  , react.createElement('div', { className: "flex flex-column flex-row"  , style: { paddingRight: '75px' }, __self: this, __source: {fileName: _jsxFileName$9, lineNumber: 68}}
+                            style: { overflowY: 'hidden' }, __self: this, __source: {fileName: _jsxFileName$9, lineNumber: 65}}
+                  , react.createElement('div', { className: "flex flex-column flex-row"  , style: { paddingRight: '75px' }, __self: this, __source: {fileName: _jsxFileName$9, lineNumber: 67}}
                     , react.createElement(Filter, { label: "Show all Events"  , isActive: !showAllEvents, onClick: () => {
                       api.setShowAllEvents(address, !showAllEvents);
-                    }, __self: this, __source: {fileName: _jsxFileName$9, lineNumber: 69}})
+                    }, __self: this, __source: {fileName: _jsxFileName$9, lineNumber: 68}})
                     , 
                       showAllEvents || (hashPairs && hashPairs.length > 0 && this.renderFilters(hashPairs, filters))
                     
                   )
-                  , react.createElement('div', { className: "flex flex-column flex-row absolute bg-white right-0 top-0"      , __self: this, __source: {fileName: _jsxFileName$9, lineNumber: 76}}
+                  , react.createElement('div', { className: "flex flex-column flex-row absolute bg-white right-0 top-0"      , __self: this, __source: {fileName: _jsxFileName$9, lineNumber: 75}}
                     , react.createElement(Link, {
-                      to: `/~eth-event-viewer/`, __self: this, __source: {fileName: _jsxFileName$9, lineNumber: 77}}
+                      to: `/~eth-event-viewer/`, __self: this, __source: {fileName: _jsxFileName$9, lineNumber: 76}}
                     
                       , react.createElement('div', { className: "f9 gray3" ,
                            style: { padding: '16px' },
-                           onClick: () => api.removeContract(address), __self: this, __source: {fileName: _jsxFileName$9, lineNumber: 80}}, "remove"
+                           onClick: () => api.removeContract(address), __self: this, __source: {fileName: _jsxFileName$9, lineNumber: 79}}, "remove"
 
                       )
                     )
@@ -66454,8 +66442,8 @@
               }
 
               renderLog(logs, hashPairs, contract) {
-                return react.createElement('div', { className: "h-100-minus-60 overflow-auto" , __self: this, __source: {fileName: _jsxFileName$9, lineNumber: 91}}
-                  , react.createElement('ul', { className: "list pl0 ma0 dt w-100"    , __self: this, __source: {fileName: _jsxFileName$9, lineNumber: 92}}
+                return react.createElement('div', { className: "h-100-minus-60 overflow-auto" , __self: this, __source: {fileName: _jsxFileName$9, lineNumber: 90}}
+                  , react.createElement('ul', { className: "list pl0 ma0 dt w-100"    , __self: this, __source: {fileName: _jsxFileName$9, lineNumber: 91}}
                     , 
                       logs
                         .map((eventLog, index) => {
@@ -66463,7 +66451,7 @@
                             react.createElement('a', {
                               href: `https://etherscan.io/tx/${eventLog.mined['transaction-hash']}`,
                               key: contract.address + '-' + index,
-                              target: '_blank', __self: this, __source: {fileName: _jsxFileName$9, lineNumber: 97}}
+                              target: '_blank', __self: this, __source: {fileName: _jsxFileName$9, lineNumber: 96}}
                             
                               , this.renderListItem(eventLog, hashPairs, contract.abiEvents)
                             )
@@ -66488,7 +66476,7 @@
                       react.createElement(Filter, { key: pair.name,
                               isActive: filters.some(filter => filter === pair.name),
                               label: pair.name,
-                              onClick: () => this.toggleFilter(pair.name, filters), __self: this, __source: {fileName: _jsxFileName$9, lineNumber: 122}})
+                              onClick: () => this.toggleFilter(pair.name, filters), __self: this, __source: {fileName: _jsxFileName$9, lineNumber: 121}})
                     )
                   })
               }
@@ -66498,12 +66486,16 @@
 
                 return (
                   react.createElement('li', {
-                    className: 'lh-copy pl3 pv3 ba bl-0 bt-0 br-0 b--solid b--gray4 b--gray1-d bg-animate pointer', __self: this, __source: {fileName: _jsxFileName$9, lineNumber: 134}}
+                    className: 'lh-copy pl3 pv3 ba bl-0 bt-0 br-0 b--solid b--gray4 b--gray1-d bg-animate pointer', __self: this, __source: {fileName: _jsxFileName$9, lineNumber: 133}}
                   
-                    , react.createElement('div', { className: "flex flex-column flex-row nowrap"   , __self: this, __source: {fileName: _jsxFileName$9, lineNumber: 137}}
-                      , react.createElement('div', { key: "transaction-info", className: "mw-180-px", __self: this, __source: {fileName: _jsxFileName$9, lineNumber: 138}}
-                        , react.createElement('p', { className: "f9 truncate" , __self: this, __source: {fileName: _jsxFileName$9, lineNumber: 139}}, hashPair ? hashPair.name : eventLog.topics[0])
-                        , react.createElement('p', { className: "f9 gray3" , __self: this, __source: {fileName: _jsxFileName$9, lineNumber: 140}}, "Block No. "  , eventLog.mined['block-number'])
+                    , react.createElement('div', { className: "flex flex-column flex-row nowrap"   , __self: this, __source: {fileName: _jsxFileName$9, lineNumber: 136}}
+                      , react.createElement('div', { key: "transaction-info", className: "mw-180-px", __self: this, __source: {fileName: _jsxFileName$9, lineNumber: 137}}
+                        , react.createElement('p', { className: "f9 truncate" , __self: this, __source: {fileName: _jsxFileName$9, lineNumber: 138}}, hashPair ? hashPair.name : eventLog.topics[0])
+                        , react.createElement('p', { className: "f9 gray3" , __self: this, __source: {fileName: _jsxFileName$9, lineNumber: 139}}, "Block No. "  , eventLog.mined['block-number'])
+                      )
+                      , react.createElement('div', { key: "data-info", className: "mw-310-px", __self: this, __source: {fileName: _jsxFileName$9, lineNumber: 141}}
+                        , react.createElement('p', { className: "f9 truncate" , __self: this, __source: {fileName: _jsxFileName$9, lineNumber: 142}}, "Data")
+                        , react.createElement('p', { className: "f9 gray3 truncate"  , __self: this, __source: {fileName: _jsxFileName$9, lineNumber: 143}}, eventLog.data)
                       )
                       , 
                         this.renderEventTopics(eventLog, hashPair)
@@ -66521,18 +66513,18 @@
                   }
                   const topicIndex = index - 1;
                   const topicName = hashPair && hashPair.inputs[topicIndex] && hashPair.inputs[topicIndex].name;
-                  return (react.createElement('div', { className: "ml2 mw-310-px" , key: topic + topicIndex, __self: this, __source: {fileName: _jsxFileName$9, lineNumber: 158}}
-                    , react.createElement('p', { className: "f9", __self: this, __source: {fileName: _jsxFileName$9, lineNumber: 159}}, topicName ? topicName : topic)
-                    , react.createElement('p', { className: "f9 gray3" , __self: this, __source: {fileName: _jsxFileName$9, lineNumber: 160}}, topic)
+                  return (react.createElement('div', { className: "ml2 mw-310-px" , key: topic + topicIndex, __self: this, __source: {fileName: _jsxFileName$9, lineNumber: 161}}
+                    , react.createElement('p', { className: "f9", __self: this, __source: {fileName: _jsxFileName$9, lineNumber: 162}}, topicName ? topicName : topic)
+                    , react.createElement('p', { className: "f9 gray3" , __self: this, __source: {fileName: _jsxFileName$9, lineNumber: 163}}, topic)
                   ))
                 })
               }
 
               renderNoDataAvailable() {
-                return react.createElement('div', { className: "pl3 pr3 pt2 dt pb3 w-100 h-100-minus-56"      , __self: this, __source: {fileName: _jsxFileName$9, lineNumber: 166}}
-                  , react.createElement('div', { className: "f9 pt3 gray2 w-100 h-100 dtc v-mid tc"       , __self: this, __source: {fileName: _jsxFileName$9, lineNumber: 167}}
-                    , react.createElement('p', { className: "w-100 tc mb2"  , __self: this, __source: {fileName: _jsxFileName$9, lineNumber: 168}}, "No contract data available."   )
-                    , react.createElement('p', { className: "w-100 tc" , __self: this, __source: {fileName: _jsxFileName$9, lineNumber: 169}}, "It might need some time, take a coffee and lean back."          )
+                return react.createElement('div', { className: "pl3 pr3 pt2 dt pb3 w-100 h-100-minus-56"      , __self: this, __source: {fileName: _jsxFileName$9, lineNumber: 169}}
+                  , react.createElement('div', { className: "f9 pt3 gray2 w-100 h-100 dtc v-mid tc"       , __self: this, __source: {fileName: _jsxFileName$9, lineNumber: 170}}
+                    , react.createElement('p', { className: "w-100 tc mb2"  , __self: this, __source: {fileName: _jsxFileName$9, lineNumber: 171}}, "No contract data available."   )
+                    , react.createElement('p', { className: "w-100 tc" , __self: this, __source: {fileName: _jsxFileName$9, lineNumber: 172}}, "It might need some time, take a coffee and lean back."          )
                   )
                 );
               }
