@@ -66518,10 +66518,6 @@
                         , react.createElement('p', { className: "f9 truncate" , __self: this, __source: {fileName: _jsxFileName$9, lineNumber: 138}}, hashPair ? hashPair.name : eventLog.topics[0])
                         , react.createElement('p', { className: "f9 gray3" , __self: this, __source: {fileName: _jsxFileName$9, lineNumber: 139}}, "Block No. "  , eventLog.mined['block-number'])
                       )
-                      , react.createElement('div', { key: "data-info", className: "mw-310-px", __self: this, __source: {fileName: _jsxFileName$9, lineNumber: 141}}
-                        , react.createElement('p', { className: "f9 truncate" , __self: this, __source: {fileName: _jsxFileName$9, lineNumber: 142}}, "Data")
-                        , react.createElement('p', { className: "f9 gray3 truncate"  , __self: this, __source: {fileName: _jsxFileName$9, lineNumber: 143}}, eventLog.data)
-                      )
                       , 
                         this.renderEventTopics(eventLog, hashPair)
                       
@@ -66538,18 +66534,18 @@
                   }
                   const topicIndex = index - 1;
                   const topicName = hashPair && hashPair.inputs[topicIndex] && hashPair.inputs[topicIndex].name;
-                  return (react.createElement('div', { className: "ml2 mw-310-px" , key: topic + topicIndex, __self: this, __source: {fileName: _jsxFileName$9, lineNumber: 161}}
-                    , react.createElement('p', { className: "f9", __self: this, __source: {fileName: _jsxFileName$9, lineNumber: 162}}, topicName ? topicName : topic)
-                    , react.createElement('p', { className: "f9 gray3" , __self: this, __source: {fileName: _jsxFileName$9, lineNumber: 163}}, topic)
+                  return (react.createElement('div', { className: "ml2 mw-310-px" , key: topic + topicIndex, __self: this, __source: {fileName: _jsxFileName$9, lineNumber: 157}}
+                    , react.createElement('p', { className: "f9", __self: this, __source: {fileName: _jsxFileName$9, lineNumber: 158}}, topicName ? topicName : topic)
+                    , react.createElement('p', { className: "f9 gray3" , __self: this, __source: {fileName: _jsxFileName$9, lineNumber: 159}}, topic)
                   ))
                 })
               }
 
               renderNoDataAvailable() {
-                return react.createElement('div', { className: "pl3 pr3 pt2 dt pb3 w-100 h-100-minus-56"      , __self: this, __source: {fileName: _jsxFileName$9, lineNumber: 169}}
-                  , react.createElement('div', { className: "f9 pt3 gray2 w-100 h-100 dtc v-mid tc"       , __self: this, __source: {fileName: _jsxFileName$9, lineNumber: 170}}
-                    , react.createElement('p', { className: "w-100 tc mb2"  , __self: this, __source: {fileName: _jsxFileName$9, lineNumber: 171}}, "No contract data available."   )
-                    , react.createElement('p', { className: "w-100 tc" , __self: this, __source: {fileName: _jsxFileName$9, lineNumber: 172}}, "It might need some time, take a coffee and lean back."          )
+                return react.createElement('div', { className: "pl3 pr3 pt2 dt pb3 w-100 h-100-minus-56"      , __self: this, __source: {fileName: _jsxFileName$9, lineNumber: 165}}
+                  , react.createElement('div', { className: "f9 pt3 gray2 w-100 h-100 dtc v-mid tc"       , __self: this, __source: {fileName: _jsxFileName$9, lineNumber: 166}}
+                    , react.createElement('p', { className: "w-100 tc mb2"  , __self: this, __source: {fileName: _jsxFileName$9, lineNumber: 167}}, "No contract data available."   )
+                    , react.createElement('p', { className: "w-100 tc" , __self: this, __source: {fileName: _jsxFileName$9, lineNumber: 168}}, "It might need some time, take a coffee and lean back."          )
                   )
                 );
               }

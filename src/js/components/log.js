@@ -138,10 +138,6 @@ export class EventLogs extends Component {
             <p className="f9 truncate">{hashPair ? hashPair.name : eventLog.topics[0]}</p>
             <p className="f9 gray3">Block No. {eventLog.mined['block-number']}</p>
           </div>
-          <div key="data-info" className="mw-310-px">
-            <p className="f9 truncate">Data</p>
-            <p className="f9 gray3 truncate">{eventLog.data}</p>
-          </div>
           {
             this.renderEventTopics(eventLog, hashPair)
           }
