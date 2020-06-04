@@ -44,7 +44,12 @@ export class ContractsReducer {
     let data = _.get(obj, 'abi-res', false);
 
     if (data) {
-      state.abi = data && JSON.parse(data);
+      try {
+        state.abi = data && JSON.parse(data);
+      } catch (e) {
+        console.error('Error while receiving data: ', data)
+        console.error(e);
+      }
     }
   }
 

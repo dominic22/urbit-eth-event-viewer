@@ -11,6 +11,7 @@ export class Root extends Component {
     super(props);
     this.state = store.state;
     store.setStateHandler(this.setState.bind(this));
+    api.getBlockNumber();
   }
 
   render() {

@@ -17,18 +17,20 @@ const initialState = {
 export class NewContract extends Component {
   constructor(props) {
     super(props);
-    this.state = initialState;
+    this.state = {
+      ...initialState,
+      blockNumber: props.blockNumber,
+    };
     this.handleContractChangeBound = this.handleContractChange.bind(this);
     this.handleNameChangeBound = this.handleNameChange.bind(this);
     this.handleBlockNumberChangeBound = this.handleBlockNumberChange.bind(this);
-    api.getBlockNumber();
   }
 
   componentDidUpdate(prevProps) {
     const {abi, blockNumber} = this.props;
     if(abi && abi !== prevProps.abi) {
       this.setState({abiEvents: abi.filter(topics => topics.type === 'event')});
-    } else if(blockNumber !== prevProps.blockNumber && !isNaN(Number(blockNumber))) {
+    } else if((blockNumber !== prevProps.blockNumber || !this.state.blockNumber) && !isNaN(Number(blockNumber))) {
       this.setState({blockNumber: Number(blockNumber)});
     }
   }
