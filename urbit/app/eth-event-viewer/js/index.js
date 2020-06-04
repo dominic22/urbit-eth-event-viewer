@@ -44718,6 +44718,16 @@
                 });
               }
 
+              getBlockNumber() {
+                const timestamp = lodash.round(Date.now() / 1000).toString();
+                console.log('REQUEST BLOCK NUMBER', timestamp);
+                api.action('eth-event-viewer', 'json', {
+                  'get-block-number': {
+                    timestamp
+                  }
+                });
+              }
+
               removeContract(address) {
                 api.action('eth-event-viewer', 'json', {
                   'remove-contract': {
@@ -44826,6 +44836,7 @@
                   this.removeContract(data, state);
                   this.contracts(data, state);
                   this.abi(data, state);
+                  this.blockNumber(data, state);
                   this.eventLogs(data, state);
                 }
               }
@@ -44857,10 +44868,19 @@
               }
 
               abi(obj, state) {
-                let data = lodash.get(obj, 'abi-result', false);
+                let data = lodash.get(obj, 'abi-res', false);
 
                 if (data) {
                   state.abi = data && JSON.parse(data);
+                }
+              }
+
+              blockNumber(obj, state) {
+                let data = lodash.get(obj, 'block-number-res', false);
+
+                if (data) {
+                  console.log('block-number', data);
+                  state.blockNumber = data;
                 }
               }
 
@@ -60364,7 +60384,7 @@
              * @param bytes The bytes
              */
             function bytesToHex(bytes) {
-                let hex = [];
+                const hex = [];
                 for (let i = 0; i < bytes.length; i++) {
                     hex.push((bytes[i] >>> 4).toString(16));
                     hex.push((bytes[i] & 0xf).toString(16));
@@ -60381,7 +60401,7 @@
                     throw new Error('cannot convert null value to array');
                 }
                 if (typeof value === 'string') {
-                    let match = value.match(/^(0x)?[0-9a-fA-F]*$/);
+                    const match = value.match(/^(0x)?[0-9a-fA-F]*$/);
                     if (!match) {
                         throw new Error('invalid hexidecimal string');
                     }
@@ -60410,12 +60430,14 @@
              */
             function isByteArray(value) {
                 if (!value ||
+                    // tslint:disable-next-line: radix
                     parseInt(String(value.length)) != value.length ||
                     typeof value === 'string') {
                     return false;
                 }
                 for (let i = 0; i < value.length; i++) {
                     const v = value[i];
+                    // tslint:disable-next-line: radix
                     if (v < 0 || v >= 256 || parseInt(String(v)) != v) {
                         return false;
                     }
@@ -60427,10 +60449,10 @@
              * @param array The array
              */
             function addSlice(array) {
-                if (array.slice) {
+                if (array.slice !== undefined) {
                     return array;
                 }
-                array.slice = function () {
+                array.slice = () => {
                     const args = Array.prototype.slice.call(arguments);
                     return addSlice(new Uint8Array(Array.prototype.slice.apply(array, args)));
                 };
@@ -61925,7 +61947,7 @@
               address: '',
               name: '',
               abiEvents: '',
-              blockNumber: 10084435,
+              blockNumber: undefined,
               specificEvents: [],
               validAddress: false,
             };
@@ -61937,20 +61959,24 @@
                 this.handleContractChangeBound = this.handleContractChange.bind(this);
                 this.handleNameChangeBound = this.handleNameChange.bind(this);
                 this.handleBlockNumberChangeBound = this.handleBlockNumberChange.bind(this);
+                api.getBlockNumber();
               }
 
               componentDidUpdate(prevProps) {
-                if(this.props.abi && this.props.abi !== prevProps.abi) {
-                  this.setState({abiEvents: this.props.abi.filter(topics => topics.type === 'event')});
+                const {abi, blockNumber} = this.props;
+                if(abi && abi !== prevProps.abi) {
+                  this.setState({abiEvents: abi.filter(topics => topics.type === 'event')});
+                } else if(blockNumber !== prevProps.blockNumber && !isNaN(Number(blockNumber))) {
+                  this.setState({blockNumber: Number(blockNumber)});
                 }
               }
 
               render() {
                 const { address, abiEvents, name, blockNumber } = this.state;
-                return (react.createElement('div', { className: "flex flex-column pa3"  , __self: this, __source: {fileName: _jsxFileName$2, lineNumber: 34}}
-                  , react.createElement('div', { className: "flex flex-row flex-wrap"  , __self: this, __source: {fileName: _jsxFileName$2, lineNumber: 35}}
-                    , react.createElement('div', { className: "w-100-s", __self: this, __source: {fileName: _jsxFileName$2, lineNumber: 36}}
-                      , react.createElement('p', { className: "f8 mt3 lh-copy db mb2"    , __self: this, __source: {fileName: _jsxFileName$2, lineNumber: 37}}, "Contract Address" )
+                return (react.createElement('div', { className: "flex flex-column pa3"  , __self: this, __source: {fileName: _jsxFileName$2, lineNumber: 38}}
+                  , react.createElement('div', { className: "flex flex-row flex-wrap"  , __self: this, __source: {fileName: _jsxFileName$2, lineNumber: 39}}
+                    , react.createElement('div', { className: "w-100-s", __self: this, __source: {fileName: _jsxFileName$2, lineNumber: 40}}
+                      , react.createElement('p', { className: "f8 mt3 lh-copy db mb2"    , __self: this, __source: {fileName: _jsxFileName$2, lineNumber: 41}}, "Contract Address" )
                       , react.createElement('textarea', {
                         id: "name",
                         className: "ba b--black-20 pa3 db w-70 b--gray4 f9 flex-basis-full-s focus-b--black focus-b--white-d w-382-px w-auto-s"
@@ -61960,10 +61986,10 @@
                         value: address,
                         style: { resize: 'none' },
                         onChange: this.handleContractChangeBound,
-                        'aria-describedby': "name-desc", __self: this, __source: {fileName: _jsxFileName$2, lineNumber: 38}}
+                        'aria-describedby': "name-desc", __self: this, __source: {fileName: _jsxFileName$2, lineNumber: 42}}
                       )
                       , this.renderInputStatus()
-                      , react.createElement('p', { className: "f8 mt3 lh-copy db mb2"    , __self: this, __source: {fileName: _jsxFileName$2, lineNumber: 50}}, "Name", react.createElement('span', { className: "gray3", __self: this, __source: {fileName: _jsxFileName$2, lineNumber: 50}}, " (Optional)" ))
+                      , react.createElement('p', { className: "f8 mt3 lh-copy db mb2"    , __self: this, __source: {fileName: _jsxFileName$2, lineNumber: 54}}, "Name", react.createElement('span', { className: "gray3", __self: this, __source: {fileName: _jsxFileName$2, lineNumber: 54}}, " (Optional)" ))
                       , react.createElement('textarea', {
                         id: "name",
                         className: "ba b--black-20 pa3 db w-70 b--gray4 f9 flex-basis-full-s focus-b--black focus-b--white-d w-382-px w-auto-s"
@@ -61973,10 +61999,9 @@
                         value: name,
                         style: { resize: 'none' },
                         onChange: this.handleNameChangeBound,
-                        'aria-describedby': "name-desc", __self: this, __source: {fileName: _jsxFileName$2, lineNumber: 51}}
+                        'aria-describedby': "name-desc", __self: this, __source: {fileName: _jsxFileName$2, lineNumber: 55}}
                       )
-
-                      , react.createElement('p', { className: "f8 mt3 lh-copy db mb2"    , __self: this, __source: {fileName: _jsxFileName$2, lineNumber: 63}}, "Block Number" )
+                      , react.createElement('p', { className: "f8 mt3 lh-copy db mb2"    , __self: this, __source: {fileName: _jsxFileName$2, lineNumber: 66}}, "Block Number" )
                       , react.createElement('textarea', {
                         id: "name",
                         className: "ba b--black-20 pa3 db w-70 b--gray4 f9 flex-basis-full-s focus-b--black focus-b--white-d w-382-px w-auto-s"
@@ -61986,27 +62011,27 @@
                         value: blockNumber,
                         style: { resize: 'none' },
                         onChange: this.handleBlockNumberChangeBound,
-                        'aria-describedby': "name-desc", __self: this, __source: {fileName: _jsxFileName$2, lineNumber: 64}}
+                        'aria-describedby': "name-desc", __self: this, __source: {fileName: _jsxFileName$2, lineNumber: 67}}
                       )
                     )
-                    , react.createElement('div', { className: "ml8 mt3 w-100-s ml0-s"   , __self: this, __source: {fileName: _jsxFileName$2, lineNumber: 76}}
+                    , react.createElement('div', { className: "ml8 mt3 w-100-s ml0-s"   , __self: this, __source: {fileName: _jsxFileName$2, lineNumber: 79}}
                       , react.createElement(EventsSelection, {
                         onEventsChanged: selectedEvents => {
                           this.setState({specificEvents:selectedEvents});
                         },
-                        abi: abiEvents, __self: this, __source: {fileName: _jsxFileName$2, lineNumber: 77}})
+                        abi: abiEvents, __self: this, __source: {fileName: _jsxFileName$2, lineNumber: 80}})
                     )
                   )
-                  , react.createElement('div', { className: "flex mt3" , __self: this, __source: {fileName: _jsxFileName$2, lineNumber: 84}}
-                    , react.createElement(Link, { to: "/~eth-event-viewer", __self: this, __source: {fileName: _jsxFileName$2, lineNumber: 85}}
+                  , react.createElement('div', { className: "flex mt3" , __self: this, __source: {fileName: _jsxFileName$2, lineNumber: 87}}
+                    , react.createElement(Link, { to: "/~eth-event-viewer", __self: this, __source: {fileName: _jsxFileName$2, lineNumber: 88}}
                       , react.createElement('button', { className: "db f9 green2 ba pa2 b--green2 bg-gray0-d pointer"       ,
-                              onClick: () => this.accept() , __self: this, __source: {fileName: _jsxFileName$2, lineNumber: 86}}, "Add Contract"
+                              onClick: () => this.accept() , __self: this, __source: {fileName: _jsxFileName$2, lineNumber: 89}}, "Add Contract"
 
                       )
                     )
-                    , react.createElement(Link, { to: "/~eth-event-viewer", __self: this, __source: {fileName: _jsxFileName$2, lineNumber: 91}}
+                    , react.createElement(Link, { to: "/~eth-event-viewer", __self: this, __source: {fileName: _jsxFileName$2, lineNumber: 94}}
                     , react.createElement('button', { className: "f9 ml3 ba pa2 b--black pointer bg-transparent b--white-d white-d"        ,
-                            onClick: () => this.setState({...initialState}), __self: this, __source: {fileName: _jsxFileName$2, lineNumber: 92}}, "Cancel"
+                            onClick: () => this.setState({...initialState}), __self: this, __source: {fileName: _jsxFileName$2, lineNumber: 95}}, "Cancel"
 
                     )
                     )
@@ -62028,7 +62053,7 @@
 
               renderInputStatus() {
                 if(!this.state.validAddress && this.state.address) {
-                  return (react.createElement('span', { className: "f9 inter red2 db pt2"    , __self: this, __source: {fileName: _jsxFileName$2, lineNumber: 115}}, "Must be a valid contract address."     ));
+                  return (react.createElement('span', { className: "f9 inter red2 db pt2"    , __self: this, __source: {fileName: _jsxFileName$2, lineNumber: 118}}, "Must be a valid contract address."     ));
                 }
                 return null;
               }
@@ -66595,6 +66620,7 @@
                             react.createElement(Skeleton, { contracts: this.state.contracts, __self: this, __source: {fileName: _jsxFileName$a, lineNumber: 37}}
                               , react.createElement(NewContract, {
                                 abi: this.state.abi,
+                                blockNumber: this.state.blockNumber,
                                 contracts: contracts,
                                 onAcceptClicked: contract => api.newContract(contract), __self: this, __source: {fileName: _jsxFileName$a, lineNumber: 38}}
                               )
@@ -66609,15 +66635,15 @@
                           return (
                             react.createElement(Skeleton, {
                               selectedContract: props.match.params.contract,
-                              contracts: contracts, __self: this, __source: {fileName: _jsxFileName$a, lineNumber: 52}}
+                              contracts: contracts, __self: this, __source: {fileName: _jsxFileName$a, lineNumber: 53}}
                             
                               , react.createElement(EventLogs, {
                                 contract: contracts && contracts.find(contract => contract.address === props.match.params.contract),
-                                filterOptions: eventFilters.find(filter => filter.address === props.match.params.contract), __self: this, __source: {fileName: _jsxFileName$a, lineNumber: 56}}
+                                filterOptions: eventFilters.find(filter => filter.address === props.match.params.contract), __self: this, __source: {fileName: _jsxFileName$a, lineNumber: 57}}
                               )
                             )
                           );
-                        }, __self: this, __source: {fileName: _jsxFileName$a, lineNumber: 47}}
+                        }, __self: this, __source: {fileName: _jsxFileName$a, lineNumber: 48}}
                       )
                     )
                   )
@@ -66630,8 +66656,8 @@
                 if (contracts && contracts.length > 0) {
                   message = 'Please select a contract.';
                 }
-                return react.createElement('div', { className: "pl3 pr3 pt2 dt pb3 w-100 h-100"      , __self: this, __source: {fileName: _jsxFileName$a, lineNumber: 75}}
-                  , react.createElement('p', { className: "f9 pt3 gray2 w-100 h-100 dtc v-mid tc"       , __self: this, __source: {fileName: _jsxFileName$a, lineNumber: 76}}, message)
+                return react.createElement('div', { className: "pl3 pr3 pt2 dt pb3 w-100 h-100"      , __self: this, __source: {fileName: _jsxFileName$a, lineNumber: 76}}
+                  , react.createElement('p', { className: "f9 pt3 gray2 w-100 h-100 dtc v-mid tc"       , __self: this, __source: {fileName: _jsxFileName$a, lineNumber: 77}}, message)
                 )
               }
             }

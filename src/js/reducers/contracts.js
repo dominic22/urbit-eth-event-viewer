@@ -9,6 +9,7 @@ export class ContractsReducer {
       this.removeContract(data, state);
       this.contracts(data, state);
       this.abi(data, state);
+      this.blockNumber(data, state);
       this.eventLogs(data, state);
     }
   }
@@ -40,10 +41,19 @@ export class ContractsReducer {
   }
 
   abi(obj, state) {
-    let data = _.get(obj, 'abi-result', false);
+    let data = _.get(obj, 'abi-res', false);
 
     if (data) {
       state.abi = data && JSON.parse(data);
+    }
+  }
+
+  blockNumber(obj, state) {
+    let data = _.get(obj, 'block-number-res', false);
+
+    if (data) {
+      console.log('block-number', data);
+      state.blockNumber = data;
     }
   }
 

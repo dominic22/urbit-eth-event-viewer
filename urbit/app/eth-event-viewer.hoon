@@ -128,7 +128,6 @@
     %disavow  ~&  %disavow-unimplemented
               [~ this]
     ==
-::
   ++  on-arvo
     |=  [=wire =sign-arvo]
     ^-  (quip card _this)
@@ -136,8 +135,13 @@
       [~ this]
     ?:  ?=(%http-response +<.sign-arvo)
       =^  cards  state
-        ?>  ?=([%abi-res ~] wire)
-        (http-response:cc wire client-response.sign-arvo)
+        ~&  '#### wire'
+        ~&  wire
+        ?:  ?=([%abi-res ~] wire)
+            (abi-response:cc wire client-response.sign-arvo)
+        ?:  ?=([%block-number-res ~] wire)
+            (block-number-response:cc wire client-response.sign-arvo)
+        [~ state]
       [cards this]
     (on-arvo:def wire sign-arvo)
   --
@@ -162,8 +166,8 @@
   ::
       [%'~eth-event-viewer' *]  (html-response:gen index)
   ==
-::
-++  http-response
+:: TODO refactor duplicated code
+++  abi-response
   |=  [=wire response=client-response:iris]
   ^-  (quip card _state)
   =,  dejs:format
@@ -184,7 +188,34 @@
   =/  jon=json
     %-  pairs:enjs:format
       :~
-        abi-result+(~(got by p.u.ujon) 'result')
+        abi-res+(~(got by p.u.ujon) 'result')
+      ==
+  :_  state
+  [%give %fact ~[/state/update] %json !>(jon)]~
+::
+++  block-number-response
+  |=  [=wire response=client-response:iris]
+  ^-  (quip card _state)
+  =,  dejs:format
+  ?.  ?=(%finished -.response)
+    ~&  'unfinished response'
+    [~ state]
+  ~&  'BLOCK NUMBER RESPONSE!!!!!!'
+  =/  data=(unit mime-data:iris)  full-file.response
+  ?~  data
+    ~&  'data is null'
+    [~ state]
+  =/  ujon=(unit json)
+    (de-json:html q.data.u.data)
+  ?~  ujon
+     [~ state]
+  ?>  ?=(%o -.u.ujon)
+  ?:  (gth 200 status-code.response-header.response)
+    [~ state]
+  =/  jon=json
+    %-  pairs:enjs:format
+      :~
+        block-number-res+(~(got by p.u.ujon) 'result')
       ==
   :_  state
   [%give %fact ~[/state/update] %json !>(jon)]~
@@ -195,6 +226,7 @@
   ?-  -.action
       %add-contract  (handle-add-contract action)
       %get-abi  (handle-get-abi action)
+      %get-block-number  (handle-get-block-number action)
       %remove-contract  (handle-remove-contract action)
       %reload-events  (handle-reload-events action)
   ==
@@ -214,6 +246,13 @@
   ?>  ?=(%get-abi -.act)
   :_  state
   [(request-ethereum-abi address.act) ~]
+::
+++  handle-get-block-number
+  |=  act=eth-event-viewer-action
+  ^-  (quip card _state)
+  ?>  ?=(%get-block-number -.act)
+  :_  state
+  [(request-block-number timestamp.act) ~]
 ::
 ++  handle-add-contract
   |=  act=eth-event-viewer-action
@@ -309,10 +348,10 @@
   |=  address=address:ethereum
   ^-  card:agent:gall
   =/  req=request:http
-    (get-request (ux-to-cord address))
+    (get-abi-request (ux-to-cord address))
   [%pass /abi-res %arvo %i %request req *outbound-config:iris]
 ::
-++  get-request
+++  get-abi-request
   |=  address=@t
   ^-  request:http
   =/  base=@t
@@ -321,10 +360,28 @@
   =/  hed  [['Accept' 'application/json']]~
   [%'GET' url hed *(unit octs)]
 ::
+++  request-block-number
+  |=  timestamp=@t
+  ^-  card:agent:gall
+  =/  req=request:http
+    (get-block-number-request timestamp)
+  [%pass /block-number-res %arvo %i %request req *outbound-config:iris]
+::
+++  get-block-number-request
+  |=  timestamp=@t
+  ^-  request:http
+  =/  base=@t
+    'https://api.etherscan.io/api?module=block&action=getblocknobytime&closest=before&timestamp='
+  =/  url=@t  (cat 3 base timestamp)
+  =/  hed  [['Accept' 'application/json']]~
+  [%'GET' url hed *(unit octs)]
+::
 ++  setup-eth-watcher
   |=  contract=contract-type
   =/  url=@t  'http://eth-mainnet.urbit.org:8545'
   %+  to-eth-watcher  (get-path address.contract)
+  ~&  'block number:'
+  ~&  block-number.contract
   :+  %poke   %eth-watcher-poke
   !>  ^-  poke:ew-sur
   :+  %watch  (get-path address.contract)

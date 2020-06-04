@@ -12,6 +12,7 @@
 +$  eth-event-viewer-action
   $%  [%add-contract contract=contract-type]
       [%get-abi address=address:ethereum]
+      [%get-block-number timestamp=@t]
       [%remove-contract address=address:ethereum]
       [%reload-events address=address:ethereum]
   ==

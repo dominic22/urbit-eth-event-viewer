@@ -9,7 +9,7 @@ const initialState = {
   address: '',
   name: '',
   abiEvents: '',
-  blockNumber: 10084435,
+  blockNumber: undefined,
   specificEvents: [],
   validAddress: false,
 };
@@ -21,11 +21,15 @@ export class NewContract extends Component {
     this.handleContractChangeBound = this.handleContractChange.bind(this);
     this.handleNameChangeBound = this.handleNameChange.bind(this);
     this.handleBlockNumberChangeBound = this.handleBlockNumberChange.bind(this);
+    api.getBlockNumber();
   }
 
   componentDidUpdate(prevProps) {
-    if(this.props.abi && this.props.abi !== prevProps.abi) {
-      this.setState({abiEvents: this.props.abi.filter(topics => topics.type === 'event')})
+    const {abi, blockNumber} = this.props;
+    if(abi && abi !== prevProps.abi) {
+      this.setState({abiEvents: abi.filter(topics => topics.type === 'event')});
+    } else if(blockNumber !== prevProps.blockNumber && !isNaN(Number(blockNumber))) {
+      this.setState({blockNumber: Number(blockNumber)});
     }
   }
 
@@ -59,7 +63,6 @@ export class NewContract extends Component {
             onChange={this.handleNameChangeBound}
             aria-describedby="name-desc"
           />
-
           <p className="f8 mt3 lh-copy db mb2">Block Number</p>
           <textarea
             id="name"

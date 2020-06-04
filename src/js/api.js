@@ -53,6 +53,16 @@ class UrbitApi {
     })
   }
 
+  getBlockNumber() {
+    const timestamp = _.round(Date.now() / 1000).toString();
+    console.log('REQUEST BLOCK NUMBER', timestamp);
+    api.action('eth-event-viewer', 'json', {
+      'get-block-number': {
+        timestamp
+      }
+    })
+  }
+
   removeContract(address) {
     api.action('eth-event-viewer', 'json', {
       'remove-contract': {

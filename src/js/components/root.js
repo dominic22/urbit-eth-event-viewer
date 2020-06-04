@@ -37,6 +37,7 @@ export class Root extends Component {
                 <Skeleton contracts={this.state.contracts}>
                   <NewContract
                     abi={this.state.abi}
+                    blockNumber={this.state.blockNumber}
                     contracts={contracts}
                     onAcceptClicked={contract => api.newContract(contract)}
                   />

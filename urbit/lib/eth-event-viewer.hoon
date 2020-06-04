@@ -11,13 +11,17 @@
   ++  parse-json
     %-  of
     :~  [%add-contract parse-contract]
-        [%get-abi parse-cord]
-        [%remove-contract parse-cord]
-        [%reload-events parse-cord]
+        [%get-abi parse-address]
+        [%get-block-number parse-timestamp]
+        [%remove-contract parse-address]
+        [%reload-events parse-address]
     ==
 ::
-  ++  parse-cord
+  ++  parse-address
     (ot address+parse-hex-result:rpc:ethereum ~)
+::
+  ++  parse-timestamp
+    (ot timestamp+so ~)
 ::
   ++  parse-contract
     %-  ot
