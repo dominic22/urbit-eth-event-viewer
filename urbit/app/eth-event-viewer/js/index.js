@@ -61869,13 +61869,16 @@
                 const { abi } = this.props;
                 const { selectedEvents, listenToAllEvents } = this.state;
                 if (!abi || abi.length === 0) {
-                  return react.createElement('p', { className: "f8", __self: this, __source: {fileName: _jsxFileName$1, lineNumber: 18}}, "No Events found..."  );
+                  return react.createElement(react.Fragment, null
+                    , react.createElement('p', { className: "f8 lh-copy db mb2"   , __self: this, __source: {fileName: _jsxFileName$1, lineNumber: 19}}, "No Events found!"  )
+                    , react.createElement('p', { className: "f8", __self: this, __source: {fileName: _jsxFileName$1, lineNumber: 20}}, "Please insert a valid contract address..."     )
+                  );
                 }
-                return (react.createElement('div', {__self: this, __source: {fileName: _jsxFileName$1, lineNumber: 20}}
-                  , react.createElement('form', { className: "mb4", __self: this, __source: {fileName: _jsxFileName$1, lineNumber: 21}}
-                    , react.createElement('fieldset', { id: "events", className: `bn pa0 ml0 ${listenToAllEvents ? 'o-10 pointer-none' : ''}`, __self: this, __source: {fileName: _jsxFileName$1, lineNumber: 22}}
-                      , react.createElement('p', { className: "f8 lh-copy mb2"  , __self: this, __source: {fileName: _jsxFileName$1, lineNumber: 23}}, "Select contract events:"  )
-                      , react.createElement('div', { style: { maxHeight: '200px', overflowY: 'auto' }, __self: this, __source: {fileName: _jsxFileName$1, lineNumber: 24}}
+                return (react.createElement('div', {__self: this, __source: {fileName: _jsxFileName$1, lineNumber: 23}}
+                  , react.createElement('form', { className: "mb4", __self: this, __source: {fileName: _jsxFileName$1, lineNumber: 24}}
+                    , react.createElement('fieldset', { id: "events", className: `bn pa0 ml0 ${listenToAllEvents ? 'o-10 pointer-none' : ''}`, __self: this, __source: {fileName: _jsxFileName$1, lineNumber: 25}}
+                      , react.createElement('p', { className: "f8 lh-copy mb2"  , __self: this, __source: {fileName: _jsxFileName$1, lineNumber: 26}}, "Select contract events:"  )
+                      , react.createElement('div', { style: { maxHeight: '200px', overflowY: 'auto' }, __self: this, __source: {fileName: _jsxFileName$1, lineNumber: 27}}
                         , 
                           abi
                             .filter(topics => topics.type === 'event')
@@ -61884,7 +61887,7 @@
                                 label: event.name,
                                 key: event.name,
                                 toggle: () => this.toggleFromEvents(event.name),
-                                isActive: selectedEvents.some(eventName => eventName === event.name), __self: this, __source: {fileName: _jsxFileName$1, lineNumber: 29}}))
+                                isActive: selectedEvents.some(eventName => eventName === event.name), __self: this, __source: {fileName: _jsxFileName$1, lineNumber: 32}}))
                             })
                         
                       )
@@ -61893,7 +61896,7 @@
                   , react.createElement(Checkbox, {
                     label: 'Listen to all events',
                     toggle: () => this.toggleEventListDisabled(),
-                    isActive: listenToAllEvents, __self: this, __source: {fileName: _jsxFileName$1, lineNumber: 39}})
+                    isActive: listenToAllEvents, __self: this, __source: {fileName: _jsxFileName$1, lineNumber: 42}})
                 ));
               }
 

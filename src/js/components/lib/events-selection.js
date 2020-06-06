@@ -15,7 +15,10 @@ export class EventsSelection extends Component {
     const { abi } = this.props;
     const { selectedEvents, listenToAllEvents } = this.state;
     if (!abi || abi.length === 0) {
-      return <p className="f8">No Events found...</p>;
+      return <>
+        <p className="f8 lh-copy db mb2">No Events found!</p>
+        <p className="f8">Please insert a valid contract address...</p>
+      </>;
     }
     return (<div>
       <form className="mb4">
