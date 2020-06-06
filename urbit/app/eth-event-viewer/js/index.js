@@ -44719,7 +44719,6 @@
               }
 
               getBlockNumber(timestamp) {
-                console.log('REQUEST BLOCK NUMBER', timestamp);
                 api.action('eth-event-viewer', 'json', {
                   'get-block-number': {
                     timestamp
