@@ -36,6 +36,13 @@ export class NewContract extends Component {
     }
   }
 
+  getPreviousWeek() {
+    const today = new Date();
+    const previousWeek = new Date(today.getFullYear(), today.getMonth(),
+      today.getDate() - 7, today.getHours(), today.getMinutes());
+    return _.round(previousWeek.getTime() / 1000).toString();
+  }
+
   render() {
     const { address, abiEvents, name, blockNumber } = this.state;
     return (<div className="flex flex-column pa3">
@@ -66,7 +73,21 @@ export class NewContract extends Component {
             onChange={this.handleNameChangeBound}
             aria-describedby="name-desc"
           />
-          <p className="f8 mt3 lh-copy db mb2">Block Number</p>
+          <div className="inline-flex justify-between w-100">
+            <p className="f8 mt3 lh-copy db mb2">Block Number </p>
+            <div className="inline-flex">
+              <div className="f9 gray3 pointer"
+                   style={{ padding: '16px' }}
+                   onClick={() => api.getBlockNumber(this.getPreviousWeek())}>
+                prev. week
+              </div>
+              <div className="f9 gray3 pointer"
+                   style={{ padding: '16px' }}
+                   onClick={() => api.getBlockNumber(_.round(Date.now() / 1000).toString())}>
+                current
+              </div>
+            </div>
+          </div>
           <textarea
             id="name"
             className="ba b--black-20 pa3 db w-70 b--gray4 f9 flex-basis-full-s focus-b--black focus-b--white-d

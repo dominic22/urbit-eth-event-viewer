@@ -44718,8 +44718,7 @@
                 });
               }
 
-              getBlockNumber() {
-                const timestamp = lodash.round(Date.now() / 1000).toString();
+              getBlockNumber(timestamp) {
                 console.log('REQUEST BLOCK NUMBER', timestamp);
                 api.action('eth-event-viewer', 'json', {
                   'get-block-number': {
@@ -44862,7 +44861,6 @@
               contracts(obj, state) {
                 let data = lodash.get(obj, 'contracts', false);
                 if (data) {
-                  console.log('event log', data);
                   state.contracts = getOrderedContracts(data.map(contract => mapContract(contract)));
                 }
               }
@@ -44881,19 +44879,20 @@
               }
 
               blockNumber(obj, state) {
-                let data = lodash.get(obj, 'block-number-res', false);
+                let blockNumber = lodash.get(obj, 'block-number-res', false);
 
-                if (data) {
-                  console.log('block-number', data);
-                  state.blockNumber = data;
+                if (blockNumber) {
+                  if(isNaN(+blockNumber)) {
+                    console.error('Error while receiving block number: ', blockNumber);
+                    return;
+                  }
+                  state.blockNumber = blockNumber;
                 }
               }
 
               eventLogs(obj, state) {
-                let data = lodash.get(obj, 'event-logs', false);
-                if (data) {
-                  console.log('event logs', data);
-                  const eventLogs = data;
+                const eventLogs = lodash.get(obj, 'event-logs', false);
+                if (eventLogs) {
                   if (!eventLogs || !eventLogs[0].address) {
                     console.error('no address found in event logs');
                     return;
@@ -61979,12 +61978,19 @@
                 }
               }
 
+              getPreviousWeek() {
+                const today = new Date();
+                const previousWeek = new Date(today.getFullYear(), today.getMonth(),
+                  today.getDate() - 7, today.getHours(), today.getMinutes());
+                return lodash.round(previousWeek.getTime() / 1000).toString();
+              }
+
               render() {
                 const { address, abiEvents, name, blockNumber } = this.state;
-                return (react.createElement('div', { className: "flex flex-column pa3"  , __self: this, __source: {fileName: _jsxFileName$2, lineNumber: 41}}
-                  , react.createElement('div', { className: "flex flex-row flex-wrap"  , __self: this, __source: {fileName: _jsxFileName$2, lineNumber: 42}}
-                    , react.createElement('div', { className: "w-100-s", __self: this, __source: {fileName: _jsxFileName$2, lineNumber: 43}}
-                      , react.createElement('p', { className: "f8 mt3 lh-copy db mb2"    , __self: this, __source: {fileName: _jsxFileName$2, lineNumber: 44}}, "Contract Address" )
+                return (react.createElement('div', { className: "flex flex-column pa3"  , __self: this, __source: {fileName: _jsxFileName$2, lineNumber: 48}}
+                  , react.createElement('div', { className: "flex flex-row flex-wrap"  , __self: this, __source: {fileName: _jsxFileName$2, lineNumber: 49}}
+                    , react.createElement('div', { className: "w-100-s", __self: this, __source: {fileName: _jsxFileName$2, lineNumber: 50}}
+                      , react.createElement('p', { className: "f8 mt3 lh-copy db mb2"    , __self: this, __source: {fileName: _jsxFileName$2, lineNumber: 51}}, "Contract Address" )
                       , react.createElement('textarea', {
                         id: "name",
                         className: "ba b--black-20 pa3 db w-70 b--gray4 f9 flex-basis-full-s focus-b--black focus-b--white-d w-382-px w-auto-s"
@@ -61994,10 +62000,10 @@
                         value: address,
                         style: { resize: 'none' },
                         onChange: this.handleContractChangeBound,
-                        'aria-describedby': "name-desc", __self: this, __source: {fileName: _jsxFileName$2, lineNumber: 45}}
+                        'aria-describedby': "name-desc", __self: this, __source: {fileName: _jsxFileName$2, lineNumber: 52}}
                       )
                       , this.renderInputStatus()
-                      , react.createElement('p', { className: "f8 mt3 lh-copy db mb2"    , __self: this, __source: {fileName: _jsxFileName$2, lineNumber: 57}}, "Name", react.createElement('span', { className: "gray3", __self: this, __source: {fileName: _jsxFileName$2, lineNumber: 57}}, " (Optional)" ))
+                      , react.createElement('p', { className: "f8 mt3 lh-copy db mb2"    , __self: this, __source: {fileName: _jsxFileName$2, lineNumber: 64}}, "Name", react.createElement('span', { className: "gray3", __self: this, __source: {fileName: _jsxFileName$2, lineNumber: 64}}, " (Optional)" ))
                       , react.createElement('textarea', {
                         id: "name",
                         className: "ba b--black-20 pa3 db w-70 b--gray4 f9 flex-basis-full-s focus-b--black focus-b--white-d w-382-px w-auto-s"
@@ -62007,9 +62013,23 @@
                         value: name,
                         style: { resize: 'none' },
                         onChange: this.handleNameChangeBound,
-                        'aria-describedby': "name-desc", __self: this, __source: {fileName: _jsxFileName$2, lineNumber: 58}}
+                        'aria-describedby': "name-desc", __self: this, __source: {fileName: _jsxFileName$2, lineNumber: 65}}
                       )
-                      , react.createElement('p', { className: "f8 mt3 lh-copy db mb2"    , __self: this, __source: {fileName: _jsxFileName$2, lineNumber: 69}}, "Block Number" )
+                      , react.createElement('div', { className: "inline-flex justify-between w-100"  , __self: this, __source: {fileName: _jsxFileName$2, lineNumber: 76}}
+                        , react.createElement('p', { className: "f8 mt3 lh-copy db mb2"    , __self: this, __source: {fileName: _jsxFileName$2, lineNumber: 77}}, "Block Number "  )
+                        , react.createElement('div', { className: "inline-flex", __self: this, __source: {fileName: _jsxFileName$2, lineNumber: 78}}
+                          , react.createElement('div', { className: "f9 gray3 pointer"  ,
+                               style: { padding: '16px' },
+                               onClick: () => api.getBlockNumber(this.getPreviousWeek()), __self: this, __source: {fileName: _jsxFileName$2, lineNumber: 79}}, "prev. week"
+
+                          )
+                          , react.createElement('div', { className: "f9 gray3 pointer"  ,
+                               style: { padding: '16px' },
+                               onClick: () => api.getBlockNumber(lodash.round(Date.now() / 1000).toString()), __self: this, __source: {fileName: _jsxFileName$2, lineNumber: 84}}, "current"
+
+                          )
+                        )
+                      )
                       , react.createElement('textarea', {
                         id: "name",
                         className: "ba b--black-20 pa3 db w-70 b--gray4 f9 flex-basis-full-s focus-b--black focus-b--white-d w-382-px w-auto-s"
@@ -62019,27 +62039,27 @@
                         value: blockNumber,
                         style: { resize: 'none' },
                         onChange: this.handleBlockNumberChangeBound,
-                        'aria-describedby': "name-desc", __self: this, __source: {fileName: _jsxFileName$2, lineNumber: 70}}
+                        'aria-describedby': "name-desc", __self: this, __source: {fileName: _jsxFileName$2, lineNumber: 91}}
                       )
                     )
-                    , react.createElement('div', { className: "ml8 mt3 w-100-s ml0-s"   , __self: this, __source: {fileName: _jsxFileName$2, lineNumber: 82}}
+                    , react.createElement('div', { className: "ml8 mt3 w-100-s ml0-s"   , __self: this, __source: {fileName: _jsxFileName$2, lineNumber: 103}}
                       , react.createElement(EventsSelection, {
                         onEventsChanged: selectedEvents => {
                           this.setState({specificEvents:selectedEvents});
                         },
-                        abi: abiEvents, __self: this, __source: {fileName: _jsxFileName$2, lineNumber: 83}})
+                        abi: abiEvents, __self: this, __source: {fileName: _jsxFileName$2, lineNumber: 104}})
                     )
                   )
-                  , react.createElement('div', { className: "flex mt3" , __self: this, __source: {fileName: _jsxFileName$2, lineNumber: 90}}
-                    , react.createElement(Link, { to: "/~eth-event-viewer", __self: this, __source: {fileName: _jsxFileName$2, lineNumber: 91}}
+                  , react.createElement('div', { className: "flex mt3" , __self: this, __source: {fileName: _jsxFileName$2, lineNumber: 111}}
+                    , react.createElement(Link, { to: "/~eth-event-viewer", __self: this, __source: {fileName: _jsxFileName$2, lineNumber: 112}}
                       , react.createElement('button', { className: "db f9 green2 ba pa2 b--green2 bg-gray0-d pointer"       ,
-                              onClick: () => this.accept() , __self: this, __source: {fileName: _jsxFileName$2, lineNumber: 92}}, "Add Contract"
+                              onClick: () => this.accept() , __self: this, __source: {fileName: _jsxFileName$2, lineNumber: 113}}, "Add Contract"
 
                       )
                     )
-                    , react.createElement(Link, { to: "/~eth-event-viewer", __self: this, __source: {fileName: _jsxFileName$2, lineNumber: 97}}
+                    , react.createElement(Link, { to: "/~eth-event-viewer", __self: this, __source: {fileName: _jsxFileName$2, lineNumber: 118}}
                     , react.createElement('button', { className: "f9 ml3 ba pa2 b--black pointer bg-transparent b--white-d white-d"        ,
-                            onClick: () => this.setState({...initialState}), __self: this, __source: {fileName: _jsxFileName$2, lineNumber: 98}}, "Cancel"
+                            onClick: () => this.setState({...initialState}), __self: this, __source: {fileName: _jsxFileName$2, lineNumber: 119}}, "Cancel"
 
                     )
                     )
@@ -62061,7 +62081,7 @@
 
               renderInputStatus() {
                 if(!this.state.validAddress && this.state.address) {
-                  return (react.createElement('span', { className: "f9 inter red2 db pt2"    , __self: this, __source: {fileName: _jsxFileName$2, lineNumber: 121}}, "Must be a valid contract address."     ));
+                  return (react.createElement('span', { className: "f9 inter red2 db pt2"    , __self: this, __source: {fileName: _jsxFileName$2, lineNumber: 142}}, "Must be a valid contract address."     ));
                 }
                 return null;
               }
@@ -66598,40 +66618,42 @@
                 super(props);
                 this.state = store$1.state;
                 store$1.setStateHandler(this.setState.bind(this));
-                api.getBlockNumber();
+                const current = lodash.round(Date.now() / 1000).toString();
+                api.getBlockNumber(current);
               }
 
               render() {
                 const { contracts, eventFilters } = this.state;
                 return (
-                  react.createElement(BrowserRouter, {__self: this, __source: {fileName: _jsxFileName$a, lineNumber: 20}}
-                    , react.createElement(Switch, {__self: this, __source: {fileName: _jsxFileName$a, lineNumber: 21}}
+                  react.createElement(BrowserRouter, {__self: this, __source: {fileName: _jsxFileName$a, lineNumber: 22}}
+                    , react.createElement(Switch, {__self: this, __source: {fileName: _jsxFileName$a, lineNumber: 23}}
                       , react.createElement(Route, {
                         exact: true,
                         path: "/~eth-event-viewer",
                         render: () => {
                           return (
-                            react.createElement(Skeleton, { contracts: contracts, __self: this, __source: {fileName: _jsxFileName$a, lineNumber: 27}}
+                            react.createElement(Skeleton, { contracts: contracts, __self: this, __source: {fileName: _jsxFileName$a, lineNumber: 29}}
                               , this.renderBaseViewContent()
                             )
                           );
-                        }, __self: this, __source: {fileName: _jsxFileName$a, lineNumber: 22}}
+                        }, __self: this, __source: {fileName: _jsxFileName$a, lineNumber: 24}}
                       )
                       , react.createElement(Route, {
                         exact: true,
                         path: "/~eth-event-viewer/new",
                         render: () => {
                           return (
-                            react.createElement(Skeleton, { contracts: this.state.contracts, __self: this, __source: {fileName: _jsxFileName$a, lineNumber: 38}}
+                            react.createElement(Skeleton, { contracts: this.state.contracts, __self: this, __source: {fileName: _jsxFileName$a, lineNumber: 40}}
                               , react.createElement(NewContract, {
                                 abi: this.state.abi,
                                 blockNumber: this.state.blockNumber,
                                 contracts: contracts,
-                                onAcceptClicked: contract => api.newContract(contract), __self: this, __source: {fileName: _jsxFileName$a, lineNumber: 39}}
+                                // timeout to avoid max rate limit reached error
+                                onAcceptClicked: contract => setTimeout(() => api.newContract(contract), 2000), __self: this, __source: {fileName: _jsxFileName$a, lineNumber: 41}}
                               )
                             )
                           );
-                        }, __self: this, __source: {fileName: _jsxFileName$a, lineNumber: 33}}
+                        }, __self: this, __source: {fileName: _jsxFileName$a, lineNumber: 35}}
                       )
                       , react.createElement(Route, {
                         exact: true,
@@ -66640,15 +66662,15 @@
                           return (
                             react.createElement(Skeleton, {
                               selectedContract: props.match.params.contract,
-                              contracts: contracts, __self: this, __source: {fileName: _jsxFileName$a, lineNumber: 54}}
+                              contracts: contracts, __self: this, __source: {fileName: _jsxFileName$a, lineNumber: 57}}
                             
                               , react.createElement(EventLogs, {
                                 contract: contracts && contracts.find(contract => contract.address === props.match.params.contract),
-                                filterOptions: eventFilters.find(filter => filter.address === props.match.params.contract), __self: this, __source: {fileName: _jsxFileName$a, lineNumber: 58}}
+                                filterOptions: eventFilters.find(filter => filter.address === props.match.params.contract), __self: this, __source: {fileName: _jsxFileName$a, lineNumber: 61}}
                               )
                             )
                           );
-                        }, __self: this, __source: {fileName: _jsxFileName$a, lineNumber: 49}}
+                        }, __self: this, __source: {fileName: _jsxFileName$a, lineNumber: 52}}
                       )
                     )
                   )
@@ -66661,8 +66683,8 @@
                 if (contracts && contracts.length > 0) {
                   message = 'Please select a contract.';
                 }
-                return react.createElement('div', { className: "pl3 pr3 pt2 dt pb3 w-100 h-100"      , __self: this, __source: {fileName: _jsxFileName$a, lineNumber: 77}}
-                  , react.createElement('p', { className: "f9 pt3 gray2 w-100 h-100 dtc v-mid tc"       , __self: this, __source: {fileName: _jsxFileName$a, lineNumber: 78}}, message)
+                return react.createElement('div', { className: "pl3 pr3 pt2 dt pb3 w-100 h-100"      , __self: this, __source: {fileName: _jsxFileName$a, lineNumber: 80}}
+                  , react.createElement('p', { className: "f9 pt3 gray2 w-100 h-100 dtc v-mid tc"       , __self: this, __source: {fileName: _jsxFileName$a, lineNumber: 81}}, message)
                 )
               }
             }

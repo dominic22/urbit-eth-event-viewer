@@ -115,8 +115,8 @@
     ?.  ?=(%fact -.sign)
     (on-agent:def wire sign)
     ?.  ?=(%eth-watcher-diff p.cage.sign)
-    ~&  'no eth-watcher-diff received'
-    (on-agent:def wire sign)
+      ~&  'no eth-watcher-diff received'
+      (on-agent:def wire sign)
     =+  !<(diff=diff:ew-sur q.cage.sign)
     ?-  -.diff
     %history  =^  cards  state
@@ -135,8 +135,6 @@
       [~ this]
     ?:  ?=(%http-response +<.sign-arvo)
       =^  cards  state
-        ~&  '#### wire'
-        ~&  wire
         ?:  ?=([%abi-res ~] wire)
             (abi-response:cc wire client-response.sign-arvo)
         ?:  ?=([%block-number-res ~] wire)
@@ -331,8 +329,6 @@
     address:(snag 0 `loglist:ew-sur`event-logs)
   =/  contract=contract-type
     (~(got by contracts.state) address)
-  ~&  'new logs'
-  ::    contract(event-logs event-logs)
   =/  updated-contract=contract-type
     contract(event-logs (weld (flop event-logs.contract) event-logs))
   =/  filtered-contracts=contracts-type
@@ -371,8 +367,6 @@
   |=  contract=contract-type
   =/  url=@t  'http://eth-mainnet.urbit.org:8545'
   %+  to-eth-watcher  (get-path address.contract)
-  ~&  'block number:'
-  ~&  block-number.contract
   :+  %poke   %eth-watcher-poke
   !>  ^-  poke:ew-sur
   :+  %watch  (get-path address.contract)

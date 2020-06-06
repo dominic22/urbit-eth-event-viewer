@@ -5,13 +5,15 @@ import { store } from '/store';
 import { NewContract } from './new';
 import { Skeleton } from './skeleton';
 import { EventLogs } from './log';
+import _ from 'lodash';
 
 export class Root extends Component {
   constructor(props) {
     super(props);
     this.state = store.state;
     store.setStateHandler(this.setState.bind(this));
-    api.getBlockNumber();
+    const current = _.round(Date.now() / 1000).toString();
+    api.getBlockNumber(current);
   }
 
   render() {
@@ -40,7 +42,8 @@ export class Root extends Component {
                     abi={this.state.abi}
                     blockNumber={this.state.blockNumber}
                     contracts={contracts}
-                    onAcceptClicked={contract => api.newContract(contract)}
+                    // timeout to avoid max rate limit reached error
+                    onAcceptClicked={contract => setTimeout(() => api.newContract(contract), 2000)}
                   />
                 </Skeleton>
               );

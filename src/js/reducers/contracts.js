@@ -1,5 +1,5 @@
 import _ from 'lodash';
-import { getOrderedContracts, getOrderedLogs, getUniqueOrderedLogs, mapContract, splitContracts } from './utils';
+import { getOrderedContracts, getOrderedLogs, mapContract, splitContracts } from './utils';
 
 export class ContractsReducer {
   reduce(json, state) {
@@ -35,7 +35,6 @@ export class ContractsReducer {
   contracts(obj, state) {
     let data = _.get(obj, 'contracts', false);
     if (data) {
-      console.log('event log', data);
       state.contracts = getOrderedContracts(data.map(contract => mapContract(contract)));
     }
   }
@@ -54,19 +53,20 @@ export class ContractsReducer {
   }
 
   blockNumber(obj, state) {
-    let data = _.get(obj, 'block-number-res', false);
+    let blockNumber = _.get(obj, 'block-number-res', false);
 
-    if (data) {
-      console.log('block-number', data);
-      state.blockNumber = data;
+    if (blockNumber) {
+      if(isNaN(+blockNumber)) {
+        console.error('Error while receiving block number: ', blockNumber);
+        return;
+      }
+      state.blockNumber = blockNumber;
     }
   }
 
   eventLogs(obj, state) {
-    let data = _.get(obj, 'event-logs', false);
-    if (data) {
-      console.log('event logs', data);
-      const eventLogs = data;
+    const eventLogs = _.get(obj, 'event-logs', false);
+    if (eventLogs) {
       if (!eventLogs || !eventLogs[0].address) {
         console.error('no address found in event logs');
         return;
