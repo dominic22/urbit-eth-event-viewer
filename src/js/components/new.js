@@ -17,9 +17,10 @@ const initialState = {
 export class NewContract extends Component {
   constructor(props) {
     super(props);
+    const blockNumber = isNaN(+props.blockNumber) ? undefined : +props.blockNumber;
     this.state = {
       ...initialState,
-      blockNumber: props.blockNumber,
+      blockNumber,
     };
     this.handleContractChangeBound = this.handleContractChange.bind(this);
     this.handleNameChangeBound = this.handleNameChange.bind(this);
@@ -30,8 +31,8 @@ export class NewContract extends Component {
     const {abi, blockNumber} = this.props;
     if(abi && abi !== prevProps.abi) {
       this.setState({abiEvents: abi.filter(topics => topics.type === 'event')});
-    } else if((blockNumber !== prevProps.blockNumber || !this.state.blockNumber) && !isNaN(Number(blockNumber))) {
-      this.setState({blockNumber: Number(blockNumber)});
+    } else if((blockNumber !== prevProps.blockNumber || !this.state.blockNumber) && !isNaN(+blockNumber)) {
+      this.setState({blockNumber: +blockNumber});
     }
   }
 

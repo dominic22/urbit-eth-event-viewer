@@ -166,59 +166,57 @@
   ::
       [%'~eth-event-viewer' *]  (html-response:gen index)
   ==
-:: TODO refactor duplicated code
+::
 ++  abi-response
   |=  [=wire response=client-response:iris]
   ^-  (quip card _state)
-  =,  dejs:format
-  ?.  ?=(%finished -.response)
-    ~&  'unfinished response'
-    [~ state]
-  =/  data=(unit mime-data:iris)  full-file.response
-  ?~  data
-    ~&  'data is null'
-    [~ state]
-  =/  ujon=(unit json)
-    (de-json:html q.data.u.data)
-  ?~  ujon
-     [~ state]
-  ?>  ?=(%o -.u.ujon)
-  ?:  (gth 200 status-code.response-header.response)
-    [~ state]
+  =/  result=json
+      (http-response-result wire response)
+  ?~  result
+      ~&  'no data received...'
+      [~ state]
   =/  jon=json
     %-  pairs:enjs:format
       :~
-        abi-res+(~(got by p.u.ujon) 'result')
+        abi-res+result
       ==
   :_  state
   [%give %fact ~[/state/update] %json !>(jon)]~
 ::
+::
 ++  block-number-response
   |=  [=wire response=client-response:iris]
   ^-  (quip card _state)
-  =,  dejs:format
-  ?.  ?=(%finished -.response)
-    ~&  'unfinished response'
-    [~ state]
-  ~&  'BLOCK NUMBER RESPONSE!!!!!!'
-  =/  data=(unit mime-data:iris)  full-file.response
-  ?~  data
-    ~&  'data is null'
-    [~ state]
-  =/  ujon=(unit json)
-    (de-json:html q.data.u.data)
-  ?~  ujon
-     [~ state]
-  ?>  ?=(%o -.u.ujon)
-  ?:  (gth 200 status-code.response-header.response)
-    [~ state]
+  =/  result=json
+      (http-response-result wire response)
+  ?~  result
+      ~&  'no data received...'
+      [~ state]
   =/  jon=json
     %-  pairs:enjs:format
       :~
-        block-number-res+(~(got by p.u.ujon) 'result')
+        block-number-res+result
       ==
   :_  state
   [%give %fact ~[/state/update] %json !>(jon)]~
+::
+++  http-response-result
+  |=  [=wire response=client-response:iris]
+  ^-  json
+  =,  dejs:format
+  ?.  ?=(%finished -.response)
+    ~
+  =/  data=(unit mime-data:iris)  full-file.response
+  ?~  data
+    ~
+  =/  ujon=(unit json)
+    (de-json:html q.data.u.data)
+  ?~  ujon
+    ~
+  ?>  ?=(%o -.u.ujon)
+  ?:  (gth 200 status-code.response-header.response)
+    ~
+  (~(got by p.u.ujon) 'result')
 ::
 ++  poke-action
   |=  action=eth-event-viewer-action
@@ -347,32 +345,25 @@
 ++  request-ethereum-abi
   |=  address=address:ethereum
   ^-  card:agent:gall
-  =/  req=request:http
-    (get-abi-request (ux-to-cord address))
-  [%pass /abi-res %arvo %i %request req *outbound-config:iris]
-::
-++  get-abi-request
-  |=  address=@t
-  ^-  request:http
   =/  base=@t
-    'https://api.etherscan.io/api?module=contract&action=getabi&address='
-  =/  url=@t  (cat 3 base address)
-  =/  hed  [['Accept' 'application/json']]~
-  [%'GET' url hed *(unit octs)]
+      'https://api.etherscan.io/api?module=contract&action=getabi&address='
+  =/  req=request:http
+    (get-request base (ux-to-cord address))
+  [%pass /abi-res %arvo %i %request req *outbound-config:iris]
 ::
 ++  request-block-number
   |=  timestamp=@t
   ^-  card:agent:gall
+  =/  base=@t
+      'https://api.etherscan.io/api?module=block&action=getblocknobytime&closest=before&timestamp='
   =/  req=request:http
-    (get-block-number-request timestamp)
+    (get-request base timestamp)
   [%pass /block-number-res %arvo %i %request req *outbound-config:iris]
 ::
-++  get-block-number-request
-  |=  timestamp=@t
+++  get-request
+  |=  [base=@t parameter=@t]
   ^-  request:http
-  =/  base=@t
-    'https://api.etherscan.io/api?module=block&action=getblocknobytime&closest=before&timestamp='
-  =/  url=@t  (cat 3 base timestamp)
+  =/  url=@t  (cat 3 base parameter)
   =/  hed  [['Accept' 'application/json']]~
   [%'GET' url hed *(unit octs)]
 ::
